@@ -1,0 +1,169 @@
+\documentclass[twoside,a4paper,10pt]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+%\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage{url}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+%\usepackage{ref}
+
+%%%
+
+\pagenumbering{arabic}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+% Shows section number and name
+\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+% Clear previous styles
+\fancyhf{}
+\fancyhead{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LO]{\rightmark}
+\fancyhead[RE]{BitTorrent Tracker: deliverable 1}
+\fancyhead[LE]{\thepage}
+\fancyfoot{}
+% Other modifiers
+%\fancyfoot[LE,RO]{\thepage}
+%\fancyfoot[LO,CE]{Something}
+%\fancyfoot[CO,RE]{Author Name}
+
+\title{BitTorrent Tracker: deliverable 1}
+
+\author{Irene Díez \and Jesus Sesma}
+
+\begin{document}
+\date{}
+\maketitle
+
+%\begin{abstract}
+%Your abstract.
+%\end{abstract}
+
+\section{Architectural design}
+
+Figure~\ref{fig:arch} shows the architectural design of the BitTorrent Tracker.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.3\textwidth]{frog.jpg}
+  \caption{\label{fig:arch}Bla blá}
+\end{figure}
+
+\section{Functionality}
+
+The tracker can be divided into the following components:
+% TODO: explain
+\begin{itemize}
+\item Master tracker
+  \begin{itemize}
+  \item Cluster Fault Tolerance System
+  \item Peer Info Sender
+  \item Master DB Fault Tolerance System
+    \begin{itemize}
+    \item DB Manager
+    \item Master Consensus System
+    \end{itemize}
+  \end{itemize}
+\item Tracker slaves
+  \begin{itemize}
+  \item Cluster Fault Tolerance System
+  \item Master Election System
+  \item Slave DB Fault Tolerance System
+    \begin{itemize}
+    \item DB Manager
+    \item Slave Consensus System
+    \end{itemize}
+  \end{itemize}
+\item Peers
+  \begin{itemize}
+  \item Peer Info Requester
+  \item Download Manager
+  \item DB Manager
+  \end{itemize}
+\end{itemize}
+
+\begin{table}[h]
+  \centering
+  \begin{tabularx}{\linewidth}{X X l}
+    Identifier & Entity & Description \\ \hline\hline
+    Cluster Fault Tolerance System & Master tracker &  \\
+    Master Consensus System & Tracker master &  \\
+    Peer Info Sender & Master tracker &  \\
+    Master DB Fault Tolerance System & Master tracker &  \\
+    Slave DB Fault Tolerance System & Tracker slaves &  \\
+    DB Manager & Master tracker, tracker slaves and peers &  \\
+    Slave Consensus System & Tracker slaves &  \\
+    Master Election System & Tracker slaves &  \\
+    Peer Info Requester & Peers &  \\
+    Download Manager & Peers &  \\
+  \end{tabularx}
+  \caption{\label{tab:fun-entities}Summary of the functionality
+    implemented in each entity}
+\end{table}
+\section{Data schema}
+
+Our system contemplates two different database schemas, on the one hand the
+tracker's master and slaves will implement the schema shown in
+figure~\ref{fig:schema-MS}. This schema has two tables: (i) \texttt{PEER-INFO}
+where information regarding the peers' host and ports is stored; and (ii)
+\texttt{CONTENTS}, where the tracker will store which peers have available some
+specific content. Both tables' fields are self-descriptive.
+
+\begin{figure}[h]
+  
+  \texttt{PEER-INFO (\underline{id:INTEGER}, host:VARCHAR(255), port:INTEGER)}
+  
+  \texttt{CONTENTS (\underline{sha1:STRING(40)}, \underline{peer\_id:INTEGER})}
+  
+  \centering
+  \caption{\label{fig:schema-MS}DB schema for the tracker's master and slaves.}
+\end{figure}
+
+On the other hand, the peers will need to remember the
+progress they have made during a download; thereby, they will store which chucks
+they have downloaded so far for a specific file. It must be underlined that our
+system will always transfer chunks of the same size, with the exception of the
+last chunk, or when the content's size is inferior to our default chunk size.
+
+This characteristic is implemented using the schema shown in
+figure~\ref{fig:schema-P}, with the table \texttt{CHUNK}; its
+fields are self-descriptive.
+
+\begin{figure}[h]
+  
+  \texttt{PEER-INFO (\underline{sha1:STRING(40)}, offset:INTEGER)}
+  
+  \centering
+  \caption{\label{fig:schema-P}DB schema for the tracker's peers.}
+\end{figure}
+
+\subsection{DB technology}
+
+We have decided to use SQLite~\cite{sqlite} as our storage technology,
+mainly because we have previous experience with it; but more importantly,
+because this is a didactic project without the high availability and performance
+needs that a professional project's database requires.
+
+Regarding the use of a classic SQL database over the NoSQL paradigm, since
+this project implies the synchronisation of the DB over the trackers, we think
+that the data should be as normalised as possible and complying to the third
+normal form (3NF); thereby, we discard NoSQL databases.
+
+\section{Interaction model design}
+
+\section{Failure model desing}
+
+\section{Graphical interface}
+
+
+\bibliographystyle{unsrt}
+\bibliography{bib}
+
+\end{document}
+
+
