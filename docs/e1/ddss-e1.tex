@@ -48,11 +48,15 @@
 \section{Architectural design}
 
 Figure~\ref{fig:arch} shows the architectural design of the BitTorrent Tracker.
+All swarm member receive UDP multicast requests from the peers; however, just
+the master answers.
+The communication between the peers is done via UDP, and the
+tracker's instances contemplate UDP/JMS communication among them.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{achitectural-design.pdf}
-  \caption{\label{fig:arch}Bla blá}
+  \includegraphics[width=\textwidth]{architectural-design.pdf}
+  \caption{\label{fig:arch}Architectural design of the Tracker.}
 \end{figure}
 
 \section{Functionality}
@@ -88,7 +92,7 @@ The tracker's functionality is summarised in table~\ref{tab:fun-entities}.
     DB system.\\
   \end{tabularx}
   \caption{\label{tab:fun-entities}Summary of the functionality
-    implemented in each entity}
+    implemented in each entity.}
 \end{table}
 
 The following list describes more thoroughly the functions previously shown in
