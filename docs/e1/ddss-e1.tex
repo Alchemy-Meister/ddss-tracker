@@ -34,7 +34,7 @@
 %\fancyfoot[CO,RE]{Author Name}
 
 \title{BitTorrent Tracker: deliverable 1\\
-   Group 01}
+  Group 01}
 \author{Irene Díez \and Jesus Sesma}
 
 \begin{document}
@@ -85,6 +85,7 @@ The tracker's functionality is summarised in table~\ref{tab:fun-entities}.
     available contents.\\
     Download Manager & P & This component handles the downloads in the
     clients.\\
+    Upload Manager & P & This component handles the uploads in the clients. \\
     Cluster Fault Tolerance System & MT and TS &
     In charge of sending keep-alive messages among all the members of the
     swarm.\\
@@ -150,6 +151,7 @@ table~\ref{tab:fun-entities} that each component is responsible for:
   \item \emph{Peer Info Requester}: requests information to the tracker about
     the available peers with some content.
   \item \emph{Download Manager}: manages the download process.
+  \item \emph{Upload Manager}: manages the upload process.
   \item \emph{DB Manager}: handles the Peer database schema described at
     Section~\ref{sec:data-schema}, see figure~\ref{fig:schema-P}.
   \end{itemize}
@@ -206,6 +208,19 @@ that the data should be as normalised as possible and complying to the third
 normal form (3NF); thereby, we discard NoSQL databases.
 
 \section{Interaction model design}
+
+\begin{itemize}
+\item Tracker-Tracker
+  \begin{enumerate}
+  \item Keepalive (KA) messages
+  \item Master election (ME) messages:
+  \item Database synchronisation (DS) messages:
+  \end{enumerate}
+\item Tracker-Peer
+  \begin{enumerate}
+  \item Peer list request messages:
+  \end{enumerate}
+\end{itemize}
 
 \section{Failure model desing}
 
