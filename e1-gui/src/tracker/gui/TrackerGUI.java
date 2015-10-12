@@ -102,7 +102,7 @@ public class TrackerGUI extends JFrame {
 		basicInfoPanel.add(textField_2, "cell 1 3,growx");
 		textField_2.setColumns(10);
 		
-		JButton startStopButton = new JButton("Shut down");
+		JButton startStopButton = new JButton("Provoke error");
 		basicInfoPanel.add(startStopButton, "cell 2 3");
 		
 		JLabel lblPort = new JLabel("Port");
