@@ -4,7 +4,11 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+
+import general.components.CustomJTable;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +18,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.JTable;
 
 public class TrackerGUI extends JFrame {
 
@@ -21,11 +26,28 @@ public class TrackerGUI extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = -7432208373774239573L;
+	private static String[] columnNames = {"ID", "IP", "Port", "Lastest Keepalive"};
+	
+	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "2015-10-11T 10:45:32"}};
+	private Object[][] slaveData = {
+			{"1", "36.53.128.122", "5432", "2015-10-11T 10:45:30"},
+			{"2", "36.53.128.123", "5432", "2015-10-11T 10:45:31"},
+			{"3", "36.53.128.124", "5432", "2015-10-11T 10:45:32"},
+			{"4", "36.53.128.125", "5432", "2015-10-11T 10:45:30"},
+			{"5", "36.53.128.126", "5432", "2015-10-11T 10:45:30"},
+			{"6", "36.53.128.127", "5432", "2015-10-11T 10:45:31"},
+			{"7", "36.53.128.128", "5432", "2015-10-11T 10:45:32"},
+			{"8", "36.53.128.129", "5432", "2015-10-11T 10:45:32"}
+			
+		};
+	
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	private JTextField textField;
 	private JTextField textField_1;
 	private JTextField textField_2;
+	private JTable masterTable;
+	private JTable slaveTable;
 
 	/**
 	 * Launch the application.
@@ -47,9 +69,10 @@ public class TrackerGUI extends JFrame {
 	 * Create the frame.
 	 */
 	public TrackerGUI() {
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		setMinimumSize(new Dimension(450, 300));
+		setBounds(100, 100, 500, 300);
+		setMinimumSize(new Dimension(500, 300));
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -92,6 +115,21 @@ public class TrackerGUI extends JFrame {
 		JPanel trackerListPanel = new JPanel();
 		trackerListPanel.setBackground(tabbedPanelColor);
 		tabbedPane.addTab("Tracker swarm", null, trackerListPanel, null);
+		trackerListPanel.setLayout(new MigLayout("", "[grow][]", "[][40px:n:45px,grow][][][][][][grow]"));
+		
+		JLabel lblMaster = new JLabel("Master");
+		trackerListPanel.add(lblMaster, "cell 0 0");
+		
+		masterTable = new CustomJTable(masterData, columnNames);
+		masterTable.setEnabled(false);
+		trackerListPanel.add(new JScrollPane(masterTable), "cell 0 1, grow");
+		
+		JLabel lblSlaves = new JLabel("Slaves");
+		trackerListPanel.add(lblSlaves, "cell 0 5");
+		
+		slaveTable = new CustomJTable(slaveData, columnNames);
+		slaveTable.setEnabled(false);
+		trackerListPanel.add(new JScrollPane(slaveTable), "cell 0 6,grow");
 		
 		JPanel peerListPanel = new JPanel();
 		peerListPanel.setBackground(tabbedPanelColor);
