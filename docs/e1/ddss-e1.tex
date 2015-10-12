@@ -215,12 +215,147 @@ as well as the BitTorrent specification~\cite{bep03,bep15,bep23} to make our
 own.
 
 \begin{itemize}
-\item Tracker-Tracker
+\item Tracker-Tracker.
+  
   \begin{enumerate}
   \item Keepalive (KA) messages: are sent every second to all the instances
-    in the tracker swarm.
-  \item Master election (ME) messages:
-  \item Database synchronisation (DS) messages:
+    in the tracker swarm. A member is considered down if two followed KA
+    messages are not received.
+
+    A KA message has the following structure:
+
+    \texttt{[type, ID]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 0, for KA message.
+    \item \texttt{ID} (160 bits): ID of the instance.
+    \end{itemize}
+
+    All swarm members must keep and update a table (for now on referred as the
+    \emph{IP-ID} table) with the values: \texttt{ID-IP-port},
+    that collects information of the ID, IP and port of all the alive
+    instances. 
+    
+  \item Master election (ME) messages: these messages are sent when the master
+    is down (two followed KA messages aren't received). These messages are sent
+    every 3 seconds during the Master Election process. The messages have
+    the following format:
+
+    \texttt{[type, payload]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 1, for ME message.  
+    \item \texttt{payload} (160 bits): the minimum tracker ID.
+    \end{itemize}
+
+    These messages must be sent to all tracker swarm members when the a slave
+    detects that the master is down. The slave chooses the minimum ID among
+    the slaves that appear at its own IP-ID table (taking into account its own
+    ID), and sends its decision to all the swarm members. It must wait to
+    receive ME messages from all the members of its IP-ID table. 
+    
+  \item Hello (HI) messages:
+    these messages are sent when a instance wants to join the tracker swarm.
+    The new instance must begin sending KA messages even though it does not
+    have still an ID.
+    They have the following format:
+
+    \texttt{[type, connection\_id]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 2, for HI message.
+    \item \texttt{connection\_id} (64 bits): randomly selected by the new
+      instance.
+    \end{itemize}
+
+    When a HI message is received the master will answer with the following
+    packets:
+
+    \texttt{[type, connection\_id, assigned\_id, contents\_sha,
+        [info\_hash, host, port]..., ]}
+
+    Where:
+
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 2, for HI message.
+    \item \texttt{connection\_id} (64 bits): the same
+      \texttt{connection\_id} sent by the new instance.
+    \item \texttt{assigned\_id} (160 bits): the ID assigned for this instance
+      by the master.
+    \item \texttt{contents\_sha} (160 bits): SHA-1 of the
+      \texttt{(info\_hash, host, port)} triplets.
+    \item \texttt{info\_hash} (160 bits): SHA-1 of the torrent.
+    \item \texttt{host} (32 bits): IP of the peer that has the torrent.
+    \item \texttt{port} (16 bits): port of the peer that has the torrent..
+    \end{itemize}
+
+    The last \texttt{(info\_hash, host, port)} triplet will be repeated for each
+    row in the \texttt{CONTENTS} table of the master.
+
+    When the new tracker slave successfully receives the master's data it will
+    send the following packet:
+
+    \texttt{[type, connection\_id, assigned\_id, contents\_sha]}
+
+    Where:
+
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 2, for HI message.
+    \item \texttt{connection\_id} (64 bits): the same
+      \texttt{connection\_id} sent by the new instance.
+    \item \texttt{assigned\_id} (160 bits): the ID assigned for this instance
+      by the master.
+    \item \texttt{contents\_sha} (160 bits): SHA-1 of the
+      \texttt{(info\_hash, host, port)} triplets.
+    \end{itemize}
+
+  \item Database synchronisation (DS) messages: for each peer scraping request
+    listened by the tracker, the slaves must send a \emph{DS-ready} message
+    if they have listened
+    the request, which  indicates that they are ready to commit.
+    This packet has the
+    following fields:
+
+    \texttt{[type, connection\_id, action, transaction\_id, [info\_hash]\ldots]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 3 for \emph{DS-ready} message.
+    \item \texttt{connection\_id} (64 bits), \texttt{action} (32 bits),
+      \texttt{transaction\_id} (32 bits) and \texttt{info\_hash} (160 bits):
+      are the fields described at \emph{Peer announce}, interaction 1.
+    \end{itemize}
+
+    When the master has received this packet from all the slaves at its IP-ID
+    table, it will send a \emph{DS-commit} message, that will indicate to
+    the slaves that they must commit the changes. This packet has the following
+    structure:
+
+    \texttt{[type, connection\_id, action, transaction\_id]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 4 for \emph{DS-commit} message.
+    \item \texttt{connection\_id} (64 bits), \texttt{action} (32 bits),
+      \texttt{transaction\_id} (32 bits): are the fields of the previous packet
+      without the variable \texttt{info\_hash}es.
+    \end{itemize}
+
+    When the slave successfully commits, it must send a \emph{DS-done} packet:
+    
+    \texttt{[type, connection\_id, action, transaction\_id]}
+
+    Where:
+    \begin{itemize}
+    \item \texttt{type} (32 bits): 5 for \emph{DS-done} message.
+    \item \texttt{connection\_id} (64 bits), \texttt{action} (32 bits),
+      \texttt{transaction\_id} (32 bits): are the fields of the previous packet
+      without the variable \texttt{info\_hash}es.
+    \end{itemize}
+    
   \end{enumerate}
 \item Tracker-Peer
   \begin{itemize}
@@ -399,6 +534,72 @@ own.
 \end{itemize}
 
 \section{Failure model design}
+
+\begin{itemize}
+\item Tracker-Tracker
+  \begin{enumerate}
+  \item Keepalive (KA) messages: there is no failure model for this type of
+    messages.
+  \item Master Election (ME) messages: depend on the values of the IP-ID table
+    that each slave has. When an election is in progress, each slave must
+    wait until it receives the decisions of all the members of its IP-ID table.
+    If everything goes right, (Situation-A) the slave with the lowest ID is
+    chosen as the new master; however, during the election several things may go
+    wrong.
+    
+    -If a slave incorrectly chooses an ID which is not the lowest (according to
+    an accurate IP-ID table),
+    it must listen to what the majority of the votes says (Situation-B). This
+    may happen when two  KA messages of the lowest-ID-slave do not reach
+    that slave, and the slave chooses wrongly.
+    
+    -If there is not a majority, the election process will continue until
+    Situation-A or Situation-B is reached. Situation-A or Situation-B will be
+    eventually reachable when (i) ME messages are correctly delivered or, (ii)
+    the IP-ID table is updated.
+
+    -If Situation-A is not reached and by Situation-B the majority of the slaves
+    chooses wrongly, a new election will start, since in the IP-ID table the
+    master won't be the one with the lowest ID.
+    
+    This process will be repeated until consensus is reached. 
+  \item Hello (HI) messages: these messages will be ignored during a Master
+    Election process.
+
+    The new instance must wait 3 seconds if no KA messages
+    are listened to elect itself as master, when it elects itself as master
+    its ID will be a random version 4 UUID (which are virtually impossible to
+    be the same in two or more instances). If two or more new instances
+    elect themselves as masters, when the KA messages eventually reach their
+    destinations, a Master Election process will start, since all the instances
+    but one will have wrongly chosen themselves as masters.
+
+    When the tracker master answers to a HI message, it will wait 10 seconds
+    until the new slave answers with the confirmation, if no response is
+    received the master will resend the request. This scheme will be repeated
+    until the new slave confirms the transaction, or the slave goes down.
+  \item Database synchronisation (DS) messages:
+    when the master does not
+    receive a \emph{DS-ready} message within 10 seconds from all the members
+    that it has on its own IP-ID table, it will send again the scraping request
+    originally sent by the peer until the slave sends the \emph{DS-ready}
+    packet or the slave goes down. When this is completed, it will follow the
+    same scheme when the \emph{DS-done} messages are not received.
+    
+    DB synchronisation is a key issue in the tracker, and thereby it is forced.
+
+    The scraping messages are stored in a FIFO structure in all the swarm
+    members, so until transaction N has been done, transaction N + 1 will not
+    start. Thereby, if a master dies the new master chosen after the ME process
+    and the new slaves will be consistent.
+    
+  \end{enumerate}
+\item Tracker-Peer: For all the messages of this type, if no response is
+  received after 15 seconds, the peer must resend the request. The peer should
+  follow this scheme until one minute has passed from the first resend. If the
+  tracker has not still answered, the peer must consider it down,
+  and thereby notify the user accordingly.
+\end{itemize}
 
 \section{Graphical interface}
 
