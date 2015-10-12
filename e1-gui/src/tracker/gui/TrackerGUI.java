@@ -27,6 +27,9 @@ public class TrackerGUI extends JFrame {
 	 */
 	private static final long serialVersionUID = -7432208373774239573L;
 	private static String[] columnNames = {"ID", "IP", "Port", "Lastest Keepalive"};
+	private static String[] peerIDColumnNames = {"ID"};
+	private static String[] peerInfoColumnNames = {"IP", "Port"};
+	private static String[] torrentInfoColumnNames = {"Name", "Downloading", "Uploading", "Extra"};
 	
 	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "2015-10-11T 10:45:32"}};
 	private Object[][] slaveData = {
@@ -37,8 +40,39 @@ public class TrackerGUI extends JFrame {
 			{"5", "36.53.128.126", "5432", "2015-10-11T 10:45:30"},
 			{"6", "36.53.128.127", "5432", "2015-10-11T 10:45:31"},
 			{"7", "36.53.128.128", "5432", "2015-10-11T 10:45:32"},
-			{"8", "36.53.128.129", "5432", "2015-10-11T 10:45:32"}
-			
+			{"8", "36.53.128.129", "5432", "2015-10-11T 10:45:32"}		
+		};
+	private Object[][] peerIDData = {
+			{"Peer_00"},
+			{"Peer_01"},
+			{"Peer_02"},
+			{"Peer_03"},
+			{"Peer_04"},
+			{"Peer_05"},
+			{"Peer_06"},
+			{"Peer_07"},
+			{"Peer_08"},
+			{"Peer_09"},
+			{"Peer_10"},
+			{"Peer_11"},
+			{"Peer_12"},
+			{"Peer_13"},
+			{"Peer_14"},
+			{"Peer_15"},
+			{"Peer_16"}
+		};
+	private Object[][] peerInfoData = {{"61.24.63.40", "65122"}};
+	private Object[][] torrentInfoData = {
+			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)", "35%", "2%", "u are a pirate!"},
+			{"[ReinForce] Shingeki no Kyojin (BDRip 1920x1080 x264 FLAC)", "13%", "5%", "u are a pirate!"},
+			{"[PSXJowie] Elfen Lied | エルフェンリート (BD 1280x720) [MP4 Batch]", "100%", "48%", "u are a pirate!"},
+			{"[Leopard-Raws] CLAYMORE (BD 1920x1080 x264 AAC(Jpn+5.1eng+EngSub))", "5%", "0%", "u are a pirate!"},
+			{"Hatsune MIku 39's Giving Day Concert 2010 [1080p60 Hi10p AAC + 5.1 AC3][kuchikirukia]", "74%", "23%", "u are a pirate!"},
+			{"[Poi] 40mP - 小さな自分と大きな世界 feat. 初音ミク Chiisana Jibun To Ookina Sekai feat. Hatsune Miku [MP3].zip", "98%", "72%", "u are a pirate!"},
+			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)", "asd", "asd", "u are a pirate!"},
+			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)", "asd", "asd", "u are a pirate!"},
+			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)", "asd", "asd", "u are a pirate!"},
+			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)", "asd", "asd", "u are a pirate!"}
 		};
 	
 	private JPanel contentPane;
@@ -48,6 +82,9 @@ public class TrackerGUI extends JFrame {
 	private JTextField textField_2;
 	private JTable masterTable;
 	private JTable slaveTable;
+	private JTable peerListTable;
+	private JTable peerInfoTable;
+	private JTable peerTorrentTable;
 
 	/**
 	 * Launch the application.
@@ -112,28 +149,65 @@ public class TrackerGUI extends JFrame {
 		basicInfoPanel.add(textField_1, "cell 1 4,growx");
 		textField_1.setColumns(10);
 		
-		JPanel trackerListPanel = new JPanel();
-		trackerListPanel.setBackground(tabbedPanelColor);
-		tabbedPane.addTab("Tracker swarm", null, trackerListPanel, null);
-		trackerListPanel.setLayout(new MigLayout("", "[grow][]", "[][40px:n:45px,grow][][][][][][grow]"));
+		JPanel trackerPanel = new JPanel();
+		trackerPanel.setBackground(tabbedPanelColor);
+		tabbedPane.addTab("Tracker swarm", null, trackerPanel, null);
+		trackerPanel.setLayout(new MigLayout("", "[grow][]", "[][40px:n:45px,grow][][][][][][grow]"));
 		
 		JLabel lblMaster = new JLabel("Master");
-		trackerListPanel.add(lblMaster, "cell 0 0");
+		trackerPanel.add(lblMaster, "cell 0 0");
 		
 		masterTable = new CustomJTable(masterData, columnNames);
 		masterTable.setEnabled(false);
-		trackerListPanel.add(new JScrollPane(masterTable), "cell 0 1, grow");
+		trackerPanel.add(new JScrollPane(masterTable), "cell 0 1, grow");
 		
 		JLabel lblSlaves = new JLabel("Slaves");
-		trackerListPanel.add(lblSlaves, "cell 0 5");
+		trackerPanel.add(lblSlaves, "cell 0 5");
 		
 		slaveTable = new CustomJTable(slaveData, columnNames);
 		slaveTable.setEnabled(false);
-		trackerListPanel.add(new JScrollPane(slaveTable), "cell 0 6,grow");
+		trackerPanel.add(new JScrollPane(slaveTable), "cell 0 6,grow");
+		
+		JPanel peerPanel = new JPanel();
+		peerPanel.setBackground(tabbedPanelColor);
+		tabbedPane.addTab("Active peers", null, peerPanel, null);
+		peerPanel.setLayout(new MigLayout("", "[grow][grow][grow][grow][grow]", "[grow][]"));
 		
 		JPanel peerListPanel = new JPanel();
-		peerListPanel.setBackground(tabbedPanelColor);
-		tabbedPane.addTab("Active peers", null, peerListPanel, null);
+		peerPanel.add(peerListPanel, "cell 0 0 1 2,grow");
+		peerListPanel.setLayout(new MigLayout("insets 0", "[70px:75px,grow]", "[16px][grow]"));
+		
+		JLabel label = new JLabel("Peer list");
+		peerListPanel.add(label, "cell 0 0,alignx left,aligny top");
+		
+		peerListTable = new CustomJTable(peerIDData, peerIDColumnNames);
+		peerListPanel.add(new JScrollPane(peerListTable), "cell 0 1,grow");
+		
+		JPanel basicTorrentPanel = new JPanel();
+		peerPanel.add(basicTorrentPanel, "cell 1 0 4 2,grow");
+		basicTorrentPanel.setLayout(new MigLayout("insets 0", "[grow]", "[60px:n:65px,grow][grow]"));
+		
+		JPanel peerBasicInfoPanel = new JPanel();
+		basicTorrentPanel.add(peerBasicInfoPanel, "cell 0 0,grow");
+		peerBasicInfoPanel.setLayout(new MigLayout("insets 0", "[grow]", "[][grow]"));
+		
+		JLabel lblBasicInfo = new JLabel("Basic info");
+		peerBasicInfoPanel.add(lblBasicInfo, "cell 0 0");
+		
+		peerInfoTable = new CustomJTable(peerInfoData, peerInfoColumnNames);
+		peerInfoTable.setEnabled(false);
+		peerBasicInfoPanel.add(new JScrollPane(peerInfoTable), "cell 0 1,grow");
+		
+		JPanel peerTorrentListPanel = new JPanel();
+		basicTorrentPanel.add(peerTorrentListPanel, "cell 0 1,grow");
+		peerTorrentListPanel.setLayout(new MigLayout("insets 0", "[grow]", "[][grow]"));
+		
+		JLabel lblTorrentList = new JLabel("Torrent list");
+		peerTorrentListPanel.add(lblTorrentList, "cell 0 0");
+		
+		peerTorrentTable = new CustomJTable(torrentInfoData, torrentInfoColumnNames);
+		peerTorrentListPanel.add(new JScrollPane(peerTorrentTable), "cell 0 1,grow");
+		
 	}
 
 }
