@@ -6,6 +6,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import general.components.CustomJTable;
 
@@ -17,6 +19,7 @@ import javax.swing.JTabbedPane;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JTable;
 
@@ -181,6 +184,15 @@ public class TrackerGUI extends JFrame {
 		peerListPanel.add(label, "cell 0 0,alignx left,aligny top");
 		
 		peerListTable = new CustomJTable(peerIDData, peerIDColumnNames);
+		peerListTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		peerListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+		      public void valueChanged(ListSelectionEvent e) {
+		    	  if(!e.getValueIsAdjusting()){
+		              int i = peerListTable.getSelectedRow();
+		              System.out.println(peerListTable.getValueAt(i, 0));
+		          }
+		      }
+		});
 		peerListPanel.add(new JScrollPane(peerListTable), "cell 0 1,grow");
 		
 		JPanel basicTorrentPanel = new JPanel();
