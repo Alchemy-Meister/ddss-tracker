@@ -1,4 +1,4 @@
-package tracker;
+package tracker.controller;
 
 import tracker.cfts.FaultToleranceSys;
 import tracker.db.DBFaultToleranceSys;

@@ -1,10 +1,11 @@
 package tracker.cfts;
 
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import sun.security.util.BigInt;
+
 import tracker.db.model.TrackerMember;
 
 /**
@@ -14,14 +15,13 @@ import tracker.db.model.TrackerMember;
  */
 public class IpIdTable {
 	
-	private BigInt masterId = null;
-	private ConcurrentHashMap<String, BigInt> ipid = null;
-	private ConcurrentHashMap<BigInt, Integer> idport = null;
+	// set a lock on this variable
+	private BigInteger masterId = null;
+	private ConcurrentHashMap<String, BigInteger> ipid = null;
 	private static IpIdTable instance;
 	
 	private IpIdTable(){
-		ipid = new ConcurrentHashMap<String, BigInt>();
-		idport = new ConcurrentHashMap<BigInt, Integer>();
+		ipid = new ConcurrentHashMap<String, BigInteger>();
 	}
 	
 	/**
@@ -36,18 +36,27 @@ public class IpIdTable {
 	
 	public List<TrackerMember> getAll() {
 		List<TrackerMember> ret = new LinkedList<TrackerMember>();
-		// Python, change to java
-		// for ip in ipid.keyset():
-		//		ret.append(TrackerMember(ip, ipid[ip], idport[ipid[ip]]))
+		// parse, or think a more efficient way of storing the members
 		return ret;
 	}
 	
-	public void set(String ip, Integer port, BigInt id) {
-		
+	public void set(String ip, BigInteger id) {
+		// set value
 	}
 	
 	public TrackerMember getMemberLowestId() {
 		return null;
+	}
+	
+	public BigInteger getMasterID() {
+		// get lock, release for this variable
+		return masterId;
+	}
+	
+	public void electMaster(BigInteger newMasterID) {
+		// get lock
+		masterId = newMasterID;
+		// release lock
 	}
 	
 }

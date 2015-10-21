@@ -1,26 +1,31 @@
 package tracker.db.model;
 
-import sun.security.util.BigInt;
+import java.math.BigInteger;
 
-/** Represents a member of the swarm.
+
+/** Represents a member of the cluster.
  * @author Irene
  * @author Jesus
  */
 public class TrackerMember {
 	// TODO: add database ORM
 	
+	private static final Integer defaultPort = 5432;
+	
 	private String ip = null;
 	private Integer port = null;
-	private BigInt id = null;
+	private BigInteger id = null;
 	
 	public TrackerMember(String ip, Integer port) {
 		this.ip = ip;
-		this.port = port;
+		if (port == null)
+			this.port = defaultPort;
 	}
 	
-	public TrackerMember(String ip, Integer port, BigInt id) {
+	public TrackerMember(String ip, Integer port, BigInteger id) {
 		this.ip = ip;
-		this.port = port;
+		if (port == null)
+			this.port = defaultPort;
 		this.id = id;
 	}
 	
@@ -36,10 +41,10 @@ public class TrackerMember {
 	public void setPort(Integer port) {
 		this.port = port;
 	}
-	public BigInt getId() {
+	public BigInteger getId() {
 		return id;
 	}
-	public void setId(BigInt id) {
+	public void setId(BigInteger id) {
 		this.id = id;
 	}
 
