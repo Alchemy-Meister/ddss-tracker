@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+import tracker.controller.TrackerSubsystem;
 import tracker.db.model.TrackerMember;
 
 /**
@@ -18,19 +18,34 @@ public class IpIdTable {
 	// set a lock on this variable
 	private BigInteger masterId = null;
 	private ConcurrentHashMap<String, BigInteger> ipid = null;
+	private ConcurrentHashMap<String, Long> ipTime = null;
 	private static IpIdTable instance;
 	
-	private IpIdTable(){
-		ipid = new ConcurrentHashMap<String, BigInteger>();
+	// To propagate the changes to the view
+	private TrackerSubsystem faultTolerance = null;
+	
+	private IpIdTable(FaultToleranceSys faultTolerance){
+		this.ipid = new ConcurrentHashMap<String, BigInteger>();
+		this.ipTime = new ConcurrentHashMap<String, Long>();
+		this.faultTolerance = faultTolerance;
 	}
 	
 	/**
-	 * Singleton, a single Ip-id table.
+	 * Explicit callback in singleton, a single Ip-id table.
+	 * @return
+	 */
+	public static IpIdTable getInstance(FaultToleranceSys faultTolerance) {
+		if (instance == null)
+			instance = new IpIdTable(faultTolerance);
+		return instance;
+	}
+	
+	/** Implicit callback in singleton.
 	 * @return
 	 */
 	public static IpIdTable getInstance() {
 		if (instance == null)
-			instance = new IpIdTable();
+			instance = new IpIdTable(FaultToleranceSys.getInstance());
 		return instance;
 	}
 	
@@ -41,7 +56,15 @@ public class IpIdTable {
 	}
 	
 	public void set(String ip, BigInteger id) {
-		// set value
+		ipid.put(ip, id);
+		ipTime.put(ip, System.nanoTime());
+		faultTolerance.notifyObservers(null);
+	}
+	
+	public void remove(String ip) {
+		ipid.remove(ip);
+		ipTime.remove(ip);
+		faultTolerance.notifyObservers(null);
 	}
 	
 	public TrackerMember getMemberLowestId() {

@@ -1,6 +1,8 @@
 package tracker.gui;
 
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -16,7 +18,7 @@ public class TrackerPanel extends JPanel implements Observer {
 
 	private static final long serialVersionUID = -3635714939911877408L;
 	
-	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Lastest Keepalive"};
+	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Latest Keepalive"};
 	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "8976", "2015-10-11T 10:45:32"}};
 	private Object[][] slaveData = {
 			{"1", "36.53.128.122", "5432", "8976", "2015-10-11T 10:45:30"},
@@ -54,10 +56,14 @@ public class TrackerPanel extends JPanel implements Observer {
 		this.add(new JScrollPane(slaveTable), "cell 0 6,grow");
 		
 	}
+	
+	public void updateSlaveData(List<HashMap<String, String>> data) {
+		
+	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-		
+		updateSlaveData((List<HashMap<String, String>>) arg);
 	}
 }

@@ -11,42 +11,32 @@ import tracker.election.MasterElectionSys;
  * @author Irene
  * @author Jesus
  */
-public class TrackerController {
+public abstract class TrackerController {
+	
+	private TrackerSubsystem instance;
+	
+	public TrackerController(Class<? extends TrackerSubsystem> classType) {
+		this.instance = getInstance(classType);
+	}
+	
+	public void addObserver(Observer ov) {
+		this.instance.addObserver(ov);
+	}
+	
+	public void rmObserver(Observer ov) {
+		this.instance.removeObserver(ov);
+	}
+	
+	private TrackerSubsystem getInstance(Class<? extends TrackerSubsystem> clas) {
+		if (clas.equals(DBFaultToleranceSys.class)) {
+			return DBFaultToleranceSys.getInstance();
+		} else {
+			if (clas.equals(FaultToleranceSys.class)) {
+				return FaultToleranceSys.getInstance();
+			} else {
+				return MasterElectionSys.getInstance();
+			}
+		}
+	}
 
-	private FaultToleranceSys ackSys;
-	private DBFaultToleranceSys dbSys;
-	private MasterElectionSys melectionSys;
-	
-	public TrackerController() {
-		
-	}
-	
-	public void addObserver(Observer ov, Class<? extends TrackerSubsystem> re) {
-		if (re.equals(MasterElectionSys.class)){
-			melectionSys.addObserver(ov);
-		} else {
-			if (re.equals(DBFaultToleranceSys.class)) {
-				dbSys.addObserver(ov);
-			} else {
-				if (re.equals(FaultToleranceSys.class)) {
-					ackSys.addObserver(ov);
-				}
-			}
-		}
-		
-	}
-	
-	public void rmObserver(Observer ov, Class<? extends TrackerSubsystem> re) {
-		if (re.equals(MasterElectionSys.class)){
-			melectionSys.removeObserver(ov);
-		} else {
-			if (re.equals(DBFaultToleranceSys.class)) {
-				dbSys.removeObserver(ov);
-			} else {
-				if (re.equals(FaultToleranceSys.class)) {
-					ackSys.removeObserver(ov);
-				}
-			}
-		}
-	}
 }

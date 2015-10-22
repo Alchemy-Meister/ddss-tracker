@@ -21,7 +21,7 @@ public abstract class TrackerSubsystem {
 		this.observers.remove(o);
 	}
 	
-	protected void notifyObservers(Object param) {
+	public void notifyObservers(Object param) {
 		for (Observer o : this.observers)
 			if (o != null)
 				o.update(null, param);
