@@ -29,21 +29,21 @@ public class TrackerGUI extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = -7432208373774239573L;
-	private static String[] columnNames = {"ID", "IP", "Port", "Lastest Keepalive"};
+	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Lastest Keepalive"};
 	private static String[] peerIDColumnNames = {"ID"};
 	private static String[] peerInfoColumnNames = {"IP", "Port"};
 	private static String[] torrentInfoColumnNames = {"Name", "Downloading", "Uploading", "Extra"};
 	
-	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "2015-10-11T 10:45:32"}};
+	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "8976", "2015-10-11T 10:45:32"}};
 	private Object[][] slaveData = {
-			{"1", "36.53.128.122", "5432", "2015-10-11T 10:45:30"},
-			{"2", "36.53.128.123", "5432", "2015-10-11T 10:45:31"},
-			{"3", "36.53.128.124", "5432", "2015-10-11T 10:45:32"},
-			{"4", "36.53.128.125", "5432", "2015-10-11T 10:45:30"},
-			{"5", "36.53.128.126", "5432", "2015-10-11T 10:45:30"},
-			{"6", "36.53.128.127", "5432", "2015-10-11T 10:45:31"},
-			{"7", "36.53.128.128", "5432", "2015-10-11T 10:45:32"},
-			{"8", "36.53.128.129", "5432", "2015-10-11T 10:45:32"}		
+			{"1", "36.53.128.122", "5432", "8976", "2015-10-11T 10:45:30"},
+			{"2", "36.53.128.123", "5432", "8976", "2015-10-11T 10:45:31"},
+			{"3", "36.53.128.124", "5432", "8976", "2015-10-11T 10:45:32"},
+			{"4", "36.53.128.125", "5432", "8976", "2015-10-11T 10:45:30"},
+			{"5", "36.53.128.126", "5432", "8976", "2015-10-11T 10:45:30"},
+			{"6", "36.53.128.127", "5432", "8976", "2015-10-11T 10:45:31"},
+			{"7", "36.53.128.128", "5432", "8976", "2015-10-11T 10:45:32"},
+			{"8", "36.53.128.129", "5432", "8976", "2015-10-11T 10:45:32"}		
 		};
 	private Object[][] peerIDData = {
 			{"Peer_00"},
@@ -88,6 +88,7 @@ public class TrackerGUI extends JFrame {
 	private JTable peerListTable;
 	private JTable peerInfoTable;
 	private JTable peerTorrentTable;
+	private JTextField textField_3;
 
 	/**
 	 * Launch the application.
@@ -126,7 +127,7 @@ public class TrackerGUI extends JFrame {
 		JPanel basicInfoPanel = new JPanel();
 		basicInfoPanel.setBackground(tabbedPanelColor);
 		tabbedPane.addTab("Basic info", null, basicInfoPanel, null);
-		basicInfoPanel.setLayout(new MigLayout("", "[][grow][]", "[20px:n,grow][][][][20px:n,grow,fill]"));
+		basicInfoPanel.setLayout(new MigLayout("", "[][grow][]", "[20px:n,grow][][][][][20px:n,grow,fill]"));
 		
 		JLabel lblId = new JLabel("ID");
 		basicInfoPanel.add(lblId, "cell 0 1,alignx trailing");
@@ -143,14 +144,21 @@ public class TrackerGUI extends JFrame {
 		textField_2.setColumns(10);
 		
 		JButton startStopButton = new JButton("Provoke error");
-		basicInfoPanel.add(startStopButton, "cell 2 2");
+		basicInfoPanel.add(startStopButton, "cell 2 2 1 2");
 		
-		JLabel lblPort = new JLabel("Port");
+		JLabel lblPort = new JLabel("Swarm port");
 		basicInfoPanel.add(lblPort, "cell 0 3");
 		
 		textField_1 = new JTextField();
 		basicInfoPanel.add(textField_1, "cell 1 3,growx");
 		textField_1.setColumns(10);
+		
+		JLabel lblPeerPort = new JLabel("Peer port");
+		basicInfoPanel.add(lblPeerPort, "cell 0 4,alignx trailing");
+		
+		textField_3 = new JTextField();
+		basicInfoPanel.add(textField_3, "cell 1 4,growx");
+		textField_3.setColumns(10);
 		
 		JPanel trackerPanel = new JPanel();
 		trackerPanel.setBackground(tabbedPanelColor);
