@@ -29,6 +29,7 @@ public class TrackerGUI extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = -7432208373774239573L;
+	
 	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Lastest Keepalive"};
 	private static String[] peerIDColumnNames = {"ID"};
 	private static String[] peerInfoColumnNames = {"IP", "Port"};
@@ -105,6 +106,7 @@ public class TrackerGUI extends JFrame {
 			}
 		});
 	}
+	
 
 	/**
 	 * Create the frame.
@@ -162,7 +164,7 @@ public class TrackerGUI extends JFrame {
 		
 		JPanel trackerPanel = new JPanel();
 		trackerPanel.setBackground(tabbedPanelColor);
-		tabbedPane.addTab("Tracker swarm", null, trackerPanel, null);
+		tabbedPane.addTab("Tracker cluster", null, trackerPanel, null);
 		trackerPanel.setLayout(new MigLayout("", "[grow][]", "[][40px:n:45px,grow][][][][][][grow]"));
 		
 		JLabel lblMaster = new JLabel("Master");
