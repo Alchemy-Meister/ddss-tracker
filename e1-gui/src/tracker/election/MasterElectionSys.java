@@ -1,13 +1,14 @@
 package tracker.election;
 
 import tracker.cfts.IpIdTable;
+import tracker.controller.TrackerSubsystem;
 import tracker.db.model.TrackerMember;
 
 /** In charge of handling the master election system.
  * @author Irene
  * @author Jesus
  */
-public class MasterElectionSys implements Runnable {
+public class MasterElectionSys extends TrackerSubsystem implements Runnable {
 	
 	private static MasterElectionSys instance = null;
 	private IpIdTable ipidTable = null;

@@ -1,18 +1,19 @@
 package tracker.cfts;
 
+import tracker.controller.TrackerSubsystem;
 import tracker.election.MasterElectionSys;
 
 /** This component is in charge of sending/receiving KA messages from
  * the swarm members. It must update the IP-ID table.
  * @author Irene
  * @author Jesus
- */
-public class FaultToleranceSys implements Runnable {
+ */ 
+public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static FaultToleranceSys instance = null;
 	private IpIdTable ipidTable = null;
 	private MasterElectionSys masterElection = null;
-	
+		
 	private FaultToleranceSys() {
 		ipidTable = IpIdTable.getInstance();
 		masterElection = MasterElectionSys.getInstance();
@@ -52,5 +53,6 @@ public class FaultToleranceSys implements Runnable {
 				ipidTable.getMemberLowestId().getId()) != 0)
 			masterElection.startMasterElection();
 	}
+	
 
 }

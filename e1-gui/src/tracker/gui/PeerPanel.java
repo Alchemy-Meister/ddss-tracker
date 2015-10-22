@@ -1,6 +1,8 @@
 package tracker.gui;
 
 import java.awt.Color;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -13,7 +15,7 @@ import javax.swing.event.ListSelectionListener;
 import general.components.CustomJTable;
 import net.miginfocom.swing.MigLayout;
 
-public class PeerPanel extends JPanel {
+public class PeerPanel extends JPanel implements Observer {
 
 	private static final long serialVersionUID = -3503360364465100065L;
 	
@@ -110,6 +112,12 @@ public class PeerPanel extends JPanel {
 		          }
 		      }
 		});
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

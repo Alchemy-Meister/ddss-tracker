@@ -1,5 +1,7 @@
 package tracker.controller;
 
+import java.util.Observer;
+
 import tracker.cfts.FaultToleranceSys;
 import tracker.db.DBFaultToleranceSys;
 import tracker.election.MasterElectionSys;
@@ -19,4 +21,32 @@ public class TrackerController {
 		
 	}
 	
+	public void addObserver(Observer ov, Class<? extends TrackerSubsystem> re) {
+		if (re.equals(MasterElectionSys.class)){
+			melectionSys.addObserver(ov);
+		} else {
+			if (re.equals(DBFaultToleranceSys.class)) {
+				dbSys.addObserver(ov);
+			} else {
+				if (re.equals(FaultToleranceSys.class)) {
+					ackSys.addObserver(ov);
+				}
+			}
+		}
+		
+	}
+	
+	public void rmObserver(Observer ov, Class<? extends TrackerSubsystem> re) {
+		if (re.equals(MasterElectionSys.class)){
+			melectionSys.removeObserver(ov);
+		} else {
+			if (re.equals(DBFaultToleranceSys.class)) {
+				dbSys.removeObserver(ov);
+			} else {
+				if (re.equals(FaultToleranceSys.class)) {
+					ackSys.removeObserver(ov);
+				}
+			}
+		}
+	}
 }

@@ -1,10 +1,12 @@
 package tracker.db;
 
+import tracker.controller.TrackerSubsystem;
+
 /** The db replication is handled in this class.
  * @author Irene
  * @author Jesus
  */
-public class DBFaultToleranceSys implements Runnable {
+public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static DBFaultToleranceSys instance = null;
 	

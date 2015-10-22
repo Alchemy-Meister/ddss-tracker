@@ -1,6 +1,8 @@
 package tracker.gui;
 
 import java.awt.Color;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -9,7 +11,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-public class BasicInfoPanel extends JPanel {
+public class BasicInfoPanel extends JPanel implements Observer {
 	
 	private static final long serialVersionUID = -1098424124151618936L;
 	
@@ -55,5 +57,11 @@ public class BasicInfoPanel extends JPanel {
 		tfPP = new JTextField();
 		this.add(tfPP, "cell 1 4,growx");
 		tfPP.setColumns(10);
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

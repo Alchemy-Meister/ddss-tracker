@@ -1,6 +1,8 @@
 package tracker.gui;
 
 import java.awt.Color;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -10,7 +12,7 @@ import javax.swing.JTable;
 import general.components.CustomJTable;
 import net.miginfocom.swing.MigLayout;
 
-public class TrackerPanel extends JPanel {
+public class TrackerPanel extends JPanel implements Observer {
 
 	private static final long serialVersionUID = -3635714939911877408L;
 	
@@ -50,6 +52,12 @@ public class TrackerPanel extends JPanel {
 		
 		this.add(new JScrollPane(masterTable), "cell 0 1, grow");
 		this.add(new JScrollPane(slaveTable), "cell 0 6,grow");
+		
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
 		
 	}
 }
