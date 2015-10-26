@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import tracker.controller.TrackerSubsystem;
 import tracker.db.model.TrackerMember;
 
 /**
@@ -65,6 +64,10 @@ public class IpIdTable {
 		// get lock
 		masterId = newMasterID;
 		// release lock
+	}
+	
+	public List<TrackerMember> getFallenMembers() {
+		return null;
 	}
 	
 }

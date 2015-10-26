@@ -1,6 +1,5 @@
 package tracker.election;
 
-import tracker.cfts.FaultToleranceSys;
 import tracker.cfts.IpIdTable;
 import tracker.controller.TrackerSubsystem;
 import tracker.db.model.TrackerMember;

@@ -33,9 +33,7 @@ public abstract class TrackerController {
 			return DBFaultToleranceSys.getInstance();
 		} else {
 			if (clas.equals(FaultToleranceSys.class)) {
-				FaultToleranceSys temp = FaultToleranceSys.getInstance();
-				temp.setIpIdTable();
-				return temp;
+				return FaultToleranceSys.getInstance();
 			} else {
 				return MasterElectionSys.getInstance();
 			}
