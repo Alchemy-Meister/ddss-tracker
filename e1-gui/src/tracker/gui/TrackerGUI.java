@@ -8,9 +8,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JTabbedPane;
 
+/** Graphical user interface of the tracker
+ * @author Irene
+ * @author Jesus
+ */
 public class TrackerGUI extends JFrame {
 
 	private static final long serialVersionUID = -7432208373774239573L;
@@ -18,7 +23,7 @@ public class TrackerGUI extends JFrame {
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	
-	private ArrayList<ObserverJPanel> jPanelTabList = new ArrayList<ObserverJPanel>();
+	private List<ObserverJPanel> jPanelTabList = new ArrayList<ObserverJPanel>();
 
 	/**
 	 * Create the frame.
@@ -37,8 +42,9 @@ public class TrackerGUI extends JFrame {
 		this.contentPane.add(tabbedPane, BorderLayout.CENTER);
 		
 		Color tabbedPanelColor = new Color(230, 230, 230);
-		
-		jPanelTabList.add(new BasicInfoPanel(tabbedPanelColor));
+		BasicInfoPanel binfopa = new BasicInfoPanel(tabbedPanelColor);
+		binfopa.init();
+		jPanelTabList.add(binfopa);
 		jPanelTabList.add(new TrackerPanel(tabbedPanelColor));
 		jPanelTabList.add(new PeerPanel(tabbedPanelColor));
 		

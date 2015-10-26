@@ -17,6 +17,7 @@ public abstract class TrackerController {
 	
 	public TrackerController(Class<? extends TrackerSubsystem> classType) {
 		this.instance = getInstance(classType);
+		System.out.println(this.instance);
 	}
 	
 	public void addObserver(Observer ov) {
@@ -32,7 +33,9 @@ public abstract class TrackerController {
 			return DBFaultToleranceSys.getInstance();
 		} else {
 			if (clas.equals(FaultToleranceSys.class)) {
-				return FaultToleranceSys.getInstance();
+				FaultToleranceSys temp = FaultToleranceSys.getInstance();
+				temp.setIpIdTable();
+				return temp;
 			} else {
 				return MasterElectionSys.getInstance();
 			}

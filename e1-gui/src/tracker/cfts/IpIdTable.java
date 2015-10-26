@@ -20,32 +20,19 @@ public class IpIdTable {
 	private ConcurrentHashMap<String, BigInteger> ipid = null;
 	private ConcurrentHashMap<String, Long> ipTime = null;
 	private static IpIdTable instance;
-	
-	// To propagate the changes to the view
-	private TrackerSubsystem faultTolerance = null;
-	
-	private IpIdTable(FaultToleranceSys faultTolerance){
+		
+	private IpIdTable(){
 		this.ipid = new ConcurrentHashMap<String, BigInteger>();
 		this.ipTime = new ConcurrentHashMap<String, Long>();
-		this.faultTolerance = faultTolerance;
 	}
 	
 	/**
 	 * Explicit callback in singleton, a single Ip-id table.
 	 * @return
 	 */
-	public static IpIdTable getInstance(FaultToleranceSys faultTolerance) {
-		if (instance == null)
-			instance = new IpIdTable(faultTolerance);
-		return instance;
-	}
-	
-	/** Implicit callback in singleton.
-	 * @return
-	 */
 	public static IpIdTable getInstance() {
 		if (instance == null)
-			instance = new IpIdTable(FaultToleranceSys.getInstance());
+			instance = new IpIdTable();
 		return instance;
 	}
 	
@@ -58,13 +45,11 @@ public class IpIdTable {
 	public void set(String ip, BigInteger id) {
 		ipid.put(ip, id);
 		ipTime.put(ip, System.nanoTime());
-		faultTolerance.notifyObservers(null);
 	}
 	
 	public void remove(String ip) {
 		ipid.remove(ip);
 		ipTime.remove(ip);
-		faultTolerance.notifyObservers(null);
 	}
 	
 	public TrackerMember getMemberLowestId() {

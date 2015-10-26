@@ -11,6 +11,10 @@ import net.miginfocom.swing.MigLayout;
 
 import tracker.controller.FaultToleranceController;
 
+/**
+ * @author Irene
+ * @author Jesus
+ */
 public class BasicInfoPanel extends ObserverJPanel {
 	
 	private static final long serialVersionUID = -1098424124151618936L;
@@ -20,7 +24,7 @@ public class BasicInfoPanel extends ObserverJPanel {
 	private JTextField tfIP;
 	private JTextField tfPP;
 	
-	FaultToleranceController ftController;
+	private FaultToleranceController ftController;
 	
 	public BasicInfoPanel(Color color) {
 		super();
@@ -61,6 +65,10 @@ public class BasicInfoPanel extends ObserverJPanel {
 		tfPP.setColumns(10);
 		
 		ftController = new FaultToleranceController();
+		
+	}
+	
+	public void init() {
 		ftController.addObserver(this);
 	}
 
@@ -69,8 +77,14 @@ public class BasicInfoPanel extends ObserverJPanel {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
+	@Override
 	public void unsubscribe() {
-		ftController.rmObserver(this);
+		// TODO Auto-generated method stub
+		
 	}
+
+	
+	
+	
 }
