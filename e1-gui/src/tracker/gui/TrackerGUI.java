@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.ArrayList;
 
 import javax.swing.JTabbedPane;
 
@@ -17,32 +18,45 @@ public class TrackerGUI extends JFrame {
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	
+	private ArrayList<ObserverJPanel> jPanelTabList = new ArrayList<ObserverJPanel>();
 
 	/**
 	 * Create the frame.
 	 */
 	public TrackerGUI() {
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 500, 300);
-		setMinimumSize(new Dimension(500, 300));
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.setBounds(100, 100, 500, 300);
+		this.setMinimumSize(new Dimension(500, 300));
+		this.contentPane = new JPanel();
+		this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		this.setContentPane(contentPane);
+		this.contentPane.setLayout(new BorderLayout(0, 0));
 		
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		contentPane.add(tabbedPane, BorderLayout.CENTER);
+		this.tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		this.contentPane.add(tabbedPane, BorderLayout.CENTER);
 		
 		Color tabbedPanelColor = new Color(230, 230, 230);
 		
-		JPanel basicInfoPanel = new BasicInfoPanel(tabbedPanelColor);
-		JPanel trackerPanel = new TrackerPanel(tabbedPanelColor);
-		JPanel peerPanel = new PeerPanel(tabbedPanelColor);
+		jPanelTabList.add(new BasicInfoPanel(tabbedPanelColor));
+		jPanelTabList.add(new TrackerPanel(tabbedPanelColor));
+		jPanelTabList.add(new PeerPanel(tabbedPanelColor));
 		
-		tabbedPane.addTab("Basic info", null, basicInfoPanel, null);
-		tabbedPane.addTab("Tracker cluster", null, trackerPanel, null);
-		tabbedPane.addTab("Active peers", null, peerPanel, null);
+		tabbedPane.addTab("Basic info", null, jPanelTabList.get(0), null);
+		tabbedPane.addTab("Tracker cluster", null, jPanelTabList.get(1), null);
+		tabbedPane.addTab("Active peers", null, jPanelTabList.get(2), null);
+		
+		
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+		    
+			@Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				for (int i = 0; i < jPanelTabList.size(); i++) {
+					jPanelTabList.get(i).unsubscribe();
+				}
+				System.exit(0);
+			}
+		});
 	}
 
 }

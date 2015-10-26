@@ -4,19 +4,20 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import general.components.CustomJTable;
 import net.miginfocom.swing.MigLayout;
+import tracker.controller.FaultToleranceController;
 
-public class TrackerPanel extends JPanel implements Observer {
+public class TrackerPanel extends ObserverJPanel {
 
 	private static final long serialVersionUID = -3635714939911877408L;
+	
+	private FaultToleranceController ftController;
 	
 	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Latest Keepalive"};
 	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "8976", "2015-10-11T 10:45:32"}};
@@ -55,6 +56,8 @@ public class TrackerPanel extends JPanel implements Observer {
 		this.add(new JScrollPane(masterTable), "cell 0 1, grow");
 		this.add(new JScrollPane(slaveTable), "cell 0 6,grow");
 		
+		ftController = new FaultToleranceController();
+		ftController.addObserver(this);
 	}
 	
 	public void updateSlaveData(List<HashMap<String, String>> data) {
@@ -65,5 +68,10 @@ public class TrackerPanel extends JPanel implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		updateSlaveData((List<HashMap<String, String>>) arg);
+	}
+
+	@Override
+	public void unsubscribe() {
+		ftController.rmObserver(this);
 	}
 }

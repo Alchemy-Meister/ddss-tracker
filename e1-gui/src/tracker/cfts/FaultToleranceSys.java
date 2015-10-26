@@ -16,7 +16,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		
 	private FaultToleranceSys() {
 		super();
-		ipidTable = IpIdTable.getInstance();
+		ipidTable = IpIdTable.getInstance(this);
 		masterElection = MasterElectionSys.getInstance();
 	}
 	

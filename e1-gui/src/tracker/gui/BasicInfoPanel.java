@@ -2,16 +2,16 @@ package tracker.gui;
 
 import java.awt.Color;
 import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-public class BasicInfoPanel extends JPanel implements Observer {
+import tracker.controller.FaultToleranceController;
+
+public class BasicInfoPanel extends ObserverJPanel {
 	
 	private static final long serialVersionUID = -1098424124151618936L;
 	
@@ -19,6 +19,8 @@ public class BasicInfoPanel extends JPanel implements Observer {
 	private JTextField tfSP;
 	private JTextField tfIP;
 	private JTextField tfPP;
+	
+	FaultToleranceController ftController;
 	
 	public BasicInfoPanel(Color color) {
 		super();
@@ -57,11 +59,18 @@ public class BasicInfoPanel extends JPanel implements Observer {
 		tfPP = new JTextField();
 		this.add(tfPP, "cell 1 4,growx");
 		tfPP.setColumns(10);
+		
+		ftController = new FaultToleranceController();
+		ftController.addObserver(this);
 	}
 
 	@Override
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public void unsubscribe() {
+		ftController.rmObserver(this);
 	}
 }

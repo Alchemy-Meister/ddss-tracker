@@ -2,7 +2,6 @@ package tracker.gui;
 
 import java.awt.Color;
 import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -14,14 +13,17 @@ import javax.swing.event.ListSelectionListener;
 
 import general.components.CustomJTable;
 import net.miginfocom.swing.MigLayout;
+import tracker.controller.DBFaultToleranceController;
 
-public class PeerPanel extends JPanel implements Observer {
+public class PeerPanel extends ObserverJPanel {
 
 	private static final long serialVersionUID = -3503360364465100065L;
 	
 	private JTable peerListTable;
 	private JTable peerInfoTable;
 	private JTable peerTorrentTable;
+	
+	private DBFaultToleranceController dbFTController;
 	
 	private static String[] peerIDColumnNames = {"ID"};
 	private static String[] peerInfoColumnNames = {"IP", "Port"};
@@ -104,6 +106,8 @@ public class PeerPanel extends JPanel implements Observer {
 		
 		peerListPanel.add(new JScrollPane(peerListTable), "cell 0 1,grow");
 		
+		dbFTController = new DBFaultToleranceController();
+		
 		peerListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 		      public void valueChanged(ListSelectionEvent e) {
 		    	  if(!e.getValueIsAdjusting()){
@@ -118,6 +122,11 @@ public class PeerPanel extends JPanel implements Observer {
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void unsubscribe() {
+		dbFTController.rmObserver(this);
 	}
 
 }
