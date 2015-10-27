@@ -1,7 +1,10 @@
-package tracker.cfts;
+package tracker.subsys.cfts;
 
-import tracker.controller.TrackerSubsystem;
-import tracker.election.MasterElectionSys;
+import java.util.List;
+
+import tracker.db.model.TrackerMember;
+import tracker.subsys.TrackerSubsystem;
+import tracker.subsys.election.MasterElectionSys;
 
 /** This component is in charge of sending/receiving KA messages from
  * the swarm members. It must update the IP-ID table.
@@ -17,10 +20,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private FaultToleranceSys() {
 		super();
 		masterElection = MasterElectionSys.getInstance();
-	}
-	
-	public void setIpIdTable() {
-		ipidTable = IpIdTable.getInstance();	
+		ipidTable = IpIdTable.getInstance();
 	}
 	
 	/** 
@@ -42,10 +42,21 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 */
 	public void run() {
 		
-		// update table with incomming messages
+		// update table with incomming messages and notify observer
 		// ipidTable.set(ip, id);
+		// this.notifyObservers(param);
+		checkOfflineMembers();
 		// check if the current master is ok
 		checkMaster();
+	}
+	
+	private void checkOfflineMembers() {
+		List<TrackerMember> offlineMembers = ipidTable.getFallenMembers();
+		for (TrackerMember tm : offlineMembers) {
+			ipidTable.remove(tm.getIp());
+			// notify observers
+			// this.notifyObservers(param);
+		}
 	}
 	
 	private void checkMaster() {

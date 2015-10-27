@@ -1,4 +1,4 @@
-package general.components;
+package tracker.gui;
 
 import java.awt.Component;
 

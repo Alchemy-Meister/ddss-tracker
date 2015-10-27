@@ -1,4 +1,4 @@
-package tracker.controller;
+package tracker.subsys;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +17,11 @@ public abstract class TrackerSubsystem {
 		observers = new ArrayList<Observer>();
 	}
 	
-	protected void addObserver(Observer o) {
+	public void addObserver(Observer o) {
 		this.observers.add(o);
 	}
 	
-	protected void removeObserver(Observer o) {
+	public void removeObserver(Observer o) {
 		this.observers.remove(o);
 	}
 	

@@ -1,6 +1,6 @@
-package tracker.db;
+package tracker.subsys.db;
 
-import tracker.controller.TrackerSubsystem;
+import tracker.subsys.TrackerSubsystem;
 
 /** The db replication is handled in this class.
  * @author Irene

@@ -1,23 +1,24 @@
-package tracker.controller;
+package tracker.observers;
 
 import java.util.Observer;
 
-import tracker.cfts.FaultToleranceSys;
-import tracker.db.DBFaultToleranceSys;
-import tracker.election.MasterElectionSys;
+import tracker.subsys.TrackerSubsystem;
+import tracker.subsys.cfts.FaultToleranceSys;
+import tracker.subsys.db.DBFaultToleranceSys;
+import tracker.subsys.election.MasterElectionSys;
+
 
 /**
  * Controller that is accessed by the view.
  * @author Irene
  * @author Jesus
  */
-public abstract class TrackerController {
+public abstract class TrackerObserver {
 	
 	private TrackerSubsystem instance;
 	
-	public TrackerController(Class<? extends TrackerSubsystem> classType) {
+	public TrackerObserver(Class<? extends TrackerSubsystem> classType) {
 		this.instance = getInstance(classType);
-		System.out.println(this.instance);
 	}
 	
 	public void addObserver(Observer ov) {
@@ -33,9 +34,7 @@ public abstract class TrackerController {
 			return DBFaultToleranceSys.getInstance();
 		} else {
 			if (clas.equals(FaultToleranceSys.class)) {
-				FaultToleranceSys temp = FaultToleranceSys.getInstance();
-				temp.setIpIdTable();
-				return temp;
+				return FaultToleranceSys.getInstance();
 			} else {
 				return MasterElectionSys.getInstance();
 			}

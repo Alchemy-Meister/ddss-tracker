@@ -1,8 +1,7 @@
-package tracker.election;
+package tracker.subsys.election;
 
-import tracker.cfts.FaultToleranceSys;
-import tracker.cfts.IpIdTable;
-import tracker.controller.TrackerSubsystem;
+import tracker.subsys.TrackerSubsystem;
+import tracker.subsys.cfts.IpIdTable;
 import tracker.db.model.TrackerMember;
 
 /** In charge of handling the master election system.

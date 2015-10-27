@@ -17,7 +17,7 @@ import javax.swing.text.Document;
 
 import net.miginfocom.swing.MigLayout;
 
-import tracker.controller.FaultToleranceController;
+import tracker.observers.FaultToleranceObserver;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
 
@@ -25,26 +25,32 @@ import java.awt.FlowLayout;
  * @author Irene
  * @author Jesus
  */
-public class BasicInfoPanel extends ObserverJPanel implements FocusListener, DocumentListener {
+public class BasicInfoPanel extends ObserverJPanel implements FocusListener, 
+	DocumentListener 
+{
 	
 	private static final long serialVersionUID = -1098424124151618936L;
+	private static final String INVALID_PORT_MSG = "Invalid Port";
+	private static final String SAME_PORT_ERROR_MSG = "Ports can't be the same";
 	
 	private JTextField tfID;
 	private JTextField tfSP;
 	private JTextField tfIP;
 	private JTextField tfPP;
 	
-	JLabel ipAddressError;
-	JLabel lblPeerPort;
-	JLabel peerPortError;
+	private JLabel ipAddressError;
+	private JLabel peerPortError;
+	private JLabel clusterPortError;
 	
-	private FaultToleranceController ftController;
+	JButton connectButton;
+	
+	private FaultToleranceObserver ftController;
 	
 	public BasicInfoPanel(Color color) {
 		super();
 		this.setBackground(color);
 		
-		this.setLayout(new MigLayout("", "[][grow][100px:n]", "[20px:n,grow][][][][][20px:n,grow,fill]"));
+		this.setLayout(new MigLayout("", "[][grow][150px:n]", "[20px:n,grow][][][][][20px:n,grow,fill]"));
 		
 		JLabel lblId = new JLabel("ID");
 		this.add(lblId, "cell 0 1,alignx trailing");
@@ -64,7 +70,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 		tfIP.getDocument().putProperty("owner", tfIP);
 		tfIP.getDocument().addDocumentListener(this);
 		
-		JLabel lblSwarmPort = new JLabel("Swarm port");
+		JLabel lblSwarmPort = new JLabel("Cluster port");
 		this.add(lblSwarmPort, "cell 0 3");
 		
 		tfSP = new JTextField();
@@ -74,12 +80,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 		tfSP.getDocument().putProperty("owner", tfSP);
 		tfSP.getDocument().addDocumentListener(this);
 		
-		ipAddressError = new JLabel();
-		ipAddressError.setForeground(Color.RED);
-		ipAddressError.setText("Invalid IP Address");
-		this.add(ipAddressError, "cell 2 2,alignx left");
-		
-		lblPeerPort = new JLabel("Peer port");
+		JLabel lblPeerPort = new JLabel("Peer port");
 		this.add(lblPeerPort, "cell 0 4,alignx trailing");
 		
 		tfPP = new JTextField();
@@ -89,13 +90,21 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 		tfPP.getDocument().putProperty("owner", tfPP);
 		tfPP.getDocument().addDocumentListener(this);
 		
-		JLabel clusterPortError = new JLabel("Invalid Port");
-		clusterPortError.setForeground(Color.RED);
-		add(clusterPortError, "cell 2 3,alignx left");
+		ipAddressError = new JLabel();
+		ipAddressError.setVisible(false);
+		ipAddressError.setForeground(Color.RED);
+		ipAddressError.setText("Invalid IP Address");
+		this.add(ipAddressError, "cell 2 2,alignx left");
 		
-		peerPortError = new JLabel("Ports can't be the same");
+		clusterPortError = new JLabel(INVALID_PORT_MSG);
+		clusterPortError.setVisible(false);
+		clusterPortError.setForeground(Color.RED);
+		this.add(clusterPortError, "cell 2 3,alignx left");
+		
+		peerPortError = new JLabel(INVALID_PORT_MSG);
+		peerPortError.setVisible(false);
 		peerPortError.setForeground(Color.RED);
-		add(peerPortError, "cell 2 4");
+		this.add(peerPortError, "cell 2 4");
 		
 		JPanel panel = new JPanel();
 		add(panel, "cell 1 5,grow");
@@ -105,11 +114,11 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 		JButton errorButton = new JButton("Provoke error");
 		panel.add(errorButton);
 		
-		JButton connectButton = new JButton("Connect");
+		connectButton = new JButton("Connect");
 		connectButton.setEnabled(false);
 		panel.add(connectButton);
 		
-		ftController = new FaultToleranceController();
+		ftController = new FaultToleranceObserver();
 		ftController.addObserver(this);
 		
 		
@@ -146,80 +155,24 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 
 	@Override
 	public void focusLost(FocusEvent e) {
-		Component focusedComponent = e.getComponent();
-		if(focusedComponent.equals(this.tfIP)) {
-			if(!isValidIP(this.tfIP.getText())) {
-				System.out.println("Invalid Address");
-			}
-				
-		} else if(focusedComponent.equals(BasicInfoPanel.this.tfSP)){
-			if(!isValidPort((this.tfSP).getText()) ||
-					this.tfSP.getText().equals(this.tfPP.getText())) {
-				System.out.println("Invalid port");
-			}
-		} else if(focusedComponent.equals(this.tfPP)) {
-			if(!isValidPort((this.tfPP).getText()) ||
-					this.tfPP.getText().equals(this.tfSP.getText())) {
-				System.out.println("Invalid port");
-			}
-		}
-		validateForm();
+		// NOTHING TODO HERE.
 	}	
 
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		Document doc = e.getDocument();
-		JTextField field = (JTextField) doc.getProperty("owner");
-		if(field.equals(this.tfIP)) {
-			try {
-				System.out.println(isValidIP(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		} else if(field.equals(this.tfSP)) {
-			try {
-				System.out.println(isValidPort(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		} else if(field.equals(this.tfPP)) {
-			try {
-				System.out.println(isValidPort(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		}
+		showErrorMessage(e.getDocument());
+		validateForm();
 	}
 
 	@Override
 	public void removeUpdate(DocumentEvent e) {
-		Document doc = e.getDocument();
-		JTextField field = (JTextField) doc.getProperty("owner");
-		if(field.equals(this.tfIP)) {
-			try {
-				System.out.println(isValidIP(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		} else if(field.equals(this.tfSP)) {
-			try {
-				System.out.println(isValidPort(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		} else if(field.equals(this.tfPP)) {
-			try {
-				System.out.println(isValidPort(doc.getText(0, doc.getLength())));
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
-		}
+		showErrorMessage(e.getDocument());
+		validateForm();
 	}
 	
 	@Override
 	public void changedUpdate(DocumentEvent e) {
 		// NOTHING TODO HERE.
-		
 	}
 	
 	private boolean isValidIP(String ip) {
@@ -237,12 +190,80 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener, Doc
 		}
 	}
 	
+	private void showErrorMessage(Document doc) {
+		JTextField field = (JTextField) doc.getProperty("owner");
+		if(field.equals(this.tfIP)) {
+			try {
+				if(!isValidIP(doc.getText(0, doc.getLength()))) {
+					ipAddressError.setVisible(true);
+				} else {
+					ipAddressError.setVisible(false);
+				}
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		} else if(field.equals(this.tfSP)) {
+			try {
+				if(!isValidPort(doc.getText(0, doc.getLength()))) 
+				{
+					clusterPortError.setText(INVALID_PORT_MSG);
+					clusterPortError.setVisible(true);
+				} else if(this.tfSP.getText().equals(this.tfPP.getText())){
+					clusterPortError.setText(SAME_PORT_ERROR_MSG);
+					clusterPortError.setVisible(true);
+				} else {
+					clusterPortError.setVisible(false);
+				}
+				
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		} else if(field.equals(this.tfPP)) {
+			try {
+				if(!isValidPort(doc.getText(0, doc.getLength()))) 
+				{
+					peerPortError.setText(INVALID_PORT_MSG);
+					peerPortError.setVisible(true);
+				} else if(this.tfSP.getText().equals(this.tfPP.getText())){
+					peerPortError.setText(SAME_PORT_ERROR_MSG);
+					peerPortError.setVisible(true);
+				} else {
+					peerPortError.setVisible(false);
+				}
+				
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
 	private void validateForm() {
+		boolean validForm = true;
 		Component[] components = this.getComponents();
-		for (int i = 0; i < components.length; i++) {
-	        if(components[i].getClass().equals(JTextField.class)){
-	            
+		int i = 0;
+		while (validForm && i < components.length) {
+	        if(components[i].getClass().equals(JLabel.class)){
+	            if(components[i].equals(ipAddressError) ||
+	            	components[i].equals(peerPortError) ||
+	            	components[i].equals(clusterPortError))
+	            {
+	            	if(components[i].isVisible()) {
+		            	validForm = false;
+		            }
+	            }
+	        } else if(components[i].getClass().equals(JTextField.class)){
+	        	if(((JTextField)components[i]).getText().equals("")) {
+	        		if(!components[i].equals(tfID)) {
+	        			validForm = false;
+	        		}
+	            }
 	        }
+	        i++;
 	    }
+		if(validForm) {
+			connectButton.setEnabled(true);
+		} else {
+			connectButton.setEnabled(false);
+		}
 	}
 }
