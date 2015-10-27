@@ -1,0 +1,132 @@
+\documentclass[twoside,a4paper,10pt]{article}
+\usepackage[top=2.54cm,bottom=2.54cm,left=2.54cm,right=2.54cm]{geometry}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+%\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{url}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{placeins}
+%\usepackage{ref}
+
+%%%
+
+\pagenumbering{arabic}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+% Shows section number and name
+\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+% Clear previous styles
+\fancyhf{}
+\fancyhead{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LO]{\rightmark}
+\fancyhead[RE]{BitTorrent Tracker: deliverable 2}
+\fancyhead[LE]{\thepage}
+\fancyfoot{}
+% Other modifiers
+%\fancyfoot[LE,RO]{\thepage}
+%\fancyfoot[LO,CE]{Something}
+%\fancyfoot[CO,RE]{Author Name}
+
+\title{BitTorrent Tracker: deliverable 2\\
+  Group 01}
+\author{Irene Díez \and Jesus Sesma}
+
+\begin{document}
+\date{}
+\maketitle
+
+%\begin{abstract}
+%Your abstract.
+%\end{abstract}
+\section{Package hierarchy}
+
+Our project has the following package hierarchy:
+
+\begin{itemize}
+\item \texttt{bitTorrent}
+  \begin{itemize}
+  \end{itemize}
+\item \texttt{general}
+  \begin{itemize}
+  \item \texttt{components}
+  \end{itemize}
+\item \texttt{peer}: this package contains the classes needed by the peers. 
+  Since this deliverable contemplates the design of the tracker GUI and
+  project skeleton it has been left empty.
+\item \texttt{tracker}: this package contains the classes needed by the tracker.
+  \begin{itemize}
+  \item \texttt{db}: classes related to the DB management.
+    \begin{itemize}
+    \item \texttt{model}: classes part of the business model.
+      \begin{itemize}
+      \item \texttt{TrackerMember.java}: represents a member of the tracker.
+      \end{itemize}
+    \item \texttt{DBManager.java}: responsible for the insert, create and
+      update operations.
+    \end{itemize}
+  \item \texttt{gui}: holds the classes related to the graphical user interface
+    of the tracker.
+    \begin{itemize}
+    \item \texttt{BasicInfoPanel.java}: displays general information about
+      the tracker, such as the current ID of the instance, IP and port etc.
+    \item \texttt{ObserverJPanel.java}: abstract class that inherits from
+      \texttt{JPanel} and implements the \texttt{Observer} interface.
+    \item \texttt{PeerPanel.java}: 
+    \item \texttt{TrackerPanel.java}:  
+    \item \texttt{TrackerGUI.java}:  
+    \end{itemize}
+  \item \texttt{observers}
+    \begin{itemize}
+    \item \texttt{DBFaultToleranceObserver.java}
+    \item \texttt{FaultToleranceObserver.java}
+    \item \texttt{MasterElectionObserver.java}
+    \item \texttt{TrackerObserver.java}
+    \end{itemize}
+  \item \texttt{subsys}: package that holds the subsystems of the tracker.
+    
+    \begin{itemize}
+    \item \texttt{TrackerSubsystem.java}: abstract class that represents a
+      subsystem of the tracker
+    \item \texttt{cfts}
+      \begin{itemize}
+      \item \texttt{FaultToleranceSys.java}
+      \item \texttt{IpIdTable.java}
+      \end{itemize}
+    \item \texttt{db}
+      \begin{itemize}
+      \item \texttt{DBFaultToleranceSys.java}
+      \end{itemize}
+    \item \texttt{election}
+      \begin{itemize}
+      \item \texttt{MasterElectionSys.java}
+      \end{itemize}
+    \end{itemize}
+  \item \texttt{Launcher.java}: program entry point. 
+  \end{itemize}
+\end{itemize}
+
+\section{Responsive design}
+
+The tracker's gui follows the guidelines given by the responsive web design
+paradigm, thereby the application's main window size and its components' size
+can be adapted to a variety of screen sizes.
+
+\section{Form validation}
+
+\section{Exception management}
+
+\section{Interaction}
+
+%\bibliographystyle{unsrt}
+%\bibliography{bib}
+
+\end{document}
+
+
