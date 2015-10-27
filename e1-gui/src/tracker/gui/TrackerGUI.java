@@ -31,8 +31,8 @@ public class TrackerGUI extends JFrame {
 	public TrackerGUI() {
 		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		this.setBounds(100, 100, 500, 300);
-		this.setMinimumSize(new Dimension(500, 300));
+		this.setBounds(100, 100, 600, 300);
+		this.setMinimumSize(new Dimension(600, 300));
 		this.contentPane = new JPanel();
 		this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setContentPane(contentPane);
@@ -42,16 +42,15 @@ public class TrackerGUI extends JFrame {
 		this.contentPane.add(tabbedPane, BorderLayout.CENTER);
 		
 		Color tabbedPanelColor = new Color(230, 230, 230);
-		BasicInfoPanel binfopa = new BasicInfoPanel(tabbedPanelColor);
-		binfopa.init();
-		jPanelTabList.add(binfopa);
+		
+		jPanelTabList.add(new BasicInfoPanel(tabbedPanelColor));
 		jPanelTabList.add(new TrackerPanel(tabbedPanelColor));
 		jPanelTabList.add(new PeerPanel(tabbedPanelColor));
 		
 		tabbedPane.addTab("Basic info", null, jPanelTabList.get(0), null);
 		tabbedPane.addTab("Tracker cluster", null, jPanelTabList.get(1), null);
 		tabbedPane.addTab("Active peers", null, jPanelTabList.get(2), null);
-		
+	
 		
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    
