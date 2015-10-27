@@ -7,7 +7,7 @@ import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.election.MasterElectionSys;
 
 /** This component is in charge of sending/receiving KA messages from
- * the swarm members. It must update the IP-ID table.
+ * the tracker members. It must update the IP-ID table.
  * @author Irene
  * @author Jesus
  */ 

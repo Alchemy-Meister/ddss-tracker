@@ -51,8 +51,6 @@ Our project has the following package hierarchy:
 
 \begin{itemize}
 \item \texttt{bitTorrent}
-  \begin{itemize}
-  \end{itemize}
 \item \texttt{general}
   \begin{itemize}
   \item \texttt{components}
@@ -78,26 +76,36 @@ Our project has the following package hierarchy:
       the tracker, such as the current ID of the instance, IP and port etc.
     \item \texttt{ObserverJPanel.java}: abstract class that inherits from
       \texttt{JPanel} and implements the \texttt{Observer} interface.
-    \item \texttt{PeerPanel.java}: 
-    \item \texttt{TrackerPanel.java}:  
-    \item \texttt{TrackerGUI.java}:  
+    \item \texttt{PeerPanel.java}: displays information about each of the
+      peers the tracker has knowledge of.
+    \item \texttt{TrackerPanel.java}: displays information about the tracker
+      members, such as the master and all the active slaves.
+    \item \texttt{TrackerGUI.java}: holds the graphical interface of the
+      tracker.
     \end{itemize}
-  \item \texttt{observers}
+  \item \texttt{observers}: this package holds all the observers of the
+    application. 
     \begin{itemize}
-    \item \texttt{DBFaultToleranceObserver.java}
-    \item \texttt{FaultToleranceObserver.java}
-    \item \texttt{MasterElectionObserver.java}
-    \item \texttt{TrackerObserver.java}
+    \item \texttt{TrackerObserver.java}: abstract base class for the observers.
+    \item \texttt{DBFaultToleranceObserver.java}: observer for the
+      \texttt{DBFaultToleranceSys}.
+    \item \texttt{FaultToleranceObserver.java}: observer for the
+      \texttt{FaultToleranceSys}.
+    \item \texttt{MasterElectionObserver.java}: observer for the
+      \texttt{MasterElectionSys}.
     \end{itemize}
   \item \texttt{subsys}: package that holds the subsystems of the tracker.
     
     \begin{itemize}
     \item \texttt{TrackerSubsystem.java}: abstract class that represents a
-      subsystem of the tracker
-    \item \texttt{cfts}
+      subsystem of the tracker.
+    \item \texttt{cfts}: holds the classes related to the Cluster Fault
+      Tolerance System.
       \begin{itemize}
-      \item \texttt{FaultToleranceSys.java}
-      \item \texttt{IpIdTable.java}
+      \item \texttt{FaultToleranceSys.java}: component in charge of
+        sending/receiving KA messages from the tracker members.
+      \item \texttt{IpIdTable.java}: class that holds the current state of the
+        cluster members.
       \end{itemize}
     \item \texttt{db}
       \begin{itemize}
@@ -117,8 +125,35 @@ Our project has the following package hierarchy:
 The tracker's gui follows the guidelines given by the responsive web design
 paradigm, thereby the application's main window size and its components' size
 can be adapted to a variety of screen sizes.
+Figures~\ref{fig:resp-small} and~\ref{fig:resp-maxi} show an example of this
+behaviour.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{imgs/responsive_design_maximized.png}
+  \caption{\label{fig:resp-maxi}Responsive behaviour: maximised window.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{imgs/responsive_design.png}
+  \caption{\label{fig:resp-small}Responsive behaviour: small window.}
+\end{figure}
 
 \section{Form validation}
+
+Our application needs some input typed by the users, consequently that input
+must be validated; and when an error is found, the user needs to be correctly
+informed. Figure~\ref{fig:validation}
+shows the validation and error notification of a window of the tracker.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{imgs/form_validation.png}
+  \caption{\label{fig:validation}Forms of the \emph{Basic info} tab show
+    error messages.}
+\end{figure}
+
 
 \section{Exception management}
 
