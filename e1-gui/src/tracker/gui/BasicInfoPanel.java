@@ -112,6 +112,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		panel.setBackground(color);
 		
 		JButton errorButton = new JButton("Provoke error");
+		errorButton.setEnabled(false);
 		panel.add(errorButton);
 		
 		connectButton = new JButton("Connect");

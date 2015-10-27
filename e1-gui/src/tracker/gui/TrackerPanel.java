@@ -18,7 +18,7 @@ public class TrackerPanel extends ObserverJPanel {
 	
 	private FaultToleranceObserver ftController;
 	
-	private static String[] columnNames = {"ID", "IP", "Swarm port", "Peer port", "Latest Keepalive"};
+	private static String[] columnNames = {"ID", "IP", "Cluster port", "Peer port", "Latest Keepalive"};
 	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "8976", "2015-10-11T 10:45:32"}};
 	private Object[][] slaveData = {
 			{"1", "36.53.128.122", "5432", "8976", "2015-10-11T 10:45:30"},
