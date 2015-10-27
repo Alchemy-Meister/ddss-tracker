@@ -8,8 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
-
-import tracker.controller.FaultToleranceController;
+import tracker.observers.FaultToleranceObserver;
 
 /**
  * @author Irene
@@ -24,7 +23,7 @@ public class BasicInfoPanel extends ObserverJPanel {
 	private JTextField tfIP;
 	private JTextField tfPP;
 	
-	private FaultToleranceController ftController;
+	private FaultToleranceObserver ftController;
 	
 	public BasicInfoPanel(Color color) {
 		super();
@@ -64,7 +63,7 @@ public class BasicInfoPanel extends ObserverJPanel {
 		this.add(tfPP, "cell 1 4,growx");
 		tfPP.setColumns(10);
 		
-		ftController = new FaultToleranceController();
+		ftController = new FaultToleranceObserver();
 		
 	}
 	

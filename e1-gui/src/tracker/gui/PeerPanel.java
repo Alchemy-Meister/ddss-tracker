@@ -13,7 +13,7 @@ import javax.swing.event.ListSelectionListener;
 
 import general.components.CustomJTable;
 import net.miginfocom.swing.MigLayout;
-import tracker.controller.DBFaultToleranceController;
+import tracker.observers.DBFaultToleranceObserver;
 
 public class PeerPanel extends ObserverJPanel {
 
@@ -23,7 +23,7 @@ public class PeerPanel extends ObserverJPanel {
 	private JTable peerInfoTable;
 	private JTable peerTorrentTable;
 	
-	private DBFaultToleranceController dbFTController;
+	private DBFaultToleranceObserver dbFTController;
 	
 	private static String[] peerIDColumnNames = {"ID"};
 	private static String[] peerInfoColumnNames = {"IP", "Port"};
@@ -106,7 +106,7 @@ public class PeerPanel extends ObserverJPanel {
 		
 		peerListPanel.add(new JScrollPane(peerListTable), "cell 0 1,grow");
 		
-		dbFTController = new DBFaultToleranceController();
+		dbFTController = new DBFaultToleranceObserver();
 		
 		peerListTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 		      public void valueChanged(ListSelectionEvent e) {

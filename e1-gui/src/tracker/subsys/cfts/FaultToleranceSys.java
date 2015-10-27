@@ -1,10 +1,10 @@
-package tracker.cfts;
+package tracker.subsys.cfts;
 
 import java.util.List;
 
-import tracker.controller.TrackerSubsystem;
 import tracker.db.model.TrackerMember;
-import tracker.election.MasterElectionSys;
+import tracker.subsys.TrackerSubsystem;
+import tracker.subsys.election.MasterElectionSys;
 
 /** This component is in charge of sending/receiving KA messages from
  * the swarm members. It must update the IP-ID table.
