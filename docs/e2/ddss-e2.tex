@@ -45,16 +45,16 @@
 %\begin{abstract}
 %Your abstract.
 %\end{abstract}
-\section{Package hierarchy}
+\section{Package hierarchy}\label{sec:pa-hierarchy}
 
 Our project has the following package hierarchy:
 
 \begin{itemize}
-\item \texttt{bitTorrent}
-\item \texttt{general}
-  \begin{itemize}
-  \item \texttt{components}
-  \end{itemize}
+\item \texttt{bitTorrent}: this package holds the classes related to the
+  BitTorrent protocol specification; in the following deliverables of this
+  project we will change them if necessary to accommodate them to our
+  implementation.
+  This package will also hold the classes and packages related to networking.
 \item \texttt{peer}: this package contains the classes needed by the peers. 
   Since this deliverable contemplates the design of the tracker GUI and
   project skeleton it has been left empty.
@@ -72,6 +72,8 @@ Our project has the following package hierarchy:
   \item \texttt{gui}: holds the classes related to the graphical user interface
     of the tracker.
     \begin{itemize}
+    \item \texttt{CustomJTable.java}: custom table used in the application to
+      give responsive behaviour to Java's default \texttt{JTable}s.
     \item \texttt{BasicInfoPanel.java}: displays general information about
       the tracker, such as the current ID of the instance, IP and port etc.
     \item \texttt{ObserverJPanel.java}: abstract class that inherits from
@@ -84,7 +86,10 @@ Our project has the following package hierarchy:
       tracker.
     \end{itemize}
   \item \texttt{observers}: this package holds all the observers of the
-    application. 
+    application.
+    The observers are necessary since we have decided to follow the Model View
+    Controller pattern, as suggested in the specification of the deliverable.
+    
     \begin{itemize}
     \item \texttt{TrackerObserver.java}: abstract base class for the observers.
     \item \texttt{DBFaultToleranceObserver.java}: observer for the
@@ -107,13 +112,16 @@ Our project has the following package hierarchy:
       \item \texttt{IpIdTable.java}: class that holds the current state of the
         cluster members.
       \end{itemize}
-    \item \texttt{db}
+    \item \texttt{db}: holds the classes related to the DB fault tolerance
+      system.
       \begin{itemize}
-      \item \texttt{DBFaultToleranceSys.java}
+      \item \texttt{DBFaultToleranceSys.java}: class in charge of maintaining
+        the reliability of the DB in the cluster.
       \end{itemize}
     \item \texttt{election}
       \begin{itemize}
-      \item \texttt{MasterElectionSys.java}
+      \item \texttt{MasterElectionSys.java}: class in charge of doing the master
+        election process.
       \end{itemize}
     \end{itemize}
   \item \texttt{Launcher.java}: program entry point. 
@@ -157,7 +165,8 @@ shows the validation and error notification of a window of the tracker.
 
 \section{Exception management}
 
-\section{Interaction}
+Our application has a well-defined exception hierarchy previously described
+in section~\ref{sec:pa-hierarchy}, please refer to this section.
 
 %\bibliographystyle{unsrt}
 %\bibliography{bib}
