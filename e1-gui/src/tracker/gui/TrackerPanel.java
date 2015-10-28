@@ -17,7 +17,7 @@ public class TrackerPanel extends ObserverJPanel {
 
 	private static final long serialVersionUID = -3635714939911877408L;
 	
-	private FaultToleranceObserver ftController;
+	private FaultToleranceObserver ftObserver;
 	private TrackerController trController;
 	
 	private JTable masterTable;
@@ -50,8 +50,8 @@ public class TrackerPanel extends ObserverJPanel {
 		this.add(new JScrollPane(masterTable), "cell 0 1, grow");
 		this.add(new JScrollPane(slaveTable), "cell 0 7 1 2,grow");
 		
-		ftController = new FaultToleranceObserver();
-		ftController.addObserver(this);
+		ftObserver = new FaultToleranceObserver();
+		ftObserver.addObserver(this);
 	}
 	
 	public void updateSlaveData(List<HashMap<String, String>> data) {
@@ -66,6 +66,6 @@ public class TrackerPanel extends ObserverJPanel {
 
 	@Override
 	public void unsubscribe() {
-		ftController.rmObserver(this);
+		ftObserver.rmObserver(this);
 	}
 }

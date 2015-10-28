@@ -24,13 +24,13 @@ public class PeerPanel extends ObserverJPanel {
 	private JTable peerInfoTable;
 	private JTable peerTorrentTable;
 	
-	private DBFaultToleranceObserver dbFTController;
+	private DBFaultToleranceObserver dbFTObserver;
 	private PeerController pController;
 	
 	public PeerPanel(Color color) {
 		super();
 		
-		dbFTController = new DBFaultToleranceObserver();
+		dbFTObserver = new DBFaultToleranceObserver();
 		pController = new PeerController();
 		
 		this.setBackground(color);
@@ -41,6 +41,7 @@ public class PeerPanel extends ObserverJPanel {
 		this.add(peerListPanel, "cell 0 0 1 2,grow");
 		peerListPanel.setLayout(new MigLayout("insets 0", "[70px:75px,grow]",
 				"[16px][grow]"));
+		peerListPanel.setBackground(color);
 		
 		JLabel label = new JLabel("Peer list");
 		peerListPanel.add(label, "cell 0 0,alignx left,aligny top");
@@ -49,14 +50,17 @@ public class PeerPanel extends ObserverJPanel {
 		this.add(basicTorrentPanel, "cell 1 0 4 2,grow");
 		basicTorrentPanel.setLayout(new MigLayout("insets 0", "[grow]",
 				"[60px:n:65px,grow][grow]"));
+		basicTorrentPanel.setBackground(color);
 		
 		JPanel peerBasicInfoPanel = new JPanel();
 		basicTorrentPanel.add(peerBasicInfoPanel, "cell 0 0,grow");
 		peerBasicInfoPanel.setLayout(new MigLayout("insets 0", "[grow]",
 				"[][grow]"));
+		peerBasicInfoPanel.setBackground(color);
 		
 		JLabel lblBasicInfo = new JLabel("Basic info");
 		peerBasicInfoPanel.add(lblBasicInfo, "cell 0 0");
+		peerBasicInfoPanel.setBackground(color);
 		
 		peerInfoTable = new CustomJTable();
 		
@@ -72,6 +76,7 @@ public class PeerPanel extends ObserverJPanel {
 		basicTorrentPanel.add(peerTorrentListPanel, "cell 0 1,grow");
 		peerTorrentListPanel.setLayout(new MigLayout("insets 0", "[grow]",
 				"[][grow]"));
+		peerTorrentListPanel.setBackground(color);
 		
 		JLabel lblTorrentList = new JLabel("Torrent list");
 		peerTorrentListPanel.add(lblTorrentList, "cell 0 0");
@@ -130,7 +135,7 @@ public class PeerPanel extends ObserverJPanel {
 
 	@Override
 	public void unsubscribe() {
-		dbFTController.rmObserver(this);
+		dbFTObserver.rmObserver(this);
 	}
 
 }

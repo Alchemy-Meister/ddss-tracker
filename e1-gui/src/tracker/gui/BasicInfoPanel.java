@@ -29,7 +29,8 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 {
 	
 	private static final long serialVersionUID = -1098424124151618936L;
-	private static final String INVALID_PORT_MSG = "Invalid Port";
+	private static final String INVALID_IP_ADDRESS_MSG = "Invalid IP address";
+	private static final String INVALID_PORT_MSG = "Invalid port number";
 	private static final String SAME_PORT_ERROR_MSG = "Ports can't be the same";
 	
 	private JTextField tfID;
@@ -43,19 +44,20 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	
 	JButton connectButton;
 	
-	private FaultToleranceObserver ftController;
+	private FaultToleranceObserver ftObserver;
 	private BasicInfoController biController;
 	
 	public BasicInfoPanel(Color color) {
 		super();
 		
-		ftController = new FaultToleranceObserver();
-		ftController.addObserver(this);
+		ftObserver = new FaultToleranceObserver();
+		ftObserver.addObserver(this);
 		biController = new BasicInfoController();
 		
 		this.setBackground(color);
 		
-		this.setLayout(new MigLayout("", "[][grow][150px:n]", "[20px:n,grow][][][][][20px:n,grow,fill]"));
+		this.setLayout(new MigLayout("", "[][grow][150px:n]",
+				"[20px:n,grow][][][][][20px:n,grow,fill]"));
 		
 		JLabel lblId = new JLabel("ID");
 		this.add(lblId, "cell 0 1,alignx trailing");
@@ -98,7 +100,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		ipAddressError = new JLabel();
 		ipAddressError.setVisible(false);
 		ipAddressError.setForeground(Color.RED);
-		ipAddressError.setText("Invalid IP Address");
+		ipAddressError.setText(INVALID_IP_ADDRESS_MSG);
 		this.add(ipAddressError, "cell 2 2,alignx left");
 		
 		clusterPortError = new JLabel(INVALID_PORT_MSG);
@@ -135,7 +137,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 
 	@Override
 	public void unsubscribe() {
-		ftController.rmObserver(this);		
+		ftObserver.rmObserver(this);		
 	}
 
 	@Override
