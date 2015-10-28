@@ -51,15 +51,27 @@ Our project has the following package hierarchy:
 
 \begin{itemize}
 \item \texttt{bitTorrent}: this package holds the classes related to the
-  BitTorrent protocol specification; in the following deliverables of this
-  project we will change them if necessary to accommodate them to our
-  implementation.
+  BitTorrent protocol specification. In the following deliverables of this
+  project, we will introduce the necessary changes to accomodate the protocol
+  to our implementation.
   This package will also hold the classes and packages related to networking.
 \item \texttt{peer}: this package contains the classes needed by the peers. 
   Since this deliverable contemplates the design of the tracker GUI and
   project skeleton it has been left empty.
 \item \texttt{tracker}: this package contains the classes needed by the tracker.
   \begin{itemize}
+  \item \texttt{exceptions}: holds the classes of the exceptions thrown by the
+    tracker.
+  \item \texttt{controllers}: manage the DB connections and the observers for
+    each of the views in the main application window.
+    \begin{itemize}
+    \item \texttt{BasicInfoController.java}:
+      manages the \emph{BasicInfo} tab's info.
+    \item \texttt{PeerController.java}:
+      manages the \emph{Peer} tab's info.
+    \item \texttt{TrackerController.java}:
+      manages the \emph{Tracker} tab's info.
+    \end{itemize}
   \item \texttt{db}: classes related to the DB management.
     \begin{itemize}
     \item \texttt{model}: classes part of the business model.
