@@ -62,6 +62,18 @@ Our project has the following package hierarchy:
   \begin{itemize}
   \item \texttt{exceptions}: holds the classes of the exceptions thrown by the
     tracker.
+    \begin{itemize}
+    \item \texttt{TrackerException.java}: abstract base class.
+    \item \texttt{DBFaultToleranceSysException.java}: exceptions in the DB
+      fault tolerance system.
+    \item \texttt{MasterElectionSysException.java}: exceptions in the master
+      election system.
+    \item \texttt{FaultToleranceSysException.java}: exceptions in the fault
+      tolerance system.
+    \item \texttt{NetProtoException.java}: general networking/protocol
+      exception. This class will be extended in future deliverables when the
+      networking part is implemented.
+    \end{itemize}
   \item \texttt{controllers}: manage the DB connections and the observers for
     each of the views in the main application window.
     \begin{itemize}
