@@ -16,7 +16,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import net.miginfocom.swing.MigLayout;
-
+import tracker.controllers.BasicInfoController;
 import tracker.observers.FaultToleranceObserver;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
@@ -45,6 +45,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	JButton connectButton;
 	
 	private FaultToleranceObserver ftController;
+	private BasicInfoController biController;
 	
 	public BasicInfoPanel(Color color) {
 		super();

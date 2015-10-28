@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import net.miginfocom.swing.MigLayout;
+import tracker.controllers.TrackerController;
 import tracker.observers.FaultToleranceObserver;
 
 public class TrackerPanel extends ObserverJPanel {
@@ -17,6 +18,7 @@ public class TrackerPanel extends ObserverJPanel {
 	private static final long serialVersionUID = -3635714939911877408L;
 	
 	private FaultToleranceObserver ftController;
+	private TrackerController trController;
 	
 	private static String[] columnNames = {"ID", "IP", "Cluster port", "Peer port", "Latest Keepalive"};
 	private Object[][] masterData = {{"0", "36.53.128.121", "5432", "8976", "2015-10-11T 10:45:32"}};
@@ -37,7 +39,8 @@ public class TrackerPanel extends ObserverJPanel {
 		super();
 		this.setBackground(color);
 		
-		this.setLayout(new MigLayout("", "[grow][]", "[][40px:n:45px,grow][][][][][][grow]"));
+		this.setLayout(new MigLayout("", "[grow][]",
+				"[][40px:n:45px,grow][][][][][][grow]"));
 		
 		JLabel lblMaster = new JLabel("Master");
 		this.add(lblMaster, "cell 0 0");
