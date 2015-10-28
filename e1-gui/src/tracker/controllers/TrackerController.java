@@ -1,9 +1,15 @@
 package tracker.controllers;
 
+import tracker.db.DBManager;
+
 public class TrackerController {
+	
+	private DBManager manager = null;
 	
 	public TrackerController() {
 		//TODO initialize database instance.
+		manager = new DBManager();
+		manager.connect();
 	}
 	
 	public String[][] getMasterInfo() {

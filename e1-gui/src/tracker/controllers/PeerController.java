@@ -74,13 +74,13 @@ public class PeerController {
 			{"[Poi] 40mP - 小さな自分と大きな世界 feat. 初音ミク Chiisana Jibun To Ookina Sekai feat. Hatsune Miku [MP3].zip",
 				"98%", "72%", "u are a pirate!"},
 			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"asd", "asd", "u are a pirate!"},
+			    "98%", "72%", "u are a pirate!"},
 			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"asd", "asd", "u are a pirate!"},
+				"98%", "72%", "u are a pirate!"},
 			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"asd", "asd", "u are a pirate!"},
+				"98%", "72%", "u are a pirate!"},
 			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"asd", "asd", "u are a pirate!"}
+				"98%", "72%", "u are a pirate!"}
 			};
 	}
 	

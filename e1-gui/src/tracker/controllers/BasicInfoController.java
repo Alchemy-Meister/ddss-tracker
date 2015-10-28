@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public class BasicInfoController {
 	
 	public BasicInfoController() {
-		// TODO start whatever dependecy it goes here.
+		// TODO start whatever dependecy goes here.
 	}
 	
 	public boolean isValidIP(String ip) {
