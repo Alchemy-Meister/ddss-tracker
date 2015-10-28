@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Observable;
-import java.util.regex.*;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -49,6 +48,11 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	
 	public BasicInfoPanel(Color color) {
 		super();
+		
+		ftController = new FaultToleranceObserver();
+		ftController.addObserver(this);
+		biController = new BasicInfoController();
+		
 		this.setBackground(color);
 		
 		this.setLayout(new MigLayout("", "[][grow][150px:n]", "[20px:n,grow][][][][][20px:n,grow,fill]"));
@@ -120,9 +124,6 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		connectButton.setEnabled(false);
 		panel.add(connectButton);
 		
-		ftController = new FaultToleranceObserver();
-		ftController.addObserver(this);
-		
 		
 	}
 
@@ -177,26 +178,11 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		// NOTHING TODO HERE.
 	}
 	
-	private boolean isValidIP(String ip) {
-		String pattern = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$";
-		Pattern r = Pattern.compile(pattern);
-		return r.matcher(ip).find();
-	}
-	
-	private boolean isValidPort(String port) {
-		try {
-			int portNo = Integer.parseInt(port);
-			return portNo > 1023 && portNo <= 65535;
-		} catch(NumberFormatException e) {
-			return false;
-		}
-	}
-	
 	private void showErrorMessage(Document doc) {
 		JTextField field = (JTextField) doc.getProperty("owner");
 		if(field.equals(this.tfIP)) {
 			try {
-				if(!isValidIP(doc.getText(0, doc.getLength()))) {
+				if(!biController.isValidIP(doc.getText(0, doc.getLength()))) {
 					ipAddressError.setVisible(true);
 				} else {
 					ipAddressError.setVisible(false);
@@ -206,7 +192,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 			}
 		} else if(field.equals(this.tfSP)) {
 			try {
-				if(!isValidPort(doc.getText(0, doc.getLength()))) 
+				if(!biController.isValidPort(doc.getText(0, doc.getLength()))) 
 				{
 					clusterPortError.setText(INVALID_PORT_MSG);
 					clusterPortError.setVisible(true);
@@ -222,7 +208,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 			}
 		} else if(field.equals(this.tfPP)) {
 			try {
-				if(!isValidPort(doc.getText(0, doc.getLength()))) 
+				if(!biController.isValidPort(doc.getText(0, doc.getLength()))) 
 				{
 					peerPortError.setText(INVALID_PORT_MSG);
 					peerPortError.setVisible(true);

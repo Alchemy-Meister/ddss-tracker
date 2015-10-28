@@ -59,9 +59,12 @@ public class PeerPanel extends ObserverJPanel {
 		peerBasicInfoPanel.add(lblBasicInfo, "cell 0 0");
 		
 		peerInfoTable = new CustomJTable();
+		
+		
 		peerInfoTable.setModel(new DefaultTableModel(
 				pController.getPeerBasicHardCodedInfo(), 
 				pController.getPeerInfoColumnNames()));
+		((DefaultTableModel) peerInfoTable.getModel()).setRowCount(0);
 		peerInfoTable.setEnabled(false);
 		peerBasicInfoPanel.add(new JScrollPane(peerInfoTable), "cell 0 1,grow");
 		
@@ -78,9 +81,7 @@ public class PeerPanel extends ObserverJPanel {
 		peerTorrentTable.setModel(new DefaultTableModel(
 				pController.getPeerTorrentsHardCodedData(),
 				pController.getPeerTorrentColumnNames()));
-		DefaultTableModel model = (DefaultTableModel)
-				peerTorrentTable.getModel();
-		model.setRowCount(0);
+		((DefaultTableModel) peerTorrentTable.getModel()).setRowCount(0);
 		peerTorrentListPanel.add(new JScrollPane(peerTorrentTable),
 				"cell 0 1,grow");
 		

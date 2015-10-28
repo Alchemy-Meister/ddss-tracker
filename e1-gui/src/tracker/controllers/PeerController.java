@@ -5,18 +5,21 @@ import java.util.Random;
 public class PeerController {
 	
 	public PeerController() {
-		
+		//TODO initialize database instance.
 	}
 	
 	public String[][] getPeerBasicData(String id) {
+		// TODO return real data from DB.
 		return new String[][]{{randomIP(), randomPort()}};
 	}
 	
 	public String[][] getPeerTorrents(String id) {
+		// TODO return real data from DB.
 		return this.shuffleArray(this.getPeerTorrentsHardCodedData());
 	}
 	
 	public String[] getPeerIDListColumnName() {
+		// TODO get the column names from database.
 		return new String[]{"ID"};
 	}
 	
