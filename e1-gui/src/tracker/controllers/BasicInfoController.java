@@ -2,7 +2,13 @@ package tracker.controllers;
 
 import java.util.regex.Pattern;
 
+import javax.swing.JLabel;
+
+import tracker.networking.Networker;
+
 public class BasicInfoController {
+	
+	private Networker networker;
 	
 	public BasicInfoController() {
 		// TODO start whatever dependecy goes here.
@@ -20,6 +26,25 @@ public class BasicInfoController {
 			return portNo > 1023 && portNo <= 65535;
 		} catch(NumberFormatException e) {
 			return false;
+		}
+	}
+	
+	public void connect(int port, JLabel label) {
+		networker = Networker.getInstance(port, label);
+		networker.start();
+	}
+	
+	public void disconnect() {
+		networker.stop();
+	}
+	
+	public boolean isConnected() {
+		if(networker == null) {
+			System.out.println(networker);
+			return false;
+		} else {
+			System.out.println(networker.isRunning());
+			return networker.isRunning();
 		}
 	}
 }

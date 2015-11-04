@@ -3,6 +3,8 @@ package tracker.subsys.cfts;
 import java.util.List;
 
 import tracker.db.model.TrackerMember;
+import tracker.networking.InScheduler;
+import tracker.networking.OutScheduler;
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.election.MasterElectionSys;
 
@@ -11,7 +13,8 @@ import tracker.subsys.election.MasterElectionSys;
  * @author Irene
  * @author Jesus
  */ 
-public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
+public class FaultToleranceSys extends TrackerSubsystem implements 
+	InScheduler, OutScheduler, Runnable {
 
 	private static FaultToleranceSys instance = null;
 	private IpIdTable ipidTable = null;
@@ -67,6 +70,18 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		if (ipidTable.getMasterID().compareTo(
 				ipidTable.getMemberLowestId().getId()) != 0)
 			masterElection.startMasterElection();
+	}
+
+	@Override
+	public void send() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void receive() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 

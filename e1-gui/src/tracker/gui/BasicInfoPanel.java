@@ -2,6 +2,8 @@ package tracker.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Observable;
@@ -25,13 +27,15 @@ import java.awt.FlowLayout;
  * @author Jesus
  */
 public class BasicInfoPanel extends ObserverJPanel implements FocusListener, 
-	DocumentListener 
+	DocumentListener, ActionListener 
 {
 	
 	private static final long serialVersionUID = -1098424124151618936L;
 	private static final String INVALID_IP_ADDRESS_MSG = "Invalid IP address";
 	private static final String INVALID_PORT_MSG = "Invalid port number";
 	private static final String SAME_PORT_ERROR_MSG = "Ports can't be the same";
+	private static final String CONNECT_MSG = "Connect";
+	private static final String DISCONNECT_MGS = "Disconnect";
 	
 	private JTextField tfID;
 	private JTextField tfSP;
@@ -42,7 +46,10 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	private JLabel peerPortError;
 	private JLabel clusterPortError;
 	
-	JButton connectButton;
+	private JLabel panicLabel;
+	
+	private JButton connectButton;
+	private JButton errorButton;
 	
 	private FaultToleranceObserver ftObserver;
 	private BasicInfoController biController;
@@ -56,8 +63,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		
 		this.setBackground(color);
 		
-		this.setLayout(new MigLayout("", "[][grow][150px:n]",
-				"[20px:n,grow][][][][][20px:n,grow,fill]"));
+		this.setLayout(new MigLayout("", "[][grow][150px:n]", "[20px:n,grow][][][][][][20px:n,grow]"));
 		
 		JLabel lblId = new JLabel("ID");
 		this.add(lblId, "cell 0 1,alignx trailing");
@@ -118,7 +124,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		panel.setBackground(color);
 		
-		JButton errorButton = new JButton("Provoke error");
+		errorButton = new JButton("Provoke error");
 		errorButton.setEnabled(false);
 		panel.add(errorButton);
 		
@@ -126,6 +132,17 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		connectButton.setEnabled(false);
 		panel.add(connectButton);
 		
+		connectButton.addActionListener(this);
+		errorButton.addActionListener(this);
+		
+		JPanel panicPanel = new JPanel();
+		panicPanel.setBackground(color);
+		this.add(panicPanel, "cell 1 6,grow");
+		panicPanel.setLayout(null);
+		
+		panicLabel = new JLabel("");
+		panicLabel.setBounds(0, 0, 318, 20);
+		panicPanel.add(panicLabel);
 		
 	}
 
@@ -204,6 +221,16 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 				} else {
 					clusterPortError.setVisible(false);
 				}
+				if(!this.tfSP.getText().equals(this.tfPP.getText())) {
+					if(peerPortError.isVisible()) {
+						if(biController.isValidPort(this.tfPP.getText())) {
+							peerPortError.setVisible(false);
+						} else {
+							peerPortError.setText(INVALID_PORT_MSG);
+							peerPortError.setVisible(true);
+						}
+					}
+				}
 				
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
@@ -217,8 +244,18 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 				} else if(this.tfSP.getText().equals(this.tfPP.getText())){
 					peerPortError.setText(SAME_PORT_ERROR_MSG);
 					peerPortError.setVisible(true);
-				} else {
+				}  else {
 					peerPortError.setVisible(false);
+				}
+				if(!this.tfSP.getText().equals(this.tfPP.getText())) {
+					if(clusterPortError.isVisible()) {
+						if(biController.isValidPort(this.tfSP.getText())) {
+							clusterPortError.setVisible(false);
+						} else {
+							clusterPortError.setText(INVALID_PORT_MSG);
+							clusterPortError.setVisible(true);
+						}
+					}
 				}
 				
 			} catch (BadLocationException e1) {
@@ -255,5 +292,24 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		} else {
 			connectButton.setEnabled(false);
 		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		JButton clickedButton = (JButton) e.getSource();
+		if(clickedButton.equals(connectButton)) {
+			System.out.println("Connect click （*´▽｀*）");
+			if(!this.biController.isConnected()) {
+				this.biController.connect(Integer.parseInt(this.tfSP.getText()), this.panicLabel);
+				this.connectButton.setText(DISCONNECT_MGS);
+			} else {
+				this.biController.disconnect();
+				this.connectButton.setText(CONNECT_MSG);
+			}
+		} else if(clickedButton.equals(errorButton)) {
+			System.out.println("Hey what are you trying to do, "
+					+ "don't be a meanie <(｀^´)>");
+		}
+		
 	}
 }

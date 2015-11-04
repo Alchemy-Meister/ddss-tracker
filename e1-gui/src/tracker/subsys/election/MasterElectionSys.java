@@ -3,12 +3,15 @@ package tracker.subsys.election;
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.cfts.IpIdTable;
 import tracker.db.model.TrackerMember;
+import tracker.networking.InScheduler;
+import tracker.networking.OutScheduler;
 
 /** In charge of handling the master election system.
  * @author Irene
  * @author Jesus
  */
-public class MasterElectionSys extends TrackerSubsystem implements Runnable {
+public class MasterElectionSys extends TrackerSubsystem implements 
+	InScheduler, OutScheduler, Runnable {
 	
 	private static MasterElectionSys instance = null;
 	private IpIdTable ipidTable = null;
@@ -46,5 +49,17 @@ public class MasterElectionSys extends TrackerSubsystem implements Runnable {
 			ipidTable.electMaster(newMaster.getId());
 		else
 			startMasterElection();
+	}
+
+	@Override
+	public void send() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void receive() {
+		// TODO Auto-generated method stub
+		
 	}
 }
