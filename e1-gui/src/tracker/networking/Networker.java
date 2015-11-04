@@ -28,7 +28,7 @@ public class Networker implements InScheduler, OutScheduler {
 	}
 	
 	public boolean isStatusThreadRunning() {
-		return netStatusThread.isAlive() ? netStatusThread != null : false;
+		return netStatusThread != null ? netStatusThread.isAlive() : false;
 	}
 	
 	public void startStatusThread() {
@@ -48,7 +48,7 @@ public class Networker implements InScheduler, OutScheduler {
 	}
 	
 	public boolean isNetThreadRunning() {
-		return networkerThread.isAlive() ? networkerThread != null : false;
+		return networkerThread != null ? networkerThread.isAlive() : false;
 	}
 	
 	public void startNetThread() {
