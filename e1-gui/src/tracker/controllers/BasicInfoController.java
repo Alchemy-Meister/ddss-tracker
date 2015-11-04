@@ -29,13 +29,13 @@ public class BasicInfoController {
 		}
 	}
 	
-	public void connect(int port, JLabel label) {
-		networker = Networker.getInstance(port, label);
-		networker.start();
+	public void connect(int port, String ip, JLabel label) {
+		networker = Networker.getInstance(port, ip, label);
+		networker.startStatusThread();
 	}
 	
 	public void disconnect() {
-		networker.stop();
+		networker.stopStatusThread();
 	}
 	
 	public boolean isConnected() {
@@ -43,8 +43,8 @@ public class BasicInfoController {
 			System.out.println(networker);
 			return false;
 		} else {
-			System.out.println(networker.isRunning());
-			return networker.isRunning();
+			System.out.println(networker.isStatusThreadRunning());
+			return networker.isStatusThreadRunning();
 		}
 	}
 }

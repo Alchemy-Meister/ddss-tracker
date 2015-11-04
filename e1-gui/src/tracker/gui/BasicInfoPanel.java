@@ -300,7 +300,8 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		if(clickedButton.equals(connectButton)) {
 			System.out.println("Connect click （*´▽｀*）");
 			if(!this.biController.isConnected()) {
-				this.biController.connect(Integer.parseInt(this.tfSP.getText()), this.panicLabel);
+				this.biController.connect(Integer.parseInt(this.tfSP.getText()),
+						this.tfIP.getText(), this.panicLabel);
 				this.connectButton.setText(DISCONNECT_MGS);
 			} else {
 				this.biController.disconnect();
