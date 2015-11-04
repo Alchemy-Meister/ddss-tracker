@@ -2,57 +2,78 @@ package tracker.networking;
 
 import javax.swing.JLabel;
 
+/**
+ * @author Irene
+ * @author Jesus
+ */
 public class Networker implements InScheduler, OutScheduler {
 	
 	private static Networker instance = null;
-	private Thread networkerThread;
+	private Thread netStatusThread, networkerThread;
+	private NetworkerRunnable netRunnable;
 	private JLabel label;
 	
-	private Networker(int port, JLabel label) {
+	private Networker(int port, String ip, JLabel label) {
 		
 		this.label = label;
-		this.networkerThread= new Thread(new NetworkerThread(label));
+		this.netStatusThread = new Thread(new NetworkerStatusThread(label));
+		this.netRunnable = new NetworkerRunnable(port, ip);
 	}
 	
-	public static Networker getInstance(int port, JLabel label) {
-		if(instance == null) {
-			instance = new Networker(port, label);
+	public static Networker getInstance(int port, String ip, JLabel label) {
+		if (instance == null) {
+			instance = new Networker(port, ip, label);
 		}
 		return instance;
 	}
 	
-	public boolean isRunning() {
-		if(networkerThread != null) {
-			return networkerThread.isAlive();
-		} else {
-			return false;
+	public boolean isStatusThreadRunning() {
+		return netStatusThread.isAlive() ? netStatusThread != null : false;
+	}
+	
+	public void startStatusThread() {
+		if (this.netStatusThread == null) {
+			this.netStatusThread = new Thread(new NetworkerStatusThread(label));
+		}
+		if (!this.netStatusThread.isAlive()) {
+			this.netStatusThread.start();
 		}
 	}
 	
-	public void start() {
-		if(this.networkerThread == null) {
-			this.networkerThread = new Thread(new NetworkerThread(label));
+	public void stopStatusThread() {
+		if (this.netStatusThread.isAlive()) {
+			this.netStatusThread.interrupt();
+			this.netStatusThread = null;
 		}
-		if(!this.networkerThread.isAlive()) {
+	}
+	
+	public boolean isNetThreadRunning() {
+		return networkerThread.isAlive() ? networkerThread != null : false;
+	}
+	
+	public void startNetThread() {
+		this.netRunnable.setNetworker(this);
+		if (this.networkerThread == null)
+			this.netStatusThread = new Thread(netRunnable);
+		if (!this.networkerThread.isAlive())
 			this.networkerThread.start();
-		}
 	}
 	
-	public void stop() {
-		if(this.networkerThread.isAlive()) {
+	public void stopNetThread() {
+		if (this.networkerThread.isAlive()) {
 			this.networkerThread.interrupt();
 			this.networkerThread = null;
 		}
 	}
 	
 	@Override
-	public void send() {
-		// TODO Auto-generated method stub
+	public void send(String param) {
+		netRunnable.put(param);
 		
 	}
 
 	@Override
-	public void receive() {
+	public void receive(String param) {
 		// TODO Auto-generated method stub
 		
 	}

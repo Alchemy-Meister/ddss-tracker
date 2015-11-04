@@ -52,13 +52,13 @@ public class MasterElectionSys extends TrackerSubsystem implements
 	}
 
 	@Override
-	public void send() {
+	public void send(String param) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void receive() {
+	public void receive(String param) {
 		// TODO Auto-generated method stub
 		
 	}
