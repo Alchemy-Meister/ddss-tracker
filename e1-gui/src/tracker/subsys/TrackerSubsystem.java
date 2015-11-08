@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 
+import tracker.networking.Networker;
+import tracker.networking.Subscriber;
+
 
 /** Base class implemented by all the tracker's subsystems.
  * @author Irene
  * @author Jesus
  */
-public abstract class TrackerSubsystem {
+public abstract class TrackerSubsystem implements Subscriber {
 
 	protected List<Observer> observers = null;
+	protected static Networker networker;
 	
 	public TrackerSubsystem() {
 		observers = new ArrayList<Observer>();
@@ -29,6 +33,11 @@ public abstract class TrackerSubsystem {
 		for (Observer o : this.observers)
 			if (o != null)
 				o.update(null, param);
+	}
+	
+	public static void setNetwork(String ip, int port) {
+		if (networker == null)
+			networker = Networker.getInstance(port, ip);
 	}
 	
 }

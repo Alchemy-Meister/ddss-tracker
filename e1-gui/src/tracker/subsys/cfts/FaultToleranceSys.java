@@ -1,10 +1,12 @@
 package tracker.subsys.cfts;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import tracker.db.model.TrackerMember;
-import tracker.networking.InScheduler;
-import tracker.networking.OutScheduler;
+import tracker.networking.Networker;
+import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.election.MasterElectionSys;
 
@@ -13,17 +15,20 @@ import tracker.subsys.election.MasterElectionSys;
  * @author Irene
  * @author Jesus
  */ 
-public class FaultToleranceSys extends TrackerSubsystem implements 
-	InScheduler, OutScheduler, Runnable {
+public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static FaultToleranceSys instance = null;
 	private IpIdTable ipidTable = null;
 	private MasterElectionSys masterElection = null;
+	private Timer timer;
+	private static final Topic subscription = Topic.KA;
 		
 	private FaultToleranceSys() {
 		super();
 		masterElection = MasterElectionSys.getInstance();
 		ipidTable = IpIdTable.getInstance();
+		timer = new Timer();
+		// ini networker
 	}
 	
 	/** 
@@ -44,13 +49,13 @@ public class FaultToleranceSys extends TrackerSubsystem implements
 	 * the incomming ACK messages.
 	 */
 	public void run() {
+		networker.subscribe(FaultToleranceSys.subscription, this);	
+		timer.schedule(new KATimerTask(this.networker), 0);
 		
-		// update table with incomming messages and notify observer
-		// ipidTable.set(ip, id);
-		// this.notifyObservers(param);
 		checkOfflineMembers();
 		// check if the current master is ok
 		checkMaster();
+		
 	}
 	
 	private void checkOfflineMembers() {
@@ -71,18 +76,30 @@ public class FaultToleranceSys extends TrackerSubsystem implements
 				ipidTable.getMemberLowestId().getId()) != 0)
 			masterElection.startMasterElection();
 	}
-
+	
 	@Override
-	public void send(String param) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void receive(String param) {
-		// TODO Auto-generated method stub
-		
+	public void receive(Topic topic, String param) {
+		if (topic == FaultToleranceSys.subscription) {
+			// TODO update ip id table
+			// TODO notifyObservers
+		}
 	}
 	
+
+	private class KATimerTask extends TimerTask {
+
+		private Networker networker;
+		
+		public KATimerTask(Networker networker) {
+			this.networker = networker;
+		}
+		
+		@Override
+		public void run() {
+			//networker.send("KA"); // TODO change to actual message
+			timer.schedule(new KATimerTask(this.networker), 2000);
+		}
+		
+	}
 
 }

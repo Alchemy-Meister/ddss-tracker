@@ -2,7 +2,7 @@ package tracker.networking;
 
 import javax.swing.JLabel;
 
-public class NetworkerStatusThread implements Runnable {
+public class NetworkerStatusRunnable implements Runnable {
 	
 	private String[] frames = {
 			"                                                         (△`ノ)",
@@ -48,11 +48,14 @@ public class NetworkerStatusThread implements Runnable {
 		};
 	
 	private int index = 0;
-	
 	private JLabel label;
-	private boolean isInterrupted;
+	private boolean isInterrupted = false;
 	
-	public NetworkerStatusThread(JLabel label) {
+	public NetworkerStatusRunnable() {
+		
+	}
+	
+	public void setStatusLabel(JLabel label) {
 		this.label = label;
 	}
 	

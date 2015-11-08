@@ -58,8 +58,10 @@ public class NetworkerRunnable implements Runnable {
 			DatagramPacket messageIn = null;
 			messageIn = new DatagramPacket(buffer, buffer.length);
 			socket.receive(messageIn);
-			if (messageIn != null)
-				notify(messageIn.toString()); // TODO check
+			if (messageIn != null) {
+				// TODO read message type and set topic
+				notify(Topic.KA, messageIn.toString()); // TODO check
+			}
 
 		} catch (SocketException e) {
 			System.err.println("# Socket Error: " + e.getMessage());
@@ -72,8 +74,8 @@ public class NetworkerRunnable implements Runnable {
 		queue.add(param);
 	}
 	
-	private void notify(String param) {
-		networker.receive(param);
+	private void notify(Topic topic, String param) {
+		networker.notify(topic, param);
 	}
 
 	public void init() throws NetProtoException {

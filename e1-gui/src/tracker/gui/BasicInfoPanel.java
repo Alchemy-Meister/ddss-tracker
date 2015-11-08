@@ -63,7 +63,8 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		
 		this.setBackground(color);
 		
-		this.setLayout(new MigLayout("", "[][grow][150px:n]", "[20px:n,grow][][][][][][20px:n,grow]"));
+		this.setLayout(new MigLayout("", "[][grow][150px:n]",
+				"[20px:n,grow][][][][][][20px:n,grow]"));
 		
 		JLabel lblId = new JLabel("ID");
 		this.add(lblId, "cell 0 1,alignx trailing");
@@ -297,8 +298,10 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JButton clickedButton = (JButton) e.getSource();
-		if(clickedButton.equals(connectButton)) {
+		if (clickedButton.equals(connectButton)) {
 			System.out.println("Connect click （*´▽｀*）");
+			if (this.panicLabel == null)
+				System.out.println("* panic null");
 			if(!this.biController.isConnected()) {
 				this.biController.connect(Integer.parseInt(this.tfSP.getText()),
 						this.tfIP.getText(), this.panicLabel);
@@ -311,6 +314,6 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 			System.out.println("Hey what are you trying to do, "
 					+ "don't be a meanie <(｀^´)>");
 		}
-		
 	}
+	
 }

@@ -7,7 +7,6 @@ import tracker.gui.TrackerGUI;
 public class Launcher {
 
 	public static void main(String [] args) {
-		// TODO launch all the threads
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

@@ -1,21 +1,19 @@
 package tracker.subsys.db;
 
-import tracker.networking.InScheduler;
-import tracker.networking.OutScheduler;
+import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
 
 /** The db replication is handled in this class.
  * @author Irene
  * @author Jesus
  */
-public class DBFaultToleranceSys extends TrackerSubsystem implements 
-	InScheduler, OutScheduler, Runnable {
+public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static DBFaultToleranceSys instance = null;
 	
 	
 	private DBFaultToleranceSys() {
-		
+		super();
 	}
 	
 	/** Singleton. Just one thread.
@@ -34,15 +32,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements
 	}
 
 	@Override
-	public void send(String param) {
+	public void receive(Topic topic, String param) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	public void receive(String param) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }
