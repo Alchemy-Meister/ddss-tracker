@@ -1,0 +1,90 @@
+package tracker.networking.runnables;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.List;
+
+import tracker.exceptions.NetProtoException;
+import tracker.networking.Networker;
+
+public class NetworkerWriteRunnable implements Runnable {
+
+	private List<String> queue;
+	private int port;
+	private String ip;
+	private Networker networker = null;
+	private MulticastSocket socket;
+	private InetAddress group;
+
+	public NetworkerWriteRunnable(int port, String ip) {
+		this.queue = new LinkedList<String>(); 
+	}
+
+	public void setNetworker(Networker networker) {
+		this.networker = networker;
+	}
+
+	public Networker getNetworker() {
+		return this.networker;
+	}
+
+	/** Inserts param to que queue
+	 * @param param
+	 */
+	public synchronized void put(String param) {
+		queue.add(param);
+	}
+
+	@Override
+	public void run() {
+		while(true) {
+			// Send
+			String mess = null;
+			synchronized (queue) {
+				if (!queue.isEmpty())
+					mess = queue.remove(0);
+			}
+			if(mess != null) {
+				DatagramPacket messageOut = new DatagramPacket(mess.getBytes(),
+						mess.length(), group, port);
+				try {
+					socket.send(messageOut);
+				} catch (IOException e) {
+					// TODO send netproto except
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+	public void init() throws NetProtoException {
+		try {
+			this.group = InetAddress.getByName(ip);
+			MulticastSocket socket = new MulticastSocket(port);
+			this.socket = socket; // TODO check
+			socket.joinGroup(this.group);
+		} catch (UnknownHostException e) {
+			throw new NetProtoException("Unknow host: " + ip);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void stop() {
+		try {
+			this.socket.leaveGroup(group);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

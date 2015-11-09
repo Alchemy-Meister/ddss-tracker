@@ -50,7 +50,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 */
 	public void run() {
 		networker.subscribe(FaultToleranceSys.subscription, this);	
-		timer.schedule(new KATimerTask(this.networker), 0);
+		timer.schedule(new KATimerTask(TrackerSubsystem.networker), 0);
 		
 		checkOfflineMembers();
 		// check if the current master is ok

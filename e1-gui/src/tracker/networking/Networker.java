@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.swing.JLabel;
 
+import tracker.networking.runnables.NetworkerReadRunnable;
+import tracker.networking.runnables.NetworkerStatusRunnable;
+import tracker.networking.runnables.NetworkerWriteRunnable;
 import tracker.subsys.TrackerSubsystem;
 
 /**
@@ -15,13 +18,15 @@ import tracker.subsys.TrackerSubsystem;
 public class Networker implements Publisher {
 	
 	private static Networker instance = null;
-	private Thread netStatusThread, networkerThread;
-	private NetworkerRunnable netRunnable;
+	private Thread netStatusThread;
+	private NetworkerReadRunnable netReadRunnable;
+	private NetworkerWriteRunnable netWriteRunnable;
 	private NetworkerStatusRunnable statusRunnable;
 	private HashMap<Topic, List<TrackerSubsystem>> subscribers;
 	
 	private Networker(int port, String ip) {
-		this.netRunnable = new NetworkerRunnable(port, ip);
+		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
+		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
 		this.statusRunnable = new NetworkerStatusRunnable();
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 	}
@@ -57,22 +62,18 @@ public class Networker implements Publisher {
 	}
 	
 	public boolean isNetThreadRunning() {
-		return networkerThread != null ? networkerThread.isAlive() : false;
+		//TODO
+		return true;
 	}
 	
 	public void startNetThread() {
-		this.netRunnable.setNetworker(this);
-		if (this.networkerThread == null)
-			this.networkerThread = new Thread(netRunnable);
-		if (!this.networkerThread.isAlive())
-			this.networkerThread.start();
+		//TODO
+		this.netReadRunnable.setNetworker(this);
+		this.netWriteRunnable.setNetworker(this);
 	}
 	
 	public void stopNetThread() {
-		if (this.networkerThread.isAlive()) {
-			this.networkerThread.interrupt();
-			this.networkerThread = null;
-		}
+		//TODO
 	}
 	
 	/** Requests a subscrition to the given topic by the given susbsystem.
@@ -87,7 +88,7 @@ public class Networker implements Publisher {
 
 	@Override
 	public void publish(Topic topic, String param) {
-		netRunnable.put(param);
+		netWriteRunnable.put(param);
 	}
 
 	/** Used by the networking thread. When a new notification enters, the
@@ -95,7 +96,7 @@ public class Networker implements Publisher {
 	 * @param topic
 	 * @param param
 	 */
-	protected void notify(Topic topic, String param) {
+	public void notify(Topic topic, String param) {
 		for (TrackerSubsystem subscriber : this.subscribers.get(topic))
 			subscriber.receive(topic, param);
 	}

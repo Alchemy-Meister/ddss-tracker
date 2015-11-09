@@ -1,4 +1,4 @@
-package tracker.networking;
+package tracker.networking.runnables;
 
 import javax.swing.JLabel;
 
