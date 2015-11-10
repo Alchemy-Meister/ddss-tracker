@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.JLabel;
 
+import tracker.exceptions.NetProtoException;
 import tracker.networking.runnables.NetworkerReadRunnable;
 import tracker.networking.runnables.NetworkerStatusRunnable;
 import tracker.networking.runnables.NetworkerWriteRunnable;
@@ -18,7 +19,7 @@ import tracker.subsys.TrackerSubsystem;
 public class Networker implements Publisher {
 	
 	private static Networker instance = null;
-	private Thread netStatusThread;
+	private Thread netStatusThread, netReadThread, netWriteThread;
 	private NetworkerReadRunnable netReadRunnable;
 	private NetworkerWriteRunnable netWriteRunnable;
 	private NetworkerStatusRunnable statusRunnable;
@@ -74,6 +75,18 @@ public class Networker implements Publisher {
 	
 	public void stopNetThread() {
 		//TODO
+	}
+	
+	public void startRW() throws NetProtoException {
+		netReadRunnable.setNetworker(this);
+		netReadRunnable.init();
+		netWriteRunnable.setNetworker(this);
+		netWriteRunnable.init();
+		
+		netReadThread = new Thread(netReadRunnable);
+		netWriteThread = new Thread(netWriteRunnable);
+		netReadThread.start();
+		netWriteThread.start();
 	}
 	
 	/** Requests a subscrition to the given topic by the given susbsystem.

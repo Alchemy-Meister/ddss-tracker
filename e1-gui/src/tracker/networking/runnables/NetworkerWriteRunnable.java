@@ -11,6 +11,12 @@ import java.util.List;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
 
+/**
+ * This runnable is in charge of writing. To request a write you must put the
+ * data into the queue.
+ * @author Irene
+ * @author Jesus
+ */
 public class NetworkerWriteRunnable implements Runnable {
 
 	private List<String> queue;
@@ -22,6 +28,8 @@ public class NetworkerWriteRunnable implements Runnable {
 
 	public NetworkerWriteRunnable(int port, String ip) {
 		this.queue = new LinkedList<String>(); 
+		this.port = port;
+		this.ip = ip;
 	}
 
 	public void setNetworker(Networker networker) {
@@ -41,14 +49,14 @@ public class NetworkerWriteRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		while(true) {
+		while (true) {
 			// Send
 			String mess = null;
 			synchronized (queue) {
 				if (!queue.isEmpty())
 					mess = queue.remove(0);
 			}
-			if(mess != null) {
+			if (mess != null) {
 				DatagramPacket messageOut = new DatagramPacket(mess.getBytes(),
 						mess.length(), group, port);
 				try {
