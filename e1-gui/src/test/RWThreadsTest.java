@@ -22,8 +22,10 @@ class TestingReadSubsystem extends TrackerSubsystem {
 
 	@Override
 	public void receive(Topic topic, String param) {
+		System.out.println("[ TestingReadSubsystem ] received-> topic: " +
+				topic);
 		System.out.println("[ TestingReadSubsystem ] received-> param: " +
-				param + " topic: " + topic);
+				param);
 	}
 	
 }
@@ -38,6 +40,8 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	
 	@Override
 	public void receive(Topic topic, String param) {
+		System.out.println("[ TestingWriteSubsystem ] received-> topic: " +
+				topic);
 		System.out.println("[ TestingWriteSubsystem ] received-> param: " +
 				param + " topic: " + topic);
 		

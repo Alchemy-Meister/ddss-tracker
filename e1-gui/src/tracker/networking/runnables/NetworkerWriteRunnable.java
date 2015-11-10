@@ -8,11 +8,12 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
+import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
 
 /**
- * This runnable is in charge of writing. To request a write you must put the
+ * Runnable in charge of writing. To request a write you must put the
  * data into the queue.
  * @author Irene
  * @author Jesus
@@ -25,6 +26,8 @@ public class NetworkerWriteRunnable implements Runnable {
 	private Networker networker = null;
 	private MulticastSocket socket;
 	private InetAddress group;
+	private boolean initialized = false;
+	private static final String printfProto = "[ NetworkerWriteRunnable] ";
 
 	public NetworkerWriteRunnable(int port, String ip) {
 		this.queue = new LinkedList<String>(); 
@@ -49,29 +52,34 @@ public class NetworkerWriteRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		while (true) {
-			// Send
-			String mess = null;
-			synchronized (queue) {
-				if (!queue.isEmpty())
-					mess = queue.remove(0);
-			}
-			if (mess != null) {
-				DatagramPacket messageOut = new DatagramPacket(mess.getBytes(),
-						mess.length(), group, port);
+		if (this.initialized) {
+			while (true) {
+				// Send
+				String mess = null;
+				synchronized (queue) {
+					if (!queue.isEmpty())
+						mess = queue.remove(0);
+				}
+				if (mess != null) {
+					DatagramPacket messageOut = new DatagramPacket(
+							mess.getBytes(), mess.length(), group, port);
+					try {
+						socket.send(messageOut);
+						if (Const.PRINTF)
+							System.out.println(printfProto + "sent: " + mess);
+					} catch (IOException e) {
+						// TODO send netproto except
+						e.printStackTrace();
+					}
+				}
 				try {
-					socket.send(messageOut);
-				} catch (IOException e) {
-					// TODO send netproto except
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
+
 	}
 
 
@@ -81,6 +89,7 @@ public class NetworkerWriteRunnable implements Runnable {
 			MulticastSocket socket = new MulticastSocket(port);
 			this.socket = socket; // TODO check
 			socket.joinGroup(this.group);
+			this.initialized = true;
 		} catch (UnknownHostException e) {
 			throw new NetProtoException("Unknow host: " + ip);
 		} catch (IOException e) {
@@ -91,6 +100,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	public void stop() {
 		try {
 			this.socket.leaveGroup(group);
+			this.initialized = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
