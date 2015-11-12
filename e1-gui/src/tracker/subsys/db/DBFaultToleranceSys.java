@@ -1,5 +1,6 @@
 package tracker.subsys.db;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
 
@@ -32,7 +33,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	}
 
 	@Override
-	public void receive(Topic topic, String param) {
+	public void receive(Topic topic, CustomMessage param) {
 		// TODO Auto-generated method stub
 		
 	}

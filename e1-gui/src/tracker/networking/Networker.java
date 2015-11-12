@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.JLabel;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.runnables.NetworkerReadRunnable;
 import tracker.networking.runnables.NetworkerStatusRunnable;
@@ -100,7 +101,7 @@ public class Networker implements Publisher {
 	}
 
 	@Override
-	public void publish(Topic topic, String param) {
+	public void publish(Topic topic, CustomMessage param) {
 		netWriteRunnable.put(param);
 	}
 
@@ -109,7 +110,7 @@ public class Networker implements Publisher {
 	 * @param topic
 	 * @param param
 	 */
-	public void notify(Topic topic, String param) {
+	public void notify(Topic topic, CustomMessage param) {
 		for (TrackerSubsystem subscriber : this.subscribers.get(topic))
 			subscriber.receive(topic, param);
 	}

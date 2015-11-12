@@ -2,6 +2,7 @@ package tracker.subsys.election;
 
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.cfts.IpIdTable;
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Topic;
 
@@ -51,7 +52,7 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	}
 
 	@Override
-	public void receive(Topic topic, String param) {
+	public void receive(Topic topic, CustomMessage param) {
 		// TODO Auto-generated method stub
 		
 	}

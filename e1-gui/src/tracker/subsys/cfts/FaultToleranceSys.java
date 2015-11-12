@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
@@ -78,7 +79,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	}
 	
 	@Override
-	public void receive(Topic topic, String param) {
+	public void receive(Topic topic, CustomMessage param) {
 		if (topic == FaultToleranceSys.subscription) {
 			// TODO update ip id table
 			// TODO notifyObservers
