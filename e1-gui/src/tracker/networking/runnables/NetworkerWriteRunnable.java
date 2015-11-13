@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
@@ -20,7 +21,7 @@ import tracker.networking.Networker;
  */
 public class NetworkerWriteRunnable implements Runnable {
 
-	private List<String> queue;
+	private List<CustomMessage> queue;
 	private int port;
 	private String ip;
 	private Networker networker = null;
@@ -31,7 +32,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	private static final String printfProto = "[ NetworkerWriteRunnable] ";
 
 	public NetworkerWriteRunnable(int port, String ip) {
-		this.queue = new LinkedList<String>(); 
+		this.queue = new LinkedList<CustomMessage>(); 
 		this.port = port;
 		this.ip = ip;
 	}
@@ -47,7 +48,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	/** Inserts param to que queue
 	 * @param param
 	 */
-	public synchronized void put(String param) {
+	public synchronized void put(CustomMessage param) {
 		this.queue.add(param);
 	}
 
@@ -56,14 +57,15 @@ public class NetworkerWriteRunnable implements Runnable {
 		if (this.initialized) {
 			while (!this.isInterrupted) {
 				// Send
-				String mess = null;
+				CustomMessage mess = null;
 				synchronized (queue) {
 					if (!this.queue.isEmpty())
 						mess = this.queue.remove(0);
 				}
 				if (mess != null) {
+					byte[] messBytes = mess.getBytes();
 					DatagramPacket messageOut = new DatagramPacket(
-							mess.getBytes(), mess.length(), group, port);
+							messBytes, messBytes.length, group, port);
 					try {
 						this.socket.send(messageOut);
 						if (Const.PRINTF)

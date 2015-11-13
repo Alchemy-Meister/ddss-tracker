@@ -1,5 +1,9 @@
 package test;
 
+import java.math.BigInteger;
+
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
+import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
@@ -21,7 +25,7 @@ public class RWThreadsTest {
 class TestingReadSubsystem extends TrackerSubsystem {
 
 	@Override
-	public void receive(Topic topic, String param) {
+	public void receive(Topic topic, CustomMessage param) {
 		System.out.println("[ TestingReadSubsystem ] received-> topic: " +
 				topic);
 		System.out.println("[ TestingReadSubsystem ] received-> param: " +
@@ -39,7 +43,7 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	}
 	
 	@Override
-	public void receive(Topic topic, String param) {
+	public void receive(Topic topic, CustomMessage param) {
 		System.out.println("[ TestingWriteSubsystem ] received-> topic: " +
 				topic);
 		System.out.println("[ TestingWriteSubsystem ] received-> param: " +
@@ -50,11 +54,11 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	@Override
 	public void run() {
 		// Should be received by all
-		net.publish(Topic.KA,  "First KA");
+		net.publish(Topic.KA,  new KeepAliveM(new BigInteger("1")));
 		// Should not be received
-		net.publish(Topic.DS_COMMIT, "sudo commit");
+		net.publish(Topic.DS_COMMIT, new KeepAliveM(new BigInteger("0")));
 		// By all
-		net.publish(Topic.KA, "Second KA");
+		net.publish(Topic.KA, new KeepAliveM(new BigInteger("2")));
 	}
 	
 	

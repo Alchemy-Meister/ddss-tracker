@@ -1,7 +1,9 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.ka;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.Type;
 
 /**
@@ -11,12 +13,16 @@ import bitTorrent.tracker.protocol.udp.messages.custom.Type;
  * @author Irene
  * @author Jesus
  */
-public class KeepAliveM {
+public class KeepAliveM extends CustomMessage {
 
 	private final Type type = Type.KA;
 	private BigInteger id;
 	
+	public KeepAliveM() {
+	}
+
 	public KeepAliveM(BigInteger id) {
+		super();
 		this.id = id;
 	}
 
@@ -30,6 +36,17 @@ public class KeepAliveM {
 
 	public Type getType() {
 		return type;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
+				type.getValue()).array();
+		byte[] idBytes = id.toByteArray();
+		byte [] ret = new byte[1 + idBytes.length];
+		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
+		System.arraycopy(idBytes, 0, ret, typeBytes.length, idBytes.length);
+		return ret;
 	}
 	
 }

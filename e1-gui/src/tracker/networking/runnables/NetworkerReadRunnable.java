@@ -7,9 +7,12 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
+import tracker.exceptions.PacketParserException;
 import tracker.networking.Networker;
+import tracker.networking.PacketParser;
 import tracker.networking.Topic;
 
 /**
@@ -42,8 +45,8 @@ public class NetworkerReadRunnable implements Runnable {
 		return this.networker;
 	}
 
-	private void notify(Topic topic, String param) {
-		networker.notify(topic, param);
+	private void notify(Topic topic, CustomMessage message) {
+		networker.notify(topic, message);
 	}
 
 	@Override
@@ -60,10 +63,16 @@ public class NetworkerReadRunnable implements Runnable {
 					Thread.currentThread().interrupt();
 				}
 				if (messageIn != null) {
-					String message = new String(messageIn.getData());
+					CustomMessage message = null;
+					try {
+					message = PacketParser.parse(messageIn.getData());
+					} catch(PacketParserException e) {
+						// TODO do something
+						e.printStackTrace();
+					}
 					if (Const.PRINTF)
 						System.out.println(printfProto + "read: " + message);
-					notify(Topic.KA, new String(message));
+					notify(Topic.KA, message);
 				}
 			}
 		}
