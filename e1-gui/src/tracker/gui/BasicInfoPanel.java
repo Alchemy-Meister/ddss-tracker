@@ -18,6 +18,7 @@ import javax.swing.text.Document;
 
 import net.miginfocom.swing.MigLayout;
 import tracker.controllers.BasicInfoController;
+import tracker.exceptions.NetProtoException;
 import tracker.observers.FaultToleranceObserver;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
@@ -32,6 +33,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	
 	private static final long serialVersionUID = -1098424124151618936L;
 	private static final String INVALID_IP_ADDRESS_MSG = "Invalid IP address";
+	private static final String UNKNOWN_IP_ADDRESS_MSG = "Unknown IP address";
 	private static final String INVALID_PORT_MSG = "Invalid port number";
 	private static final String SAME_PORT_ERROR_MSG = "Ports can't be the same";
 	private static final String CONNECT_MSG = "Connect";
@@ -299,16 +301,27 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	public void actionPerformed(ActionEvent e) {
 		JButton clickedButton = (JButton) e.getSource();
 		if (clickedButton.equals(connectButton)) {
-			System.out.println("Connect click （*´▽｀*）");
-			if (this.panicLabel == null)
-				System.out.println("* panic null");
 			if(!this.biController.isConnected()) {
-				this.biController.connect(Integer.parseInt(this.tfSP.getText()),
-						this.tfIP.getText(), this.panicLabel);
-				this.connectButton.setText(DISCONNECT_MGS);
+				try {
+					this.biController.connect(
+							Integer.parseInt(this.tfSP.getText()),
+							this.tfIP.getText());
+					this.connectButton.setText(DISCONNECT_MGS);
+					this.tfIP.setEnabled(false);
+					this.tfPP.setEnabled(false);
+					this.tfSP.setEnabled(false);
+				} catch (NetProtoException exception) {
+					ipAddressError.setText(UNKNOWN_IP_ADDRESS_MSG);
+					ipAddressError.setVisible(true);
+					connectButton.setEnabled(false);
+					tfIP.requestFocus();
+				}
 			} else {
 				this.biController.disconnect();
 				this.connectButton.setText(CONNECT_MSG);
+				this.tfIP.setEnabled(true);
+				this.tfPP.setEnabled(true);
+				this.tfSP.setEnabled(true);
 			}
 		} else if(clickedButton.equals(errorButton)) {
 			System.out.println("Hey what are you trying to do, "

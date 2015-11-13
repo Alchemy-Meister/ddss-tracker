@@ -27,6 +27,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	private MulticastSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
+	private boolean isInterrupted = false;
 	private static final String printfProto = "[ NetworkerWriteRunnable] ";
 
 	public NetworkerWriteRunnable(int port, String ip) {
@@ -47,24 +48,24 @@ public class NetworkerWriteRunnable implements Runnable {
 	 * @param param
 	 */
 	public synchronized void put(String param) {
-		queue.add(param);
+		this.queue.add(param);
 	}
 
 	@Override
 	public void run() {
 		if (this.initialized) {
-			while (true) {
+			while (!this.isInterrupted) {
 				// Send
 				String mess = null;
 				synchronized (queue) {
-					if (!queue.isEmpty())
-						mess = queue.remove(0);
+					if (!this.queue.isEmpty())
+						mess = this.queue.remove(0);
 				}
 				if (mess != null) {
 					DatagramPacket messageOut = new DatagramPacket(
 							mess.getBytes(), mess.length(), group, port);
 					try {
-						socket.send(messageOut);
+						this.socket.send(messageOut);
 						if (Const.PRINTF)
 							System.out.println(printfProto + "sent: " + mess);
 					} catch (IOException e) {
@@ -75,7 +76,7 @@ public class NetworkerWriteRunnable implements Runnable {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					this.isInterrupted = true;
 				}
 			}
 		}

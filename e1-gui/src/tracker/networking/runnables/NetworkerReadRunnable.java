@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import tracker.Const;
@@ -48,7 +49,7 @@ public class NetworkerReadRunnable implements Runnable {
 	@Override
 	public void run() {
 		if (this.initialized) {
-			while (true)  {
+			while (!Thread.currentThread().isInterrupted())  {
 				// Listen for 1 sec
 				byte[] buffer = new byte[1024];			
 				DatagramPacket messageIn = null;
@@ -56,7 +57,7 @@ public class NetworkerReadRunnable implements Runnable {
 				try {
 					socket.receive(messageIn);
 				} catch (IOException e) {
-					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 				if (messageIn != null) {
 					String message = new String(messageIn.getData());
@@ -72,10 +73,11 @@ public class NetworkerReadRunnable implements Runnable {
 		try {
 			this.group = InetAddress.getByName(ip);
 			MulticastSocket socket = new MulticastSocket(port);
+			socket.setSoTimeout(1000);
 			this.socket = socket; // TODO check
 			socket.joinGroup(this.group);
 			this.initialized = true;
-		} catch (UnknownHostException e) {
+		} catch (UnknownHostException | SocketException e) {
 			throw new NetProtoException("Unknow host: " + ip);
 		} catch (IOException e) {
 			e.printStackTrace();

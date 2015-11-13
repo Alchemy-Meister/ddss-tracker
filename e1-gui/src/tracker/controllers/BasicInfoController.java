@@ -2,9 +2,8 @@ package tracker.controllers;
 
 import java.util.regex.Pattern;
 
-import javax.swing.JLabel;
-
 import tracker.Const;
+import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
 
 public class BasicInfoController {
@@ -36,21 +35,19 @@ public class BasicInfoController {
 			return true;
 	}
 
-	public void connect(int port, String ip, JLabel label) {
+	public void connect(int port, String ip) 
+			throws NetProtoException {
 		networker = Networker.getInstance(port, ip);
-		networker.startStatusThread(label);
+		networker.startRW();
 	}
 
 	public void disconnect() {
-		networker.stopStatusThread();
+		networker.stopNetThread();
 	}
 
 	public boolean isConnected() {
-		if(networker == null) {
+		if(networker == null) 
 			return false;
-		} else {
-			System.out.println(networker.isStatusThreadRunning());
-			return networker.isStatusThreadRunning();
-		}
+		return networker.isNetThreadRunning();
 	}
 }

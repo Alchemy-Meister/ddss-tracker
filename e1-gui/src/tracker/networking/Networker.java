@@ -63,18 +63,21 @@ public class Networker implements Publisher {
 	}
 	
 	public boolean isNetThreadRunning() {
-		//TODO
-		return true;
-	}
-	
-	public void startNetThread() {
-		//TODO
-		this.netReadRunnable.setNetworker(this);
-		this.netWriteRunnable.setNetworker(this);
+		System.out.println(this.netReadThread.isAlive());
+		System.out.println(this.netWriteThread.isAlive());
+		
+		return (this.netReadThread != null && this.netReadThread.isAlive()) 
+			|| (this.netWriteThread != null && this.netWriteThread.isAlive());
 	}
 	
 	public void stopNetThread() {
-		//TODO
+		if(this.netReadThread != null && this.netReadThread.isAlive()) {
+			this.netReadThread.interrupt();
+		}
+		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
+			this.netWriteThread.interrupt();
+		}
+		
 	}
 	
 	public void startRW() throws NetProtoException {
