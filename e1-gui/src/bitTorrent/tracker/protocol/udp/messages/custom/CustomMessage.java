@@ -12,5 +12,7 @@ public abstract class CustomMessage {
 	}
 
 	public abstract byte[] getBytes();
+	
+	public abstract String toString();
 
 }

@@ -5,7 +5,9 @@ import java.math.BigInteger;
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import tracker.exceptions.NetProtoException;
+import tracker.exceptions.PacketParserException;
 import tracker.networking.Networker;
+import tracker.networking.PacketParser;
 import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
 
@@ -26,10 +28,13 @@ class TestingReadSubsystem extends TrackerSubsystem {
 
 	@Override
 	public void receive(Topic topic, CustomMessage param) {
-		System.out.println("[ TestingReadSubsystem ] received-> topic: " +
-				topic);
-		System.out.println("[ TestingReadSubsystem ] received-> param: " +
-				param);
+		try {
+			System.out.println("[ TestingReadSubsystem ] received-> topic: " +
+					topic + ", param: "
+					+ PacketParser.parse(param.getBytes()).toString());
+		} catch (PacketParserException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }
@@ -44,11 +49,13 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	
 	@Override
 	public void receive(Topic topic, CustomMessage param) {
-		System.out.println("[ TestingWriteSubsystem ] received-> topic: " +
-				topic);
-		System.out.println("[ TestingWriteSubsystem ] received-> param: " +
-				param + " topic: " + topic);
-		
+		try {
+			System.out.println("[ TestingWriteSubsystem ] received-> topic: " +
+					topic + ", param: "
+					+ PacketParser.parse(param.getBytes()).toString());
+		} catch (PacketParserException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -56,9 +63,9 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		// Should be received by all
 		net.publish(Topic.KA,  new KeepAliveM(new BigInteger("1")));
 		// Should not be received
-		net.publish(Topic.DS_COMMIT, new KeepAliveM(new BigInteger("0")));
+		//net.publish(Topic.DS_COMMIT, new KeepAliveM(new BigInteger("0")));
 		// By all
-		net.publish(Topic.KA, new KeepAliveM(new BigInteger("2")));
+		//net.publish(Topic.KA, new KeepAliveM(new BigInteger("00000002")));
 	}
 	
 	

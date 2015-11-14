@@ -25,12 +25,16 @@ public class PacketParser {
 			throws PacketParserException
 	{
 		ByteBuffer messageBytes = ByteBuffer.wrap(bytes);
+		System.out.println("total:" + bytes.length);
 		// Identify the type of the message - 32 bits
 		int type = messageBytes.getInt(0); // 0 - 32 bit integer
 		switch(type) {
 		case 0: // KA
-			byte[] temp = new byte[128];
-			messageBytes.get(temp, 4, 16);
+			byte[] temp = new byte[bytes.length];
+			System.out.println("remaining: " + messageBytes.remaining());
+			// read until the end of messageBytes
+			System.out.println(bytes.length);
+			messageBytes.get(temp, 4, bytes.length - 4);
 			BigInteger id = new BigInteger(temp);
 			return new KeepAliveM(id);
 		case 1: // ME

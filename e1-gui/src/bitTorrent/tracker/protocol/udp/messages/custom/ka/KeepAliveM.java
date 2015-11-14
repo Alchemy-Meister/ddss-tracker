@@ -43,10 +43,17 @@ public class KeepAliveM extends CustomMessage {
 		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
 				type.getValue()).array();
 		byte[] idBytes = id.toByteArray();
-		byte [] ret = new byte[1 + idBytes.length];
+		byte [] ret = new byte[typeBytes.length + idBytes.length];
 		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
 		System.arraycopy(idBytes, 0, ret, typeBytes.length, idBytes.length);
+		System.out.println("[ KA ] size: " + ret.length);
 		return ret;
+	}
+
+	@Override
+	public String toString() {
+		return "[type: " + this.type.getValue() + ", id: "
+				+ this.id.toString() + "]";
 	}
 	
 }
