@@ -65,7 +65,7 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		// Should not be received
 		//net.publish(Topic.DS_COMMIT, new KeepAliveM(new BigInteger("0")));
 		// By all
-		//net.publish(Topic.KA, new KeepAliveM(new BigInteger("00000002")));
+		net.publish(Topic.KA, new KeepAliveM(new BigInteger("233333333333333")));
 	}
 	
 	

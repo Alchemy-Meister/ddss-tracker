@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.Type;
+import tracker.Const;
 
 /**
  * Offset  Size	 			Name   Value
@@ -17,7 +18,7 @@ public class KeepAliveM extends CustomMessage {
 
 	private final Type type = Type.KA;
 	private BigInteger id;
-	
+
 	public KeepAliveM() {
 	}
 
@@ -43,10 +44,18 @@ public class KeepAliveM extends CustomMessage {
 		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
 				type.getValue()).array();
 		byte[] idBytes = id.toByteArray();
-		byte [] ret = new byte[typeBytes.length + idBytes.length];
+		byte[] ret = new byte[typeBytes.length + idBytes.length
+		                       + CustomMessage.CRLF.length];
 		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
 		System.arraycopy(idBytes, 0, ret, typeBytes.length, idBytes.length);
-		System.out.println("[ KA ] size: " + ret.length);
+		System.arraycopy(CustomMessage.CRLF, 0,	ret,
+				typeBytes.length + idBytes.length, CustomMessage.CRLF.length);
+		if (Const.PRINTF) {
+			System.out.print("[ KA ] HEX: ");
+			for (byte i : ret)
+				System.out.printf("0x%02X ", i);
+			System.out.println();
+		}
 		return ret;
 	}
 
@@ -55,5 +64,6 @@ public class KeepAliveM extends CustomMessage {
 		return "[type: " + this.type.getValue() + ", id: "
 				+ this.id.toString() + "]";
 	}
-	
+
+
 }

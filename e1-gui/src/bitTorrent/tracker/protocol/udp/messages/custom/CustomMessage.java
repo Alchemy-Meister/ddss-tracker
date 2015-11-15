@@ -7,12 +7,14 @@ package bitTorrent.tracker.protocol.udp.messages.custom;
  */
 public abstract class CustomMessage {
 
+	public static final byte[] CRLF = {0x0A, 0x0D};
+
 	public CustomMessage(){
-		
 	}
 
 	public abstract byte[] getBytes();
 	
 	public abstract String toString();
+
 
 }

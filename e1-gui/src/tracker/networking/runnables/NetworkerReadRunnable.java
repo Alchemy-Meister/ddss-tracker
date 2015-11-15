@@ -53,7 +53,6 @@ public class NetworkerReadRunnable implements Runnable {
 	public void run() {
 		if (this.initialized) {
 			while (!Thread.currentThread().isInterrupted())  {
-				// Listen for 1 sec
 				byte[] buffer = new byte[1024];			
 				DatagramPacket messageIn = null;
 				messageIn = new DatagramPacket(buffer, buffer.length);
@@ -70,8 +69,6 @@ public class NetworkerReadRunnable implements Runnable {
 						// TODO do something
 						e.printStackTrace();
 					}
-					if (Const.PRINTF)
-						System.out.println(printfProto + "read: " + message);
 					notify(Topic.KA, message);
 				}
 			}
@@ -82,7 +79,6 @@ public class NetworkerReadRunnable implements Runnable {
 		try {
 			this.group = InetAddress.getByName(ip);
 			MulticastSocket socket = new MulticastSocket(port);
-			socket.setSoTimeout(1000);
 			this.socket = socket; // TODO check
 			socket.joinGroup(this.group);
 			this.initialized = true;

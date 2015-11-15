@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
+import tracker.Const;
 import tracker.exceptions.PacketParserException;
 
 /**
@@ -14,7 +15,7 @@ import tracker.exceptions.PacketParserException;
  */
 public class PacketParser {
 
-	
+
 	/** Parses the bytes and returns a CustomMessage.
 	 * @param bytes
 	 * @return
@@ -24,19 +25,41 @@ public class PacketParser {
 	public static CustomMessage parse(byte [] bytes) 
 			throws PacketParserException
 	{
+
 		ByteBuffer messageBytes = ByteBuffer.wrap(bytes);
-		System.out.println("total:" + bytes.length);
 		// Identify the type of the message - 32 bits
 		int type = messageBytes.getInt(0); // 0 - 32 bit integer
 		switch(type) {
 		case 0: // KA
-			byte[] temp = new byte[bytes.length];
-			System.out.println("remaining: " + messageBytes.remaining());
-			// read until the end of messageBytes
-			System.out.println(bytes.length);
-			messageBytes.get(temp, 4, bytes.length - 4);
-			BigInteger id = new BigInteger(temp);
-			return new KeepAliveM(id);
+			// read until 0x0A 0x0D
+			boolean found = false;
+			int pos = 4;
+			while(!found && pos < bytes.length) {
+				if (bytes[pos] == 0x0A) {
+					if (pos + 1 <= bytes.length - 1) {
+						if (bytes[pos + 1] == 0x0D)
+							found = true;
+						else
+							pos++;
+
+					} else
+						pos++;
+				} else
+					pos++;
+			}
+			if (found) { // we are at 0x0A
+				byte id[] = new byte[pos - 4];
+				System.arraycopy(bytes, 4, id, 0, pos - 4);
+				if (Const.PRINTF) {
+					System.out.print("[PaPa] read id: ");
+					for (byte i : id)
+						System.out.printf("0x%02X ", i);
+					System.out.println();
+				}
+				BigInteger bid = new BigInteger(id);
+				return new KeepAliveM(bid);
+			} else
+				throw new PacketParserException("0x0A 0x0D not found on KA");
 		case 1: // ME
 			break;
 		case 2: // HI
@@ -48,7 +71,7 @@ public class PacketParser {
 		case 5: // DS_DONE
 			break;
 		default:
-			
+
 		}
 		return null;
 	}
