@@ -1,33 +1,50 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.Type;
+import java.nio.ByteBuffer;
+
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
+import tracker.Const;
 
 /**
- * Offset  Size	 			Name   			Value
- * 0       32-bit integer	type   		    2 // hi message
- * 4       64-bit integer   connection_id   
- * @author Irene
- * @author Jesus
- */
-public abstract class HelloM {
+* Offset  Size	 			Name   			Value
+* 0       32-bit integer	type   		    2 // hi message
+* 4       64-bit integer   connection_id   
+* @author Irene
+* @author Jesus
+*/
+public class HelloM extends HelloBaseM {
 
-	private final Type type = Type.HI;
-	private long connection_id;
-	
 	public HelloM(long connection_id) {
-		this.connection_id = connection_id;
+		super(connection_id);
 	}
-	
-	public long getConnection_id() {
-		return connection_id;
+
+	@Override
+	public byte[] getBytes() {
+		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
+				this.type.getValue()).array();
+		byte[] connectionIdBytes = ByteBuffer.allocate(8).putLong(
+				this.connection_id).array();
+		byte[] ret = new byte[typeBytes.length + connectionIdBytes.length
+		                       + CustomMessage.CRLF.length];
+		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
+		System.arraycopy(connectionIdBytes, 0, ret, typeBytes.length,
+				connectionIdBytes.length);
+		System.arraycopy(CustomMessage.CRLF, 0,	ret,
+				typeBytes.length + connectionIdBytes.length,
+				CustomMessage.CRLF.length);
+		if (Const.PRINTF) {
+			System.out.print("[ HI B ] HEX: ");
+			for (byte i : ret)
+				System.out.printf("0x%02X ", i);
+			System.out.println();
+		}
+		return ret;
 	}
-	
-	public void setConnection_id(long connection_id) {
-		this.connection_id = connection_id;
+
+	@Override
+	public String toString() {
+		return "[type: " + this.type.getValue() + ", connection_id: "
+				+ new Long(this.connection_id).toString() + "]";
 	}
-	
-	public Type getType() {
-		return type;
-	}
-	
+
 }

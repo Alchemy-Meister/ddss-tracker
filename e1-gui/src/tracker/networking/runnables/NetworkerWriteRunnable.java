@@ -29,7 +29,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	private InetAddress group;
 	private boolean initialized = false;
 	private boolean isInterrupted = false;
-	private static final String printfProto = "[ NetworkerWriteRunnable] ";
+	private static final String printfProto = "[ NWR ] ";
 
 	public NetworkerWriteRunnable(int port, String ip) {
 		this.queue = new LinkedList<CustomMessage>(); 
@@ -68,8 +68,10 @@ public class NetworkerWriteRunnable implements Runnable {
 							messBytes, messBytes.length, group, port);
 					try {
 						this.socket.send(messageOut);
-						if (Const.PRINTF)
+						if (Const.PRINTF) {
 							System.out.println(printfProto + "sent: " + mess);
+							System.out.println();
+						}
 					} catch (IOException e) {
 						// TODO send netproto except
 						e.printStackTrace();

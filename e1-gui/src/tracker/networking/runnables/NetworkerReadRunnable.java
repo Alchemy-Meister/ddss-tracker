@@ -30,7 +30,7 @@ public class NetworkerReadRunnable implements Runnable {
 	private MulticastSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
-	private static final String printfProto = "[ NetworkerReadRunnable] ";
+	private static final String printfProto = "[ NRR ] ";
 
 	public NetworkerReadRunnable(int port, String ip) {
 		this.port = port;
@@ -53,7 +53,7 @@ public class NetworkerReadRunnable implements Runnable {
 	public void run() {
 		if (this.initialized) {
 			while (!Thread.currentThread().isInterrupted())  {
-				byte[] buffer = new byte[1024];			
+				byte[] buffer = new byte[256];			
 				DatagramPacket messageIn = null;
 				messageIn = new DatagramPacket(buffer, buffer.length);
 				try {
@@ -62,9 +62,15 @@ public class NetworkerReadRunnable implements Runnable {
 					Thread.currentThread().interrupt();
 				}
 				if (messageIn != null) {
+					if (Const.PRINTF) {
+						System.out.print(printfProto + "in hex: ");
+						for (byte i : buffer)
+							System.out.printf("0x%02X ", i);
+						System.out.println();
+					}
 					CustomMessage message = null;
 					try {
-					message = PacketParser.parse(messageIn.getData());
+						message = PacketParser.parse(messageIn.getData());
 					} catch(PacketParserException e) {
 						// TODO do something
 						e.printStackTrace();

@@ -1,6 +1,6 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
-import java.math.BigInteger;
+import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 
 /**
  * Offset  Size	 			Name   			Value
@@ -16,16 +16,16 @@ import java.math.BigInteger;
  * @author Jesus
  *
  */
-public class HelloResponseM extends HelloM {
+public class HelloResponseM extends HelloBaseM {
 
-	private BigInteger assigned_id;
-	private BigInteger contents_sha;
-	private BigInteger info_hash;
+	private LongLong assigned_id;
+	private LongLong contents_sha;
+	private LongLong info_hash;
 	private int host;
 	private short port;
 	
-	public HelloResponseM(long connection_id, BigInteger assigned_id,
-			BigInteger contents_sha, BigInteger info_hash, int host,
+	public HelloResponseM(long connection_id, LongLong assigned_id,
+			LongLong contents_sha, LongLong info_hash, int host,
 			short port)
 	{
 		super(connection_id);
@@ -36,27 +36,27 @@ public class HelloResponseM extends HelloM {
 		this.port = port;
 	}
 
-	public BigInteger getAssigned_id() {
+	public LongLong getAssigned_id() {
 		return assigned_id;
 	}
 
-	public void setAssigned_id(BigInteger assigned_id) {
+	public void setAssigned_id(LongLong assigned_id) {
 		this.assigned_id = assigned_id;
 	}
 
-	public BigInteger getContents_sha() {
+	public LongLong getContents_sha() {
 		return contents_sha;
 	}
 
-	public void setContents_sha(BigInteger contents_sha) {
+	public void setContents_sha(LongLong contents_sha) {
 		this.contents_sha = contents_sha;
 	}
 
-	public BigInteger getInfo_hash() {
+	public LongLong getInfo_hash() {
 		return info_hash;
 	}
 
-	public void setInfo_hash(BigInteger info_hash) {
+	public void setInfo_hash(LongLong info_hash) {
 		this.info_hash = info_hash;
 	}
 
@@ -74,6 +74,18 @@ public class HelloResponseM extends HelloM {
 
 	public void setPort(short port) {
 		this.port = port;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

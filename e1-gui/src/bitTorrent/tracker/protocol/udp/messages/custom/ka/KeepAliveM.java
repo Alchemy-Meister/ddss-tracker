@@ -42,7 +42,7 @@ public class KeepAliveM extends CustomMessage {
 	@Override
 	public byte[] getBytes() {
 		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
-				type.getValue()).array();
+				this.type.getValue()).array();
 		byte[] idBytes = id.toByteArray();
 		byte[] ret = new byte[typeBytes.length + idBytes.length
 		                       + CustomMessage.CRLF.length];
