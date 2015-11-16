@@ -7,11 +7,13 @@ import java.math.BigInteger;
  * @author Irene
  * @author Jesus
  */
-public class LongLong { // TODO wrong order
+public class LongLong {
 
-	private BigInteger value = null;
-	
+	private BigInteger value = null; // just to print
+	private byte[] mostLeft, leastRight; // these hold the real value
+
 	private void setValue(byte[] mostLeft, byte[] leastRight) {
+		// 0x00 0x00 0x00 0x01 -> ONE
 		if (mostLeft.length > 8 || leastRight.length > 8) {
 			// TODO throw error
 		} else {
@@ -22,45 +24,37 @@ public class LongLong { // TODO wrong order
 			this.value = new BigInteger(ret);
 		}
 	}
-	
+
 	public LongLong(String valueRep) {
 		this(new BigInteger(valueRep).toByteArray());
 	}
 	
-	public LongLong(byte[] mostLeft, byte[] leastRight) {
-		this.setValue(mostLeft, leastRight);
-	}
-	
-	public LongLong(byte[] bytes) {
-		for (byte  i : bytes) {
-			System.out.printf("0x%02X ", i);
-		}
-		byte[] mostLeft = new byte[8];
+	public LongLong(byte[] inBytes) {
+		byte[] mostLeft = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		byte[] leastRight = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-		if (bytes.length < 8) {
-			System.arraycopy(bytes, 0, mostLeft, 0, bytes.length);
-			for (int i = bytes.length; i < 8; i++)
-				mostLeft[i] = 0x00;
-		} else {
-			System.arraycopy(bytes, 0, mostLeft, 0, 8);
-			System.arraycopy(bytes, 8, leastRight, 0, bytes.length - 8);
+		int cursor = 15;
+		for (int i = inBytes.length - 1; i >= 0; i--) {
+			if (cursor >= 8)
+				leastRight[cursor - 8] = inBytes[i];
+			else
+				mostLeft[cursor] = inBytes[i];
+			cursor--;
 		}
-		this.setValue(mostLeft, leastRight);
-	}
-	
-	public byte[] getBytes() {
-		byte[] ret = new byte[16];
-		byte[] valueBytes = this.value.toByteArray();
-		System.arraycopy(valueBytes, 0, ret, 0, valueBytes.length);
-		if (valueBytes.length < 16) {
-			for (int i = valueBytes.length; i < 16; i++)
-				ret[i] = 0x00;
+			this.setValue(mostLeft, leastRight);
+			this.mostLeft = mostLeft;
+			this.leastRight = leastRight;
 		}
-		return ret;
-	}
 
-	@Override
-	public String toString() {
-		return "LongLong [value=" + value + "]";
+		public byte[] getBytes() {
+			byte[] ret = new byte[16];
+			System.arraycopy(this.mostLeft, 0, ret, 0, this.mostLeft.length);
+			System.arraycopy(this.leastRight, 0, ret, this.mostLeft.length,
+					this.leastRight.length);
+			return ret;
+		}
+
+		@Override
+		public String toString() {
+			return "LongLong [value=" + value + "]";
+		}
 	}
-}

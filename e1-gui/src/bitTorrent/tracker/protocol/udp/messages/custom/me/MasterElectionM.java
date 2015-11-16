@@ -1,6 +1,5 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.me;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
