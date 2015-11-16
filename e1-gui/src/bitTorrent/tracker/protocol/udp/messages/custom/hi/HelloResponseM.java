@@ -1,6 +1,10 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
+import java.nio.ByteBuffer;
+
+import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import tracker.Const;
 
 /**
  * Offset  Size	 			Name   			Value
@@ -20,7 +24,7 @@ public class HelloResponseM extends HelloBaseM {
 
 	private LongLong assigned_id;
 	private LongLong contents_sha;
-	private LongLong info_hash;
+	private LongLong info_hash; // TODO change to repeat
 	private int host;
 	private short port;
 	
@@ -78,8 +82,56 @@ public class HelloResponseM extends HelloBaseM {
 
 	@Override
 	public byte[] getBytes() {
-		// TODO Auto-generated method stub
-		return null;
+		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
+				this.type.getValue()).array();
+		byte[] connectionIdBytes = ByteBuffer.allocate(8).putLong(
+				this.connection_id).array();
+		byte[] assignedIdBytes = this.assigned_id.getBytes();
+		byte[] contentsBytes = this.contents_sha.getBytes();
+		byte[] hashBytes = this.info_hash.getBytes();
+		byte[] hostBytes = ByteBuffer.allocate(4).putInt(this.host).array();
+		byte[] portBytes = ByteBuffer.allocate(2).putShort(this.port).array();
+		byte[] ret = new byte[typeBytes.length + connectionIdBytes.length
+		                      + assignedIdBytes.length + contentsBytes.length
+		                      + hashBytes.length + hostBytes.length
+		                      + portBytes.length + CustomMessage.CRLF.length];
+		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
+		System.arraycopy(connectionIdBytes, 0, ret, typeBytes.length,
+				connectionIdBytes.length);
+		System.arraycopy(assignedIdBytes, 0, ret,
+				typeBytes.length + connectionIdBytes.length,
+				assignedIdBytes.length);
+		System.arraycopy(contentsBytes, 0, ret,
+				typeBytes.length + connectionIdBytes.length
+				+ assignedIdBytes.length,
+				contentsBytes.length);
+		System.arraycopy(hashBytes, 0, ret,
+				typeBytes.length + connectionIdBytes.length
+				+ assignedIdBytes.length + contentsBytes.length,
+				hashBytes.length);
+		System.arraycopy(hostBytes, 0, ret,
+				typeBytes.length + connectionIdBytes.length
+				+ assignedIdBytes.length + contentsBytes.length
+				+ hashBytes.length,
+				hostBytes.length);
+		System.arraycopy(portBytes, 0, ret,
+				typeBytes.length + connectionIdBytes.length
+				+ assignedIdBytes.length + contentsBytes.length
+				+ hashBytes.length + hostBytes.length,
+				portBytes.length);
+		System.arraycopy(CustomMessage.CRLF, 0,	ret,
+				typeBytes.length + connectionIdBytes.length
+                + assignedIdBytes.length + contentsBytes.length
+                + hashBytes.length + hostBytes.length
+                + portBytes.length,
+				CustomMessage.CRLF.length);
+		if (Const.PRINTF) {
+			System.out.print("[ HI R ] HEX: ");
+			for (byte i : ret)
+				System.out.printf("0x%02X ", i);
+			System.out.println();
+		}
+		return ret;
 	}
 
 	@Override
