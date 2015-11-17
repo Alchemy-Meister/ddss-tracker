@@ -22,6 +22,17 @@ public class BasicInfoController {
 		} else
 			return true;
 	}
+	
+	public boolean isValidMCIP(String ip) {
+		if (Const.CHECK_INPUTS) {
+			String pattern = "2(?:2[4-9]|3\\d)(?:\\.(?:25[0-5]|2[0-4]" 
+					+ "\\d|1\\d\\d|[1-9]\\d?|0)){3}";
+			Pattern r = Pattern.compile(pattern);
+			return r.matcher(ip).find();
+		} else
+			return true;
+		
+	}
 
 	public boolean isValidPort(String port) {
 		if (Const.CHECK_INPUTS) {

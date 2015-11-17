@@ -204,7 +204,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		JTextField field = (JTextField) doc.getProperty("owner");
 		if(field.equals(this.tfIP)) {
 			try {
-				if(!biController.isValidIP(doc.getText(0, doc.getLength()))) {
+				if(!biController.isValidMCIP(doc.getText(0, doc.getLength()))) {
 					ipAddressError.setVisible(true);
 				} else {
 					ipAddressError.setVisible(false);
@@ -311,6 +311,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 					this.tfPP.setEnabled(false);
 					this.tfSP.setEnabled(false);
 				} catch (NetProtoException exception) {
+					exception.printStackTrace();
 					ipAddressError.setText(UNKNOWN_IP_ADDRESS_MSG);
 					ipAddressError.setVisible(true);
 					connectButton.setEnabled(false);

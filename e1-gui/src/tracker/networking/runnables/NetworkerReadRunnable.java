@@ -58,24 +58,23 @@ public class NetworkerReadRunnable implements Runnable {
 				messageIn = new DatagramPacket(buffer, buffer.length);
 				try {
 					socket.receive(messageIn);
+					if (messageIn != null) {
+						if (Const.PRINTF) {
+							System.out.print(printfProto + "in hex: ");
+							for (byte i : buffer)
+								System.out.printf("0x%02X ", i);
+						}
+						CustomMessage message = null;
+						try {
+							message = PacketParser.parse(messageIn.getData());
+						} catch(PacketParserException e) {
+							// TODO do something
+							e.printStackTrace();
+						}
+						notify(Topic.KA, message);
+					}
 				} catch (IOException e) {
 					Thread.currentThread().interrupt();
-				}
-				if (messageIn != null) {
-					if (Const.PRINTF) {
-						System.out.print(printfProto + "in hex: ");
-						for (byte i : buffer)
-							System.out.printf("0x%02X ", i);
-						System.out.println();
-					}
-					CustomMessage message = null;
-					try {
-						message = PacketParser.parse(messageIn.getData());
-					} catch(PacketParserException e) {
-						// TODO do something
-						e.printStackTrace();
-					}
-					notify(Topic.KA, message);
 				}
 			}
 		}
@@ -95,6 +94,18 @@ public class NetworkerReadRunnable implements Runnable {
 		}
 	}
 
+	public void interrupt() {
+		this.socket.close();
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
+	public void setIP(String ip) {
+		this.ip = ip;
+	}
+	
 	public void stop() {
 		try {
 			this.socket.leaveGroup(group);

@@ -110,4 +110,12 @@ public class NetworkerWriteRunnable implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
+	public void setIP(String ip) {
+		this.ip = ip;
+	}
 }

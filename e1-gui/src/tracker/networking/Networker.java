@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.JLabel;
-
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.runnables.NetworkerReadRunnable;
-import tracker.networking.runnables.NetworkerStatusRunnable;
 import tracker.networking.runnables.NetworkerWriteRunnable;
 import tracker.subsys.TrackerSubsystem;
 
@@ -20,53 +17,30 @@ import tracker.subsys.TrackerSubsystem;
 public class Networker implements Publisher {
 	
 	private static Networker instance = null;
-	private Thread netStatusThread, netReadThread, netWriteThread;
+	private Thread netReadThread, netWriteThread;
 	private NetworkerReadRunnable netReadRunnable;
 	private NetworkerWriteRunnable netWriteRunnable;
-	private NetworkerStatusRunnable statusRunnable;
 	private HashMap<Topic, List<TrackerSubsystem>> subscribers;
 	
 	private Networker(int port, String ip) {
 		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
 		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
-		this.statusRunnable = new NetworkerStatusRunnable();
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 	}
 	
 	public static Networker getInstance(int port, String ip) {
 		if (instance == null) {
 			instance = new Networker(port, ip);
+		} else {
+			instance.netReadRunnable.setIP(ip);
+			instance.netReadRunnable.setPort(port);
+			instance.netWriteRunnable.setIP(ip);
+			instance.netWriteRunnable.setPort(port);
 		}
 		return instance;
 	}
 	
-	public boolean isStatusThreadRunning() {
-		return netStatusThread != null ? netStatusThread.isAlive() : false;
-	}
-	
-	public void startStatusThread(JLabel statusLabel) {
-		if (this.netStatusThread == null) {
-			this.statusRunnable.setStatusLabel(statusLabel);
-			this.netStatusThread = new Thread(this.statusRunnable);
-		}
-		
-		if (!this.netStatusThread.isAlive()) {
-			this.statusRunnable.setStatusLabel(statusLabel);
-			this.netStatusThread.start();
-		}
-	}
-	
-	public void stopStatusThread() {
-		if (this.netStatusThread.isAlive()) {
-			this.netStatusThread.interrupt();
-			this.netStatusThread = null;
-		}
-	}
-	
 	public boolean isNetThreadRunning() {
-		System.out.println(this.netReadThread.isAlive());
-		System.out.println(this.netWriteThread.isAlive());
-		
 		return (this.netReadThread != null && this.netReadThread.isAlive()) 
 			|| (this.netWriteThread != null && this.netWriteThread.isAlive());
 	}
@@ -74,6 +48,7 @@ public class Networker implements Publisher {
 	public void stopNetThread() {
 		if(this.netReadThread != null && this.netReadThread.isAlive()) {
 			this.netReadThread.interrupt();
+			this.netReadRunnable.interrupt();
 		}
 		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
 			this.netWriteThread.interrupt();
