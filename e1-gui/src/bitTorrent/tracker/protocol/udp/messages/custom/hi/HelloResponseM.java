@@ -1,6 +1,7 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
@@ -24,20 +25,15 @@ public class HelloResponseM extends HelloBaseM {
 
 	private LongLong assigned_id;
 	private LongLong contents_sha;
-	private LongLong info_hash; // TODO change to repeat
-	private int host;
-	private short port;
+	private List<Contents> triplets;
 	
 	public HelloResponseM(long connection_id, LongLong assigned_id,
-			LongLong contents_sha, LongLong info_hash, int host,
-			short port)
+			LongLong contents_sha, List<Contents> triplets)
 	{
 		super(connection_id);
 		this.assigned_id = assigned_id;
 		this.contents_sha = contents_sha;
-		this.info_hash = info_hash;
-		this.host = host;
-		this.port = port;
+		this.triplets = triplets;
 	}
 
 	public LongLong getAssigned_id() {
@@ -56,30 +52,6 @@ public class HelloResponseM extends HelloBaseM {
 		this.contents_sha = contents_sha;
 	}
 
-	public LongLong getInfo_hash() {
-		return info_hash;
-	}
-
-	public void setInfo_hash(LongLong info_hash) {
-		this.info_hash = info_hash;
-	}
-
-	public int getHost() {
-		return host;
-	}
-
-	public void setHost(int host) {
-		this.host = host;
-	}
-
-	public short getPort() {
-		return port;
-	}
-
-	public void setPort(short port) {
-		this.port = port;
-	}
-
 	@Override
 	public byte[] getBytes() {
 		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
@@ -88,13 +60,10 @@ public class HelloResponseM extends HelloBaseM {
 				this.connection_id).array();
 		byte[] assignedIdBytes = this.assigned_id.getBytes();
 		byte[] contentsBytes = this.contents_sha.getBytes();
-		byte[] hashBytes = this.info_hash.getBytes();
-		byte[] hostBytes = ByteBuffer.allocate(4).putInt(this.host).array();
-		byte[] portBytes = ByteBuffer.allocate(2).putShort(this.port).array();
+
 		byte[] ret = new byte[typeBytes.length + connectionIdBytes.length
 		                      + assignedIdBytes.length + contentsBytes.length
-		                      + hashBytes.length + hostBytes.length
-		                      + portBytes.length + CustomMessage.CRLF.length];
+		                      + CustomMessage.CRLF.length];
 		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
 		System.arraycopy(connectionIdBytes, 0, ret, typeBytes.length,
 				connectionIdBytes.length);
@@ -105,26 +74,18 @@ public class HelloResponseM extends HelloBaseM {
 				typeBytes.length + connectionIdBytes.length
 				+ assignedIdBytes.length,
 				contentsBytes.length);
-		System.arraycopy(hashBytes, 0, ret,
-				typeBytes.length + connectionIdBytes.length
-				+ assignedIdBytes.length + contentsBytes.length,
-				hashBytes.length);
-		System.arraycopy(hostBytes, 0, ret,
-				typeBytes.length + connectionIdBytes.length
-				+ assignedIdBytes.length + contentsBytes.length
-				+ hashBytes.length,
-				hostBytes.length);
-		System.arraycopy(portBytes, 0, ret,
-				typeBytes.length + connectionIdBytes.length
-				+ assignedIdBytes.length + contentsBytes.length
-				+ hashBytes.length + hostBytes.length,
-				portBytes.length);
+		int multiplier = 1;
+		for (Contents triplet : this.triplets) {
+			System.arraycopy(triplet.getBytes(), 0, ret,
+					typeBytes.length + connectionIdBytes.length
+					+ assignedIdBytes.length + contentsBytes.length
+					+ (triplet.getSize() * multiplier), triplet.getSize());
+			multiplier++;
+		}
 		System.arraycopy(CustomMessage.CRLF, 0,	ret,
 				typeBytes.length + connectionIdBytes.length
-                + assignedIdBytes.length + contentsBytes.length
-                + hashBytes.length + hostBytes.length
-                + portBytes.length,
-				CustomMessage.CRLF.length);
+                + assignedIdBytes.length + contentsBytes.length,
+                CustomMessage.CRLF.length);
 		if (Const.PRINTF) {
 			System.out.print("[ HI R ] HEX: ");
 			for (byte i : ret)
