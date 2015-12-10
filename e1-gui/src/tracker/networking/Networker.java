@@ -88,8 +88,8 @@ public class Networker implements Publisher {
 	 * @param topic
 	 * @param param
 	 */
-	public void notify(Topic topic, CustomMessage param) {
+	public void notify(Topic topic, Bundle bundle) {
 		for (TrackerSubsystem subscriber : this.subscribers.get(topic))
-			subscriber.receive(topic, param);
+			subscriber.receive(topic, bundle);
 	}
 }

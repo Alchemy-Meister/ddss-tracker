@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 import tracker.db.model.TrackerMember;
 
 /**
@@ -16,12 +17,12 @@ public class IpIdTable {
 	
 	// set a lock on this variable
 	private BigInteger masterId = null;
-	private ConcurrentHashMap<String, BigInteger> ipid = null;
+	private ConcurrentHashMap<String, LongLong> ipid = null;
 	private ConcurrentHashMap<String, Long> ipTime = null;
 	private static IpIdTable instance;
 		
 	private IpIdTable(){
-		this.ipid = new ConcurrentHashMap<String, BigInteger>();
+		this.ipid = new ConcurrentHashMap<String, LongLong>();
 		this.ipTime = new ConcurrentHashMap<String, Long>();
 	}
 	
@@ -41,7 +42,7 @@ public class IpIdTable {
 		return ret;
 	}
 	
-	public void set(String ip, BigInteger id) {
+	public void set(String ip, LongLong id) {
 		ipid.put(ip, id);
 		ipTime.put(ip, System.nanoTime());
 	}

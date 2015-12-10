@@ -2,8 +2,8 @@ package tracker.subsys.election;
 
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.cfts.IpIdTable;
-import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.db.model.TrackerMember;
+import tracker.networking.Bundle;
 import tracker.networking.Topic;
 
 /** In charge of handling the master election system.
@@ -52,7 +52,7 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	}
 
 	@Override
-	public void receive(Topic topic, CustomMessage param) {
+	public void receive(Topic topic, Bundle bundle) {
 		// TODO Auto-generated method stub
 		
 	}

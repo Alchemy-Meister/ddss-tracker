@@ -1,7 +1,5 @@
 package tracker.networking;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
-
 /** A class implementing this interface must first subscibe to the given topic
  * to receive updates.
  * @author Irene
@@ -9,5 +7,5 @@ import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
  */
 public interface Subscriber {
 	
-	public void receive(Topic topic, CustomMessage param);
+	public void receive(Topic topic, Bundle bundle);
 }

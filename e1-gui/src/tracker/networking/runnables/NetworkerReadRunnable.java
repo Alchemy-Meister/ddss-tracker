@@ -11,6 +11,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.exceptions.PacketParserException;
+import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.PacketParser;
 import tracker.networking.Topic;
@@ -45,8 +46,8 @@ public class NetworkerReadRunnable implements Runnable {
 		return this.networker;
 	}
 
-	private void notify(Topic topic, CustomMessage message) {
-		networker.notify(topic, message);
+	private void notify(Topic topic, Bundle bundle) {
+		networker.notify(topic, bundle);
 	}
 
 	@Override
@@ -67,11 +68,13 @@ public class NetworkerReadRunnable implements Runnable {
 						CustomMessage message = null;
 						try {
 							message = PacketParser.parse(messageIn.getData());
+							this.notify(Topic.KA, new Bundle(
+									messageIn.getAddress().getHostAddress(),
+									messageIn.getPort(), message));
 						} catch(PacketParserException e) {
 							// TODO do something
 							e.printStackTrace();
-						}
-						notify(Topic.KA, message);
+						}			
 					}
 				} catch (IOException e) {
 					Thread.currentThread().interrupt();

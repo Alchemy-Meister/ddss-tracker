@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
+import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import tracker.db.model.TrackerMember;
+import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
@@ -79,10 +80,13 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	}
 	
 	@Override
-	public void receive(Topic topic, CustomMessage param) {
+	public void receive(Topic topic, Bundle bundle) {
 		if (topic == FaultToleranceSys.subscription) {
 			// TODO update ip id table
+			this.ipidTable.set(bundle.getIP(), 
+					((KeepAliveM)bundle.getMessage()).getId());
 			// TODO notifyObservers
+			this.notifyObservers(bundle);
 		}
 	}
 	
@@ -97,7 +101,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		
 		@Override
 		public void run() {
-			//networker.send("KA"); // TODO change to actual message
+			System.out.println("Am I working?");
+			networker.publish(Topic.KA, new KeepAliveM()); // TODO change to actual message
 			timer.schedule(new KATimerTask(this.networker), 2000);
 		}
 		
