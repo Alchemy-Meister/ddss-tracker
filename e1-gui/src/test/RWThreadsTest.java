@@ -2,6 +2,7 @@ package test;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import bitTorrent.tracker.protocol.udp.messages.custom.me.MasterElectionM;
 import tracker.exceptions.NetProtoException;
 import tracker.exceptions.PacketParserException;
@@ -18,7 +19,7 @@ public class RWThreadsTest {
 		TestingWriteSubsystem systemW = new TestingWriteSubsystem(net);
 		net.subscribe(Topic.KA, systemR);
 		net.subscribe(Topic.KA, systemW);
-		//net.subscribe(Topic.ME, systemR);
+		net.subscribe(Topic.ME, systemR);
 		net.startRW();
 		new Thread(systemW).start();
 	}
@@ -65,7 +66,7 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		// Should not be received
 		//net.publish(Topic.DS_COMMIT, new KeepAliveM(new BigInteger("0")));
 		// By all
-		//net.publish(Topic.KA, new KeepAliveM(new BigInteger("23")));
+		net.publish(Topic.KA, new KeepAliveM(new LongLong("23")));
 		//
 		net.publish(Topic.ME, new MasterElectionM(new LongLong("9996")));
 	}

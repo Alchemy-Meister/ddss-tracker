@@ -28,7 +28,7 @@ public class LongLong {
 	public LongLong(String valueRep) {
 		this(new BigInteger(valueRep).toByteArray());
 	}
-	
+
 	public LongLong(byte[] inBytes) {
 		byte[] mostLeft = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		byte[] leastRight = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -40,21 +40,21 @@ public class LongLong {
 				mostLeft[cursor] = inBytes[i];
 			cursor--;
 		}
-			this.setValue(mostLeft, leastRight);
-			this.mostLeft = mostLeft;
-			this.leastRight = leastRight;
-		}
-
-		public byte[] getBytes() {
-			byte[] ret = new byte[16];
-			System.arraycopy(this.mostLeft, 0, ret, 0, this.mostLeft.length);
-			System.arraycopy(this.leastRight, 0, ret, this.mostLeft.length,
-					this.leastRight.length);
-			return ret;
-		}
-
-		@Override
-		public String toString() {
-			return "LongLong [value=" + value + "]";
-		}
+		this.setValue(mostLeft, leastRight);
+		this.mostLeft = mostLeft;
+		this.leastRight = leastRight;
 	}
+
+	public byte[] getBytes() {
+		byte[] ret = new byte[16];
+		System.arraycopy(this.mostLeft, 0, ret, 0, this.mostLeft.length);
+		System.arraycopy(this.leastRight, 0, ret, this.mostLeft.length,
+				this.leastRight.length);
+		return ret;
+	}
+
+	@Override
+	public String toString() {
+		return "LongLong [value=" + value + "]";
+	}
+}

@@ -1,6 +1,5 @@
 package tracker.networking;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 
@@ -43,7 +42,7 @@ public class PacketParser {
 						System.out.printf("0x%02X ", i);
 					System.out.println();
 				}
-				return new KeepAliveM(new BigInteger(id));
+				return new KeepAliveM(new LongLong(id));
 			} else
 				throw new PacketParserException("0x0A 0x0D not found on KA");
 		case 1: // ME
