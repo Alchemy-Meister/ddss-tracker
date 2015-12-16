@@ -32,7 +32,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	private static final String printfProto = "[ NWR ] ";
 
 	public NetworkerWriteRunnable(int port, String ip) {
-		this.queue = new LinkedList<CustomMessage>(); 
+		this.queue = new LinkedList<CustomMessage>();
 		this.port = port;
 		this.ip = ip;
 	}
@@ -56,6 +56,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	public void run() {
 		if (this.initialized) {
 			while (!this.isInterrupted) {
+				System.out.println("Running write!");
 				// Send
 				CustomMessage mess = null;
 				synchronized (queue) {

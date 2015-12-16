@@ -5,10 +5,12 @@ import java.util.regex.Pattern;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
+import tracker.subsys.cfts.FaultToleranceSys;
 
 public class BasicInfoController {
 
 	private Networker networker;
+	private FaultToleranceSys fts;
 
 	public BasicInfoController() {
 		// TODO start whatever dependecy goes here.
@@ -50,6 +52,9 @@ public class BasicInfoController {
 			throws NetProtoException {
 		networker = Networker.getInstance(port, ip);
 		networker.startRW();
+		FaultToleranceSys.setNetwork(ip, port);
+		fts = FaultToleranceSys.getInstance();
+		fts.run();
 	}
 
 	public void disconnect() {

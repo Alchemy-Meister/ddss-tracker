@@ -30,7 +30,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		masterElection = MasterElectionSys.getInstance();
 		ipidTable = IpIdTable.getInstance();
 		timer = new Timer();
-		// ini networker
 	}
 	
 	/** 
@@ -51,7 +50,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * the incomming ACK messages.
 	 */
 	public void run() {
-		networker.subscribe(FaultToleranceSys.subscription, this);	
+		TrackerSubsystem.networker.subscribe(FaultToleranceSys.subscription, this);	
 		timer.schedule(new KATimerTask(TrackerSubsystem.networker), 0);
 		
 		checkOfflineMembers();
@@ -101,7 +100,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		
 		@Override
 		public void run() {
-			System.out.println("Am I working?");
 			networker.publish(Topic.KA, new KeepAliveM()); // TODO change to actual message
 			timer.schedule(new KATimerTask(this.networker), 2000);
 		}
