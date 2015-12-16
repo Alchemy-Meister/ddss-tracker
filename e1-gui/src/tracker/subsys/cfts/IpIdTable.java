@@ -1,6 +1,7 @@
 package tracker.subsys.cfts;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +69,7 @@ public class IpIdTable {
 	}
 	
 	public List<TrackerMember> getFallenMembers() {
-		return null;
+		return new ArrayList<TrackerMember>();
 	}
 	
 }

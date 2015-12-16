@@ -59,6 +59,7 @@ public class BasicInfoController {
 
 	public void disconnect() {
 		networker.stopNetThread();
+		fts.stop();
 	}
 
 	public boolean isConnected() {

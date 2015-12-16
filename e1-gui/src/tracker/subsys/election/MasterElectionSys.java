@@ -47,8 +47,8 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 		// ...
 		if (consensus)
 			ipidTable.electMaster(newMaster.getId());
-		else
-			startMasterElection();
+		//else
+			//startMasterElection();
 	}
 
 	@Override
