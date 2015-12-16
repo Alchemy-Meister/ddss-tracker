@@ -56,7 +56,6 @@ public class NetworkerWriteRunnable implements Runnable {
 	public void run() {
 		if (this.initialized) {
 			while (!this.isInterrupted) {
-				System.out.println("Running write!");
 				// Send
 				CustomMessage mess = null;
 				synchronized (queue) {

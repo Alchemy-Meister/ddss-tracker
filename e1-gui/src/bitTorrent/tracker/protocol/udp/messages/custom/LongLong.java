@@ -1,6 +1,7 @@
 package bitTorrent.tracker.protocol.udp.messages.custom;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 
 /**
  * Represents a 128-bit unsigned long
@@ -29,6 +30,16 @@ public class LongLong {
 		this(new BigInteger(valueRep).toByteArray());
 	}
 
+	public LongLong(long mostSignificant, long leastSignificant) {
+		ByteBuffer mostBuffer = ByteBuffer.allocate(Long.BYTES);
+	    mostBuffer.putLong(mostSignificant);
+	    this.mostLeft = mostBuffer.array();
+	    ByteBuffer leastBuffer = ByteBuffer.allocate(Long.BYTES);
+	    leastBuffer.putLong(leastSignificant);
+	    this.leastRight = leastBuffer.array();
+	    this.setValue(this.mostLeft, this.leastRight);
+	}
+	
 	public LongLong(byte[] inBytes) {
 		byte[] mostLeft = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		byte[] leastRight = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

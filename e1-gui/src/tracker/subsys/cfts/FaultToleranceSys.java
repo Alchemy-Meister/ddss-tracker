@@ -3,7 +3,9 @@ package tracker.subsys.cfts;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
@@ -24,6 +26,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private MasterElectionSys masterElection = null;
 	private Timer timer;
 	private static final Topic subscription = Topic.KA;
+	private UUID uuid = UUID.randomUUID();
 		
 	private FaultToleranceSys() {
 		super();
@@ -51,7 +54,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 */
 	public void run() {
 		TrackerSubsystem.networker.subscribe(FaultToleranceSys.subscription, this);	
-		timer.schedule(new KATimerTask(TrackerSubsystem.networker), 0);
+		timer.schedule(new KATimerTask(TrackerSubsystem.networker, this.uuid), 0);
 		
 		checkOfflineMembers();
 		// check if the current master is ok
@@ -93,15 +96,19 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private class KATimerTask extends TimerTask {
 
 		private Networker networker;
+		private UUID uuid;
 		
-		public KATimerTask(Networker networker) {
+		public KATimerTask(Networker networker, UUID uuid) {
 			this.networker = networker;
+			this.uuid = uuid;
 		}
 		
 		@Override
 		public void run() {
-			networker.publish(Topic.KA, new KeepAliveM()); // TODO change to actual message
-			timer.schedule(new KATimerTask(this.networker), 2000);
+			networker.publish(Topic.KA, new KeepAliveM(new LongLong(
+					uuid.getMostSignificantBits(),
+					uuid.getLeastSignificantBits())));
+			timer.schedule(new KATimerTask(this.networker, uuid), 2000);
 		}
 		
 	}
