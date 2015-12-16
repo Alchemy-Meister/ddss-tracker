@@ -90,7 +90,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	public void receive(Topic topic, Bundle bundle) {
 		if (topic == FaultToleranceSys.subscription) {
 			// TODO update ip id table
-			System.out.println(bundle.getIP());
 			this.ipidTable.set(bundle.getIP(), 
 					((KeepAliveM)bundle.getMessage()).getId());
 			// TODO notifyObservers

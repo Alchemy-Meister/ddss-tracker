@@ -66,6 +66,6 @@ public class LongLong {
 
 	@Override
 	public String toString() {
-		return "LongLong [value=" + value + "]";
+		return this.value.toString();
 	}
 }

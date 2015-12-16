@@ -9,8 +9,10 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import net.miginfocom.swing.MigLayout;
 import tracker.controllers.TrackerController;
+import tracker.networking.Bundle;
 import tracker.observers.FaultToleranceObserver;
 
 public class TrackerPanel extends ObserverJPanel {
@@ -58,10 +60,13 @@ public class TrackerPanel extends ObserverJPanel {
 		
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void update(Observable o, Object arg) {
-		updateSlaveData((List<HashMap<String, String>>) arg);
+		Bundle bundle = (Bundle) arg;
+		
+		KeepAliveM message = (KeepAliveM) bundle.getMessage();
+		System.out.println(bundle.getIP() + " " + bundle.getPort() + " " + 
+				message.getId());
 	}
 
 	@Override
