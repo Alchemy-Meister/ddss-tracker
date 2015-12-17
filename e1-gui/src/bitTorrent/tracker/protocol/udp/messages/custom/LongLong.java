@@ -65,6 +65,15 @@ public class LongLong {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof LongLong) {
+			return this.value.equals(((LongLong)obj).value);
+		} else {
+			return false;
+		}
+	};
+	
+	@Override
 	public String toString() {
 		return this.value.toString();
 	}

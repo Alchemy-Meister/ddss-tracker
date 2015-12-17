@@ -9,7 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import net.miginfocom.swing.MigLayout;
 import tracker.controllers.TrackerController;
 import tracker.networking.Bundle;
@@ -24,6 +23,8 @@ public class TrackerPanel extends ObserverJPanel {
 	
 	private JTable masterTable;
 	private JTable slaveTable;
+	
+	private TrackerTableModel trackerModel;
 
 	public TrackerPanel(Color color) {
 		super();
@@ -45,15 +46,16 @@ public class TrackerPanel extends ObserverJPanel {
 		
 		this.add(lblSlaves, "cell 0 5");
 		
-		slaveTable = new CustomJTable(trController.getSlaveListInfo(), 
-				trController.getClusterColumnNames());
-		slaveTable.setEnabled(false);
+		this.trackerModel = 
+				new TrackerTableModel();
+		this.slaveTable = new CustomJTable(trackerModel);
+		this.slaveTable.setEnabled(false);
 		
 		this.add(new JScrollPane(masterTable), "cell 0 1, grow");
 		this.add(new JScrollPane(slaveTable), "cell 0 7 1 2,grow");
 		
-		ftObserver = new FaultToleranceObserver();
-		ftObserver.addObserver(this);
+		this.ftObserver = new FaultToleranceObserver();
+		this.ftObserver.addObserver(this);
 	}
 	
 	public void updateSlaveData(List<HashMap<String, String>> data) {
@@ -62,11 +64,9 @@ public class TrackerPanel extends ObserverJPanel {
 
 	@Override
 	public void update(Observable o, Object arg) {
+		//TODO CHECK FIRST TO HI MESSAGES
 		Bundle bundle = (Bundle) arg;
-		
-		KeepAliveM message = (KeepAliveM) bundle.getMessage();
-		System.out.println(bundle.getIP() + " " + bundle.getPort() + " " + 
-				message.getId());
+		trackerModel.addRow(bundle);
 	}
 
 	@Override

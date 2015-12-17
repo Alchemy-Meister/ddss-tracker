@@ -1,8 +1,11 @@
 package tracker.networking;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
+import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import tracker.exceptions.PacketParserException;
 
 public class Bundle extends HashMap<BundleKeys, byte[]> {
@@ -17,6 +20,7 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 		this.setIP(ip);
 		this.setPort(port);
 		this.setMessage(message);
+		this.setCurrentTimeStamp();
 	}
 	
 	public void setIP(String ip) {
@@ -29,6 +33,12 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 	
 	public void setMessage(CustomMessage message) {
 		this.put(BundleKeys.MESSAGE, message.getBytes());
+	}
+	
+	public void setCurrentTimeStamp() {
+		DateTimeFormatter datefmt = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+		LocalDateTime now = LocalDateTime.now();
+		this.put(BundleKeys.TIMESTAMP, datefmt.format(now).getBytes());
 	}
 	
 	public String getIP() {
@@ -45,5 +55,17 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 		} catch (PacketParserException e) {
 			return null;
 		}
+	}
+	
+	public String getTimestamp() {
+		return new String(this.get(BundleKeys.TIMESTAMP));
+	}
+	
+	public boolean equal(Bundle bundle) {
+		return this.getIP().equals(bundle.getIP()) && 
+				this.getPort() == bundle.getPort() &&
+				((KeepAliveM) this.getMessage()).getId().equals(
+						((KeepAliveM) bundle.getMessage()).getId()) &&
+				this.getTimestamp().equals(bundle.getTimestamp());
 	}
 }
