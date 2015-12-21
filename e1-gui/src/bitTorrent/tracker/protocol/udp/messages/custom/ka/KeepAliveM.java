@@ -34,7 +34,8 @@ public class KeepAliveM extends CustomMessage {
 	public void setId(LongLong id) {
 		this.id = id;
 	}
-
+	
+	@Override
 	public Type getType() {
 		return type;
 	}

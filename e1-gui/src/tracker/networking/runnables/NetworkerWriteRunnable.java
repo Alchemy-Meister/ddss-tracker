@@ -64,6 +64,10 @@ public class NetworkerWriteRunnable implements Runnable {
 				}
 				if (mess != null) {
 					byte[] messBytes = mess.getBytes();
+					if (Const.PRINTF) {
+						System.out.println(printfProto + " message size: "
+								+ messBytes.length);
+					}
 					DatagramPacket messageOut = new DatagramPacket(
 							messBytes, messBytes.length, group, port);
 					try {

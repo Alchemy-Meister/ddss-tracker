@@ -80,8 +80,10 @@ public class HelloCloseM extends HelloBaseM {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		return "[type: " + this.type.getValue() + ", connection_id: "
+				+ this.connection_id + ", assigned_id: "
+				+ this.assigned_id.toString() + ", contents_sha: "
+				+ this.contents_sha.toString() + "]";
 	}
 
 }

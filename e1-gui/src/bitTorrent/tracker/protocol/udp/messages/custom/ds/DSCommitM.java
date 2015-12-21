@@ -3,7 +3,6 @@ package bitTorrent.tracker.protocol.udp.messages.custom.ds;
 import java.nio.ByteBuffer;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
-import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 import bitTorrent.tracker.protocol.udp.messages.custom.Type;
 import tracker.Const;
 
@@ -23,7 +22,7 @@ public class DSCommitM extends DatabaseSyncM {
 	private int action;
 	private int transaction_id;
 
-	public DSCommitM(LongLong connection_id, int action, int transaction_id) {
+	public DSCommitM(long connection_id, int action, int transaction_id) {
 		super(Type.DS_COMMIT, connection_id);
 		this.action = action;
 		this.transaction_id = transaction_id;
@@ -33,7 +32,8 @@ public class DSCommitM extends DatabaseSyncM {
 	public byte[] getBytes() {
 		byte[] typeBytes = ByteBuffer.allocate(4).putInt(
 				this.type.getValue()).array();
-		byte[] connectionIdBytes = this.connection_id.getBytes();
+		byte[] connectionIdBytes = ByteBuffer.allocate(8).putLong(
+				connection_id).array();
 		byte[] actionBytes = ByteBuffer.allocate(4).putInt(this.action).array();
 		byte[] transBytes = ByteBuffer.allocate(4).putInt(
 				this.transaction_id).array();
@@ -54,7 +54,7 @@ public class DSCommitM extends DatabaseSyncM {
 				+ actionBytes.length + transBytes.length,
 				CustomMessage.CRLF.length);
 		if (Const.PRINTF) {
-			System.out.print("[ DS C ] HEX: ");
+			System.out.print("[ DS-C ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);
 			System.out.println();
@@ -64,8 +64,9 @@ public class DSCommitM extends DatabaseSyncM {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		return "[type: " + type.getValue() + ", connection_id:" +
+				connection_id + ", action: " + action + ", transaction_id: " +
+				transaction_id + "]";
 	}
 
 }

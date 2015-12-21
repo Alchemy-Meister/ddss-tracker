@@ -16,5 +16,5 @@ public abstract class CustomMessage {
 	
 	public abstract String toString();
 
-
+	public abstract Type getType();
 }

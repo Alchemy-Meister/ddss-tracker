@@ -49,6 +49,8 @@ public class NetworkerReadRunnable implements Runnable {
 	private void notify(Topic topic, Bundle bundle) {
 		networker.notify(topic, bundle);
 	}
+	
+	
 
 	@Override
 	public void run() {
@@ -61,16 +63,18 @@ public class NetworkerReadRunnable implements Runnable {
 					socket.receive(messageIn);
 					if (messageIn != null) {
 						if (Const.PRINTF) {
-							System.out.print(printfProto + "in hex: ");
+							String prin = (printfProto + "in hex: ");
 							for (byte i : buffer)
-								System.out.printf("0x%02X ", i);
+								prin += String.format("0x%02X ", i);
+							System.out.println(prin +"\n");
 						}
 						CustomMessage message = null;
 						try {
 							message = PacketParser.parse(messageIn.getData());
-							this.notify(Topic.KA, new Bundle(
-									messageIn.getAddress().getHostAddress(),
-									messageIn.getPort(), message));
+							this.notify(Topic.topicFromType(message.getType()),
+									new Bundle(
+											messageIn.getAddress().getHostAddress(),
+											messageIn.getPort(), message));
 						} catch(PacketParserException e) {
 							// TODO do something
 							e.printStackTrace();

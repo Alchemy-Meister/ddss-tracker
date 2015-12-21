@@ -27,6 +27,7 @@ public abstract class HelloBaseM extends CustomMessage {
 		this.connection_id = connection_id;
 	}
 	
+	@Override
 	public Type getType() {
 		return type;
 	}

@@ -26,7 +26,7 @@ public class HelloResponseM extends HelloBaseM {
 	private LongLong assigned_id;
 	private LongLong contents_sha;
 	private List<Contents> triplets;
-	
+
 	public HelloResponseM(long connection_id, LongLong assigned_id,
 			LongLong contents_sha, List<Contents> triplets)
 	{
@@ -60,10 +60,13 @@ public class HelloResponseM extends HelloBaseM {
 				this.connection_id).array();
 		byte[] assignedIdBytes = this.assigned_id.getBytes();
 		byte[] contentsBytes = this.contents_sha.getBytes();
-
-		byte[] ret = new byte[typeBytes.length + connectionIdBytes.length
-		                      + assignedIdBytes.length + contentsBytes.length
-		                      + CustomMessage.CRLF.length];
+		int temsi = -1;
+		temsi = typeBytes.length + connectionIdBytes.length
+				+ assignedIdBytes.length + contentsBytes.length 
+				+ CustomMessage.CRLF.length;
+		if (!this.triplets.isEmpty())
+			temsi += (this.triplets.size() * this.triplets.get(0).getSize());
+		byte[] ret = new byte[temsi];
 		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
 		System.arraycopy(connectionIdBytes, 0, ret, typeBytes.length,
 				connectionIdBytes.length);
@@ -74,7 +77,7 @@ public class HelloResponseM extends HelloBaseM {
 				typeBytes.length + connectionIdBytes.length
 				+ assignedIdBytes.length,
 				contentsBytes.length);
-		int multiplier = 1;
+		int multiplier = 0;
 		for (Contents triplet : this.triplets) {
 			System.arraycopy(triplet.getBytes(), 0, ret,
 					typeBytes.length + connectionIdBytes.length
@@ -82,10 +85,20 @@ public class HelloResponseM extends HelloBaseM {
 					+ (triplet.getSize() * multiplier), triplet.getSize());
 			multiplier++;
 		}
-		System.arraycopy(CustomMessage.CRLF, 0,	ret,
-				typeBytes.length + connectionIdBytes.length
-                + assignedIdBytes.length + contentsBytes.length,
-                CustomMessage.CRLF.length);
+		if (this.triplets.isEmpty()) {
+			System.arraycopy(CustomMessage.CRLF, 0, ret,
+					typeBytes.length + connectionIdBytes.length
+					+ assignedIdBytes.length + contentsBytes.length,
+					CustomMessage.CRLF.length);
+
+		} else {
+			System.arraycopy(CustomMessage.CRLF, 0, ret,
+					typeBytes.length + connectionIdBytes.length
+					+ assignedIdBytes.length + contentsBytes.length
+					+ (multiplier * this.triplets.get(0).getSize()),
+					CustomMessage.CRLF.length);
+		}
+
 		if (Const.PRINTF) {
 			System.out.print("[ HI R ] HEX: ");
 			for (byte i : ret)
@@ -97,8 +110,19 @@ public class HelloResponseM extends HelloBaseM {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		String trip = "";
+		boolean first = true;
+		for (Contents s : this.triplets) {
+			if (first) {
+				trip += s.toString();
+				first = false;
+			} else
+				trip += ", " + s.toString();
+		}
+		return "[type: " + this.type.getValue() + ", connection_id: "
+		+ this.connection_id + ", assigned_id: "
+		+ this.assigned_id.toString() + ", contents_sha: "
+		+ this.contents_sha.toString() + ", contents: " + trip + "]";
 	}
 
 }

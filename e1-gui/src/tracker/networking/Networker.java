@@ -15,19 +15,19 @@ import tracker.subsys.TrackerSubsystem;
  * @author Jesus
  */
 public class Networker implements Publisher {
-	
+
 	private static Networker instance = null;
 	private Thread netReadThread, netWriteThread;
 	private NetworkerReadRunnable netReadRunnable;
 	private NetworkerWriteRunnable netWriteRunnable;
 	private HashMap<Topic, List<TrackerSubsystem>> subscribers;
-	
+
 	private Networker(int port, String ip) {
 		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
 		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 	}
-	
+
 	public static Networker getInstance(int port, String ip) {
 		if (instance == null) {
 			instance = new Networker(port, ip);
@@ -39,12 +39,12 @@ public class Networker implements Publisher {
 		}
 		return instance;
 	}
-	
+
 	public boolean isNetThreadRunning() {
 		return (this.netReadThread != null && this.netReadThread.isAlive()) 
-			|| (this.netWriteThread != null && this.netWriteThread.isAlive());
+				|| (this.netWriteThread != null && this.netWriteThread.isAlive());
 	}
-	
+
 	public void stopNetThread() {
 		if(this.netReadThread != null && this.netReadThread.isAlive()) {
 			this.netReadThread.interrupt();
@@ -53,21 +53,21 @@ public class Networker implements Publisher {
 		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
 			this.netWriteThread.interrupt();
 		}
-		
+
 	}
-	
+
 	public void startRW() throws NetProtoException {
 		netReadRunnable.setNetworker(this);
 		netReadRunnable.init();
 		netWriteRunnable.setNetworker(this);
 		netWriteRunnable.init();
-		
+
 		netReadThread = new Thread(netReadRunnable);
 		netWriteThread = new Thread(netWriteRunnable);
 		netReadThread.start();
 		netWriteThread.start();
 	}
-	
+
 	/** Requests a subscrition to the given topic by the given susbsystem.
 	 * @param topic
 	 * @param subsystem
@@ -89,7 +89,9 @@ public class Networker implements Publisher {
 	 * @param param
 	 */
 	public void notify(Topic topic, Bundle bundle) {
-		for (TrackerSubsystem subscriber : this.subscribers.get(topic))
-			subscriber.receive(topic, bundle);
+		if (this.subscribers.get(topic) != null) {
+			for (TrackerSubsystem subscriber : this.subscribers.get(topic))
+				subscriber.receive(topic, bundle);
+		}
 	}
 }
