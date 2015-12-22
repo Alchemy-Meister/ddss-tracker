@@ -64,6 +64,10 @@ public class LongLong {
 		return ret;
 	}
 
+	public BigInteger getValue() {
+		return this.value;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof LongLong) {
@@ -72,9 +76,13 @@ public class LongLong {
 			return false;
 		}
 	};
-	
+
 	@Override
 	public String toString() {
 		return this.value.toString();
+	}
+
+	public int compareTo(LongLong val) {
+		return value.compareTo(val.getValue());
 	}
 }
