@@ -19,5 +19,6 @@ public class Const {
 	// Prefefined miliseconds
 	public static final long KA_EVERY = 2000;
 	public static final long HI_EVERY = 4000;
+	public static final long WAIT_BEFORE_IAM_MASTER = 3000;
 
 }

@@ -2,6 +2,7 @@ package tracker.subsys.election;
 
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.cfts.IpIdTable;
+
 import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.networking.Topic;
@@ -14,6 +15,7 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	
 	private static MasterElectionSys instance = null;
 	private IpIdTable ipidTable = null;
+	private Boolean inProgress = false;
 	
 	
 	private MasterElectionSys() {
@@ -30,7 +32,15 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		synchronized (inProgress) {
+			inProgress = true;
+			
+		}
+		// do whatever
 		
+		synchronized (inProgress) {
+			inProgress = false;	
+		}
 	}
 	
 	/**
@@ -55,5 +65,13 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	public void receive(Topic topic, Bundle bundle) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public boolean isInProgress() {
+		boolean ret = false;
+		synchronized (inProgress) {
+			ret = inProgress;
+		}
+		return ret;
 	}
 }

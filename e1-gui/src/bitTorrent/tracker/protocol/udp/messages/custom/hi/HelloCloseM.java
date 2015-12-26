@@ -21,11 +21,12 @@ public class HelloCloseM extends HelloBaseM {
 
 	private LongLong assigned_id;
 	private LongLong contents_sha;
+	public static final String HI_CLOSE = "HI_CLOSE";
 	
 	public HelloCloseM(long connection_id, LongLong assigned_id,
 			LongLong contents_sha)
 	{
-		super(connection_id);
+		super(connection_id, HI_CLOSE);
 		this.assigned_id = assigned_id;
 		this.contents_sha = contents_sha;
 	}

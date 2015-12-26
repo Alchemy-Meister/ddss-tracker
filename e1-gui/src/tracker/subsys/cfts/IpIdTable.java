@@ -113,6 +113,21 @@ public class IpIdTable {
 		}
 		return lowest == null ? null : new TrackerMember(key, lowest);
 	}
+	
+	public LongLong getHighestId() {
+		Enumeration<String> en = ipid.keys();
+		LongLong highest = null;
+		String key = null;
+		while (en.hasMoreElements()) {
+			key = en.nextElement();
+			LongLong id = ipid.get(key);
+			if (id != null && !id.equals(new LongLong("0"))) {
+				if (id.compareTo(highest) == 1)
+					highest = id;
+			}
+		}
+		return highest;
+	}
 
 	public LongLong getMasterID() {
 		LongLong temp = null;
@@ -155,6 +170,13 @@ public class IpIdTable {
 			}
 		}
 		return ret;
+	}
+	
+	public boolean amIMaster() {
+		LongLong masterId = getMasterID();
+		if (masterId == null)
+			return false;
+		return getMyId().equals(masterId);
 	}
 
 }

@@ -26,11 +26,13 @@ public class HelloResponseM extends HelloBaseM {
 	private LongLong assigned_id;
 	private LongLong contents_sha;
 	private List<Contents> triplets;
+	public static final String HI_RES = "HI_RES";
+
 
 	public HelloResponseM(long connection_id, LongLong assigned_id,
 			LongLong contents_sha, List<Contents> triplets)
 	{
-		super(connection_id);
+		super(connection_id, HI_RES);
 		this.assigned_id = assigned_id;
 		this.contents_sha = contents_sha;
 		this.triplets = triplets;
@@ -50,6 +52,10 @@ public class HelloResponseM extends HelloBaseM {
 
 	public void setContents_sha(LongLong contents_sha) {
 		this.contents_sha = contents_sha;
+	}
+	
+	public List<Contents> getTriplets() {
+		return this.triplets;
 	}
 
 	@Override

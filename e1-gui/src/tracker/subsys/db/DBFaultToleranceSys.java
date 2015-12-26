@@ -37,6 +37,4 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		// TODO Auto-generated method stub
 		
 	}
-
-
 }

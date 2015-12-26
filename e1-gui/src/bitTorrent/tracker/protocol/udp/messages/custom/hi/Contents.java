@@ -22,6 +22,17 @@ public class Contents {
 		this.port = port;
 	}
 	
+	public LongLong getInfo_hash() {
+		return info_hash;
+	}
+	public int getHost() {
+		return host;
+	}
+
+	public short getPort() {
+		return port;
+	}
+
 	public byte[] getBytes() {
 		byte[] hashBytes = this.info_hash.getBytes();
 		byte[] hostBytes = ByteBuffer.allocate(4).putInt(this.host).array();
@@ -50,5 +61,10 @@ public class Contents {
 	public String toString() {
 		return "{ info_hash: " + info_hash.toString() + ", host: "
 				+ host + ", port: " + port + " }";
+	}
+
+	public String prepareForHash() {
+		return new String(info_hash.getBytes()) + Integer.toString(host) 
+			+ Short.toString(port);
 	}
 }

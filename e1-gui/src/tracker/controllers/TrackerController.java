@@ -10,7 +10,7 @@ public class TrackerController {
 	
 	public TrackerController() {
 		//TODO initialize database instance.
-		manager = new DBManager();
+		manager = DBManager.getInstance();
 		manager.connect();
 	}
 	

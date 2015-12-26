@@ -8,14 +8,23 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.hi.Contents;
+import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloBaseM;
+import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloCloseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloM;
+import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloResponseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
+import sun.security.provider.SecureRandom;
 import tracker.Const;
+import tracker.db.DBManager;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
+import tracker.subsys.PeerIdAssigner;
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.election.MasterElectionSys;
 
@@ -27,9 +36,16 @@ import tracker.subsys.election.MasterElectionSys;
 public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static FaultToleranceSys instance = null;
+	private static Boolean running = false;
 	private IpIdTable ipidTable = null;
 	private MasterElectionSys masterElection = null;
 	private Timer timerKA, timerHI;
+
+	private DBManager manager;
+
+	private long waitFromToElectMyself = -1;
+	private boolean waitingForMaster = true;
+
 
 	private FaultToleranceSys() {
 		super();
@@ -37,6 +53,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		ipidTable = IpIdTable.getInstance();
 		timerKA = new Timer();
 		timerHI = new Timer();
+		manager = DBManager.getInstance();
 	}
 
 	/** 
@@ -48,6 +65,10 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		if (instance == null)
 			instance = new FaultToleranceSys();
 		return instance;
+	}
+
+	public boolean amIMaster() {
+		return ipidTable.amIMaster();
 	}
 
 
@@ -62,21 +83,24 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		// 1- We start sending KAs with an unasigned id
 		timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
 				Const.UNASIGNED_ID), 0);
+		waitFromToElectMyself = System.currentTimeMillis();
+		waitingForMaster = true;
 		// 2- We also start sending HI messages
 		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 5),
 				myRandom.nextLong());
-		// 3.1 - if no KA messages are listened from other instances in 3 secs
-		//       we elect ourselves as master
-		// 3.1.1 stop HI messages
-		// 3.1.2 update KA id
-		
-		checkOfflineMembers();
-		// check if the current master is ok
-		checkMaster();
+
+		while(running) {
+			//checkOfflineMembers();
+			// check if the current master is ok
+			//checkMaster();
+		}
 
 	}
 
 	public void stop() {
+		synchronized (running) {
+			running = false;
+		}
 		//TODO Unsubscribre to networker
 		timerKA.cancel();
 		timerHI.cancel();
@@ -116,9 +140,95 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 				order.put(Const.ADD_ROW, bundle);
 				this.notifyObservers(order);
 			}
+			
+			// Check if we where waiting to assign ourselves as master
+			if (waitingForMaster) {
+				// check time limit
+				if (System.currentTimeMillis() - waitFromToElectMyself
+						>= Const.WAIT_BEFORE_IAM_MASTER)
+				{
+					waitingForMaster = false;
+					// I am the new master
+					LongLong master = PeerIdAssigner.assignId();
+					timerKA.cancel();
+					timerHI.cancel();
+					timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
+							master), 0);
+					ipidTable.setMyId(bundle.getIP(), master);
+					ipidTable.electMaster(master);
+				}
+			}
 		} else {
 			if (topic == Topic.HI) {
-				
+				// NOTE: HI messages are ignored during ME process as said
+				// in the documentation
+				if (! masterElection.isInProgress()) {
+					HelloBaseM hellobase = (HelloBaseM) bundle.getMessage();
+					switch (hellobase.getSubtype()) {
+					case HelloM.HI_INI:
+						if (amIMaster()) {
+							// Return everithing on the CONTENTS table
+							manager.connect();
+							try {
+								List<Contents> table = manager.getAllContents();
+								// NOTE: when the contents table is empty
+								// the HelloResponse Messages may be interpreted
+								// as HelloClose Messages (see reference)
+								// Thereby we are sending a triplet with
+								// info_hash -> rubbish, host -> -1, port -> -1
+								if (table.isEmpty()) {
+									byte[] bytes = new byte[16];
+									new SecureRandom().engineNextBytes(bytes);
+									table.add(new Contents(new LongLong(bytes),
+											-1, (short)-1));
+								}
+								String alltohash = "";
+								for (Contents c : table)
+									alltohash += c.prepareForHash();
+								
+								HelloM hellom = (HelloM) hellobase;
+								byte[] hashBytes = DigestUtils.sha1(alltohash);
+								networker.publish(Topic.HI,
+										new HelloResponseM(
+												hellom.getConnection_id(),
+												PeerIdAssigner.assignId(),
+												new LongLong(hashBytes),
+												table));
+							} catch (Exception e) {
+							} finally {
+								manager.disconnect();
+							}
+						}
+						break;
+					case HelloResponseM.HI_RES:
+						if (!amIMaster()) {
+							// we are assigned an id by the master and sent db info
+							timerKA.cancel();
+							timerHI.cancel();
+							HelloResponseM responseM = (HelloResponseM) hellobase;
+							LongLong myID = responseM.getAssigned_id();
+							// TODO - check what is my ip
+							ipidTable.setMyId(bundle.getIP(), myID);
+							timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
+									myID), 0);
+							// Save contents, remember that when host -> -1
+							// and port -> -1 we don't have to save that
+							for (Contents cont : responseM.getTriplets()) {
+								if (cont.getHost() != -1 && cont.getPort() != -1) {
+									manager.connect();
+									// TODO insert contents
+									manager.disconnect();
+								}
+							}
+						}
+						break;
+					case HelloCloseM.HI_CLOSE:
+						// TODO tomorrow
+						break;
+					default:
+						break;
+					}
+				}
 			}
 		}
 	}

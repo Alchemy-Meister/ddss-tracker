@@ -28,12 +28,12 @@ public class RWThreadsTest {
 		TestingReadSubsystem systemR = new TestingReadSubsystem();
 		TestingWriteSubsystem systemW = new TestingWriteSubsystem(net);
 		//net.subscribe(Topic.KA, systemR);
-		//net.subscribe(Topic.HI, systemR);
+		net.subscribe(Topic.HI, systemR);
 		//net.subscribe(Topic.KA, systemW);
 		//net.subscribe(Topic.ME, systemR);
-		net.subscribe(Topic.DS_READY, systemR);
+		/*net.subscribe(Topic.DS_READY, systemR);
 		net.subscribe(Topic.DS_COMMIT, systemR);
-		net.subscribe(Topic.DS_DONE, systemR);
+		net.subscribe(Topic.DS_DONE, systemR);*/
 		net.startRW();
 		new Thread(systemW).start();
 	}
@@ -72,13 +72,14 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		net.publish(Topic.HI, new HelloCloseM(21, new LongLong("9393"),
 				new LongLong("9494"))); // ok 
 	 */
-	/*// hi response -> ok
+	// hi response -> ok
 		List<Contents> triplets = new ArrayList<Contents>();
-		short s = 8;
-		triplets.add(new Contents(new LongLong("1"), 2, s));
+		short s = -1;
+		triplets.add(new Contents(new LongLong("1"), -1, s));
 		net.publish(Topic.HI, new HelloResponseM(10, new LongLong("11"),
 				new LongLong("2"), triplets)); // ok
-	 */
+	 
+		/*
 		List<LongLong> info_hashes = new ArrayList<LongLong>();
 		info_hashes.add(new LongLong("11"));
 		info_hashes.add(new LongLong("12"));
@@ -89,6 +90,7 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		net.publish(Topic.DS_READY, new DSReadyM(2, 5, 10, info_hashes)); // ok
 		net.publish(Topic.DS_COMMIT, new DSCommitM(10, 10, 10)); // ok
 		net.publish(Topic.DS_DONE, new DSDoneM(222222222));
+		*/
 	}
 
 	@Override

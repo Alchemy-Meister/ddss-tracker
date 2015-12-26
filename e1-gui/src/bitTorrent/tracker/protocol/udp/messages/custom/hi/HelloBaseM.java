@@ -14,9 +14,11 @@ public abstract class HelloBaseM extends CustomMessage {
 
 	protected final Type type = Type.HI;
 	protected long connection_id;
+	protected String subtype = null;
 	
-	public HelloBaseM(long connection_id) {
+	public HelloBaseM(long connection_id, String subtype) {
 		this.connection_id = connection_id;
+		this.subtype = subtype;
 	}
 	
 	public long getConnection_id() {
@@ -30,6 +32,10 @@ public abstract class HelloBaseM extends CustomMessage {
 	@Override
 	public Type getType() {
 		return type;
+	}
+	
+	public String getSubtype() {
+		return this.subtype;
 	}
 	
 }

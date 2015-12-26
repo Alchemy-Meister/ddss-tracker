@@ -14,8 +14,11 @@ import tracker.Const;
 */
 public class HelloM extends HelloBaseM {
 
+	public static final String HI_INI = "HI_INI";
+
+	
 	public HelloM(long connection_id) {
-		super(connection_id);
+		super(connection_id, HI_INI);
 	}
 
 	@Override
