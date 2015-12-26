@@ -32,7 +32,7 @@ public class HelloM extends HelloBaseM {
 		System.arraycopy(CustomMessage.CRLF, 0,	ret,
 				typeBytes.length + connectionIdBytes.length,
 				CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ HI B ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

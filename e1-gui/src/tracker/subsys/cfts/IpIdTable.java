@@ -35,11 +35,9 @@ public class IpIdTable {
 	 * Explicit callback in singleton, a single Ip-id table.
 	 * @return
 	 */
-	public static IpIdTable getInstance() {
-		synchronized (instance) {
+	public synchronized static IpIdTable getInstance() {
 			if (instance == null)
 				instance = new IpIdTable();
-		}
 		return instance;
 	}
 
@@ -113,7 +111,7 @@ public class IpIdTable {
 				}
 			}
 		}
-		return lowest == null ? null : new TrackerMember(key, lowest); 
+		return lowest == null ? null : new TrackerMember(key, lowest);
 	}
 
 	public LongLong getMasterID() {

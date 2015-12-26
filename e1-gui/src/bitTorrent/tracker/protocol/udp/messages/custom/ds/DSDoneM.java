@@ -33,7 +33,7 @@ public class DSDoneM extends DatabaseSyncM {
 				connectionIdBytes.length);
 		System.arraycopy(CustomMessage.CRLF, 0, ret, typeBytes.length
 				 + connectionIdBytes.length, CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ DS-D] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

@@ -33,7 +33,7 @@ public class Contents {
 		System.arraycopy(portBytes, 0, ret, 
 				hashBytes.length + hostBytes.length,
 				portBytes.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("\n[Contents] : ");
 			String print = "";
 			for (byte i : ret)

@@ -46,7 +46,7 @@ public class MasterElectionM extends CustomMessage {
 		System.arraycopy(payloadBy, 0, ret, typeBytes.length, payloadBy.length);
 		System.arraycopy(CustomMessage.CRLF, 0,	ret,
 				typeBytes.length + payloadBy.length, CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ ME ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 /** Graphical user interface of the tracker
  * @author Irene
@@ -32,6 +30,7 @@ public class TrackerGUI extends JFrame {
 	 */
 	public TrackerGUI() {
 		// check os to apply look and feel
+		/*
 		if (System.getProperty("os.name").toLowerCase().contains("linux")) {
 			try {
 				UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk." +
@@ -41,7 +40,7 @@ public class TrackerGUI extends JFrame {
 					| UnsupportedLookAndFeelException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setBounds(100, 100, 600, 300);

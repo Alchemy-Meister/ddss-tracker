@@ -99,7 +99,7 @@ public class HelloResponseM extends HelloBaseM {
 					CustomMessage.CRLF.length);
 		}
 
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ HI R ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

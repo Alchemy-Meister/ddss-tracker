@@ -66,7 +66,7 @@ public class DSReadyM extends DatabaseSyncM {
 		System.arraycopy(CustomMessage.CRLF, 0, ret, typeBytes.length
 				 + connIdBytes.length + actionbytes.length + transbytes.length
 				 + infohashesbytes.length, CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ DS-R] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

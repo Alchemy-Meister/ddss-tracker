@@ -53,7 +53,7 @@ public class DSCommitM extends DatabaseSyncM {
 				typeBytes.length + connectionIdBytes.length
 				+ actionBytes.length + transBytes.length,
 				CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ DS-C ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

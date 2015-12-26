@@ -51,7 +51,7 @@ public class KeepAliveM extends CustomMessage {
 		System.arraycopy(idBytes, 0, ret, typeBytes.length, idBytes.length);
 		System.arraycopy(CustomMessage.CRLF, 0,	ret,
 				typeBytes.length + idBytes.length, CustomMessage.CRLF.length);
-		if (Const.PRINTF) {
+		if (Const.PRINTF_BYTES) {
 			System.out.print("[ KA ] HEX: ");
 			for (byte i : ret)
 				System.out.printf("0x%02X ", i);

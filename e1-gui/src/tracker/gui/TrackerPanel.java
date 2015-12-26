@@ -3,6 +3,7 @@ package tracker.gui;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 
 import javax.swing.JLabel;
@@ -10,7 +11,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import net.miginfocom.swing.MigLayout;
+import tracker.Const;
 import tracker.controllers.TrackerController;
+import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.observers.FaultToleranceObserver;
 
@@ -65,8 +68,16 @@ public class TrackerPanel extends ObserverJPanel {
 	@Override
 	public void update(Observable o, Object arg) {
 		//TODO CHECK FIRST TO HI MESSAGES
-		Bundle bundle = (Bundle) arg;
-		trackerModel.addRow(bundle);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> message = (HashMap<String, Object>) arg;
+		if (message.get(Const.ADD_ROW) != null) {
+			Bundle bundle = (Bundle) message.get(Const.ADD_ROW);
+			trackerModel.addRow(bundle);
+		} else {
+			if (message.get(Const.DELETE_ROW) != null) {
+				trackerModel.removeRow((TrackerMember) message.get(Const.DELETE_ROW));
+			}
+		}
 	}
 
 	@Override
