@@ -86,8 +86,11 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		waitFromToElectMyself = System.currentTimeMillis();
 		waitingForMaster = true;
 		// 2- We also start sending HI messages
-		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 5),
-				myRandom.nextLong());
+		//TODO CHECK THIS FIX.
+		/*timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 5),
+				myRandom.nextLong());*/
+		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
+				myRandom.nextLong()), 0);
 
 		while(running) {
 			//checkOfflineMembers();
@@ -152,6 +155,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 					LongLong master = PeerIdAssigner.assignId();
 					timerKA.cancel();
 					timerHI.cancel();
+					timerKA = new Timer();
+					timerHI = new Timer();
 					timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
 							master), 0);
 					ipidTable.setMyId(bundle.getIP(), master);
@@ -205,6 +210,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 							// we are assigned an id by the master and sent db info
 							timerKA.cancel();
 							timerHI.cancel();
+							timerKA = new Timer();
+							timerHI = new Timer();
 							HelloResponseM responseM = (HelloResponseM) hellobase;
 							LongLong myID = responseM.getAssigned_id();
 							// TODO - check what is my ip
