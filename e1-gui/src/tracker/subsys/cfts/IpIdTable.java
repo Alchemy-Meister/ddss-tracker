@@ -178,5 +178,58 @@ public class IpIdTable {
 			return false;
 		return getMyId().equals(masterId);
 	}
+	
+	/** Returns an array with the info of the slaves. The array holds
+	 * the id, ip, cluster port and timestamp of the latest KA.
+	 * @param defaultPort
+	 * @return
+	 */
+	public List<String[]> getSlaveInfo(int defaultPort) {
+		String port = new Integer(defaultPort).toString();
+		List<String[]> slaves = new ArrayList<String[]>();
+		Enumeration<String> en = ipid.keys();
+		while (en.hasMoreElements()) {
+			String key = en.nextElement();
+			LongLong id = ipid.get(key);
+			if (id != null) {
+				LongLong masterId = getMasterID();
+				if (masterId != null && masterId.equals(id)) {
+					// id, ip, cluster port, latest KA
+					String[] temp = {key, id.toString(), port,
+							ipTime.get(key).toString()};
+					slaves.add(temp);
+				}
+			}
+		}
+		return slaves;
+	}
+	
+	/** Returns an array with the info of the master. The array holds
+	 * the id, ip, cluster port and timestamp of the latest KA.
+	 * @param defaultPort
+	 * @return
+	 */
+	public String[] getMasterInfo(int defaultPort) {
+		String[] ret = null;
+		LongLong master = getMasterID();
+		if (master != null) {
+		Enumeration<String> en = ipid.keys();
+		boolean found = false;
+		while (!found && en.hasMoreElements()) {
+			String key = en.nextElement();
+			LongLong id = ipid.get(key);
+			if (id != null) {
+				if (getMasterID().equals(id)) {
+					// id, ip, cluster port, latest KA
+					found = true;
+					ret = new String[] { id.toString(), key,
+							new Integer(defaultPort).toString(),
+							ipTime.get(key).toString()};
+				}
+			}
+		}
+		}
+		return ret;
+	}
 
 }

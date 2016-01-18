@@ -1,5 +1,6 @@
 package tracker.subsys.cfts;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,11 +87,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		waitFromToElectMyself = System.currentTimeMillis();
 		waitingForMaster = true;
 		// 2- We also start sending HI messages
-		//TODO CHECK THIS FIX.
-		/*timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 5),
-				myRandom.nextLong());*/
 		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
-				myRandom.nextLong()), 0);
+				myRandom.nextLong()), 5);
 
 		while(running) {
 			//checkOfflineMembers();
@@ -137,16 +135,28 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 			// update ip id table
 			KeepAliveM mess = (KeepAliveM) bundle.getMessage();
 			this.ipidTable.set(bundle.getIP(), mess.getId());
-			// notifyObservers if the id != unasigned
-			if (!mess.getId().equals(Const.UNASIGNED_ID)) {
-				Map<String, Bundle> order = new HashMap<String, Bundle>();
-				order.put(Const.ADD_ROW, bundle);
-				this.notifyObservers(order);
-			}
-			
+			// Notify observers about the latest KA
+			Map<String, Bundle> order = new HashMap<String, Bundle>();
+			order.put(Const.ADD_ROW, bundle);
+			this.notifyObservers(order);
+			List<String[]> slaveInfo = ipidTable.getSlaveInfo(
+					bundle.getPort());
+			List<String[]> masterInfo = new ArrayList<String[]>(); 
+			String[] tempInfo = ipidTable.getMasterInfo(bundle.getPort());
+			masterInfo.add(tempInfo);
+			Map<String, List<String[]>> info = new HashMap<String,
+					List<String[]>>();
+			info.put("master", masterInfo);
+			info.put("slaves", slaveInfo);
+			this.notifyObservers(info);
 			// Check if we where waiting to assign ourselves as master
 			if (waitingForMaster) {
+				// TODO clean debug
+				System.out.println(" - Waiting for master");
 				// check time limit
+				// TODO clean debug
+				System.out.println(" - time passed: "
+				+ (System.currentTimeMillis() - waitFromToElectMyself));
 				if (System.currentTimeMillis() - waitFromToElectMyself
 						>= Const.WAIT_BEFORE_IAM_MASTER)
 				{
@@ -161,6 +171,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 							master), 0);
 					ipidTable.setMyId(bundle.getIP(), master);
 					ipidTable.electMaster(master);
+					System.out.println("electing as master: " + master);
 				}
 			}
 		} else {

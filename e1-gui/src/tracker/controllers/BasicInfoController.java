@@ -50,6 +50,7 @@ public class BasicInfoController {
 
 	public void connect(int port, String ip) 
 			throws NetProtoException {
+		// TODO HERE IT BEGINS
 		networker = Networker.getInstance(port, ip);
 		networker.startRW();
 		FaultToleranceSys.setNetwork(ip, port);
