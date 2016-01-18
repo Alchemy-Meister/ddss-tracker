@@ -12,6 +12,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import common.gui.CustomJTable;
+import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
 import tracker.controllers.PeerController;
 import tracker.observers.DBFaultToleranceObserver;

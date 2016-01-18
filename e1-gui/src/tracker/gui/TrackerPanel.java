@@ -10,6 +10,8 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
+import common.gui.CustomJTable;
+import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
 import tracker.Const;
 import tracker.controllers.TrackerController;
