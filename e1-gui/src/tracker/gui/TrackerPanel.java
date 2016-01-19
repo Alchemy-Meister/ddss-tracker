@@ -13,10 +13,6 @@ import javax.swing.JTable;
 import common.gui.CustomJTable;
 import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
-import tracker.Const;
-import tracker.controllers.TrackerController;
-import tracker.db.model.TrackerMember;
-import tracker.networking.Bundle;
 import tracker.observers.FaultToleranceObserver;
 
 public class TrackerPanel extends ObserverJPanel {
@@ -24,36 +20,32 @@ public class TrackerPanel extends ObserverJPanel {
 	private static final long serialVersionUID = -3635714939911877408L;
 	
 	private FaultToleranceObserver ftObserver;
-	private TrackerController trController;
 	
 	private JTable masterTable;
 	private JTable slaveTable;
 	
-	private TrackerTableModel trackerModel;
+	private TrackerTableModel slaveModel, masterModel;
 
 	public TrackerPanel(Color color) {
 		super();
 		this.setBackground(color);
-		
-		trController = new TrackerController();
-		
+				
 		this.setLayout(new MigLayout("", "[grow][]", 
 				"[][40px:n:45px][][][][][grow][grow][grow]"));
 		
 		JLabel lblMaster = new JLabel("Master");
 		this.add(lblMaster, "cell 0 0");
 		
-		masterTable = new CustomJTable(trController.getMasterInfo(), 
-				trController.getClusterColumnNames());
+		this.masterModel = new TrackerTableModel();
+		this.masterTable = new CustomJTable(masterModel);
 		masterTable.setEnabled(false);
 		
 		JLabel lblSlaves = new JLabel("Slaves");
 		
 		this.add(lblSlaves, "cell 0 5");
 		
-		this.trackerModel = 
-				new TrackerTableModel();
-		this.slaveTable = new CustomJTable(trackerModel);
+		this.slaveModel = new TrackerTableModel();
+		this.slaveTable = new CustomJTable(slaveModel);
 		this.slaveTable.setEnabled(false);
 		
 		this.add(new JScrollPane(masterTable), "cell 0 1, grow");
@@ -62,24 +54,17 @@ public class TrackerPanel extends ObserverJPanel {
 		this.ftObserver = new FaultToleranceObserver();
 		this.ftObserver.addObserver(this);
 	}
-	
-	public void updateSlaveData(List<HashMap<String, String>> data) {
-		
-	}
 
 	@Override
 	public void update(Observable o, Object arg) {
-		//TODO CHECK FIRST TO HI MESSAGES
 		@SuppressWarnings("unchecked")
-		Map<String, Object> message = (HashMap<String, Object>) arg;
-		if (message.get(Const.ADD_ROW) != null) {
-			Bundle bundle = (Bundle) message.get(Const.ADD_ROW);
-			trackerModel.addRow(bundle);
-		} else {
-			if (message.get(Const.DELETE_ROW) != null) {
-				trackerModel.removeRow((TrackerMember) message.get(Const.DELETE_ROW));
-			}
-		}
+		Map<String, List<String[]>> info = (HashMap<String, List<String[]>>) arg;
+		List<String[]> master = info.get("master");
+		if (master != null)
+			masterModel.addall(master);
+		List<String[]> slaves = info.get("slaves");
+		if (slaves != null)
+			slaveModel.addall(slaves);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package tracker.gui;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -26,6 +27,26 @@ public class TrackerTableModel extends DefaultTableModel {
 
 	public static String[] getColumnNames() {
 		return TrackerTableModel.columnNames;
+	}
+
+	private void cleanAll() {
+		if (this.getRowCount() > 0) {
+			for (int i = this.getRowCount() - 1; i > -1; i--) {
+				this.removeRow(i);
+			}
+		}
+		this.fireTableDataChanged();
+	}
+
+	public void addall(List<String[]> data) {
+		cleanAll();
+		for (String[] array : data) {
+			System.out.println(array);
+			if (array != null) {
+				this.addRow(new Object[]{ array[0], array[1], array[2], array[3]});
+				this.fireTableDataChanged();
+			}
+		}
 	}
 
 	/** Finds an id in the table. -1 if not found

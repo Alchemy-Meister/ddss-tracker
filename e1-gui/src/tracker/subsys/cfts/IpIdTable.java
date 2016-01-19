@@ -193,9 +193,11 @@ public class IpIdTable {
 			LongLong id = ipid.get(key);
 			if (id != null) {
 				LongLong masterId = getMasterID();
-				if (masterId != null && masterId.equals(id)) {
+				if (masterId != null && !masterId.equals(id)) {
 					// id, ip, cluster port, latest KA
-					String[] temp = {key, id.toString(), port,
+					// TODO remove me
+					System.out.println("Adding slave - id: " + id + ", ip:" + key);
+					String[] temp = {id.toString(), key, port,
 							ipTime.get(key).toString()};
 					slaves.add(temp);
 				}
@@ -222,6 +224,8 @@ public class IpIdTable {
 				if (getMasterID().equals(id)) {
 					// id, ip, cluster port, latest KA
 					found = true;
+					// TODO remove me
+					System.out.println("Adding master - id: " + id + ", ip:" + key);
 					ret = new String[] { id.toString(), key,
 							new Integer(defaultPort).toString(),
 							ipTime.get(key).toString()};

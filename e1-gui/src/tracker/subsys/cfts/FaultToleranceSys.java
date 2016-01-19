@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
-
 import org.apache.commons.codec.digest.DigestUtils;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
@@ -136,9 +134,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 			KeepAliveM mess = (KeepAliveM) bundle.getMessage();
 			this.ipidTable.set(bundle.getIP(), mess.getId());
 			// Notify observers about the latest KA
-			Map<String, Bundle> order = new HashMap<String, Bundle>();
-			order.put(Const.ADD_ROW, bundle);
-			this.notifyObservers(order);
 			List<String[]> slaveInfo = ipidTable.getSlaveInfo(
 					bundle.getPort());
 			List<String[]> masterInfo = new ArrayList<String[]>(); 
