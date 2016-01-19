@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.net.SocketException;
 import java.util.Observable;
 
 import javax.swing.JButton;
@@ -18,9 +19,7 @@ import javax.swing.text.Document;
 
 import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
-import tracker.controllers.BasicInfoController;
-import tracker.exceptions.NetProtoException;
-import tracker.observers.FaultToleranceObserver;
+import peer.controllers.ConfigController;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
 
@@ -47,15 +46,12 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 	
 	private JButton connectButton;
 	
-	private FaultToleranceObserver ftObserver;
-	private BasicInfoController biController;
+	private ConfigController configController;
 	
 	public ConfigPanel(Color color) {
 		super();
 		
-		ftObserver = new FaultToleranceObserver();
-		ftObserver.addObserver(this);
-		biController = new BasicInfoController();
+		configController = new ConfigController();
 		
 		this.setBackground(color);
 		
@@ -113,7 +109,7 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 
 	@Override
 	public void unsubscribe() {
-		ftObserver.rmObserver(this);		
+		
 	}
 
 	@Override
@@ -156,7 +152,7 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 		JTextField field = (JTextField) doc.getProperty("owner");
 		if(field.equals(this.tfIP)) {
 			try {
-				if(!biController.isValidMCIP(doc.getText(0, doc.getLength()))) {
+				if(!configController.isValidMCIP(doc.getText(0, doc.getLength()))) {
 					ipAddressError.setVisible(true);
 				} else {
 					ipAddressError.setVisible(false);
@@ -166,7 +162,7 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 			}
 		} else if(field.equals(this.tfPort)) {
 			try {
-				if(!biController.isValidPort(doc.getText(0, doc.getLength()))) 
+				if(!configController.isValidPort(doc.getText(0, doc.getLength()))) 
 				{
 					portError.setVisible(true);
 				} else {
@@ -192,6 +188,10 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 		            	validForm = false;
 		            }
 	            }
+	        } else if(components[i].getClass().equals(JTextField.class)){
+	        	if(((JTextField)components[i]).getText().equals("")) {
+	        		validForm = false;
+	            }
 	        }
 	        i++;
 	    }
@@ -206,15 +206,15 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 	public void actionPerformed(ActionEvent e) {
 		JButton clickedButton = (JButton) e.getSource();
 		if (clickedButton.equals(connectButton)) {
-			if(!this.biController.isConnected()) {
+			if(!this.configController.isConnected()) {
 				try {
-					this.biController.connect(
+					this.configController.connect(
 							Integer.parseInt(this.tfPort.getText()),
 							this.tfIP.getText());
 					this.connectButton.setText(DISCONNECT_MGS);
 					this.tfIP.setEnabled(false);
 					this.tfPort.setEnabled(false);
-				} catch (NetProtoException exception) {
+				} catch (SocketException exception) {
 					exception.printStackTrace();
 					ipAddressError.setText(UNKNOWN_IP_ADDRESS_MSG);
 					ipAddressError.setVisible(true);
@@ -222,7 +222,7 @@ public class ConfigPanel extends ObserverJPanel implements FocusListener,
 					tfIP.requestFocus();
 				}
 			} else {
-				this.biController.disconnect();
+				this.configController.disconnect();
 				this.connectButton.setText(CONNECT_MSG);
 				this.tfIP.setEnabled(true);
 				this.tfPort.setEnabled(true);
