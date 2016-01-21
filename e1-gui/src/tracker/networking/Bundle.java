@@ -23,6 +23,12 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 		this.setCurrentTimeStamp();
 	}
 	
+	@Override
+	public String toString() {
+		return " IP=" + getIP() + ", PORT=" + getPort() + ", MSG=" + getMessage().toString()
+				+ ", TIMESTAMP=" + getTimestamp();
+	}
+
 	public void setIP(String ip) {
 		this.put(BundleKeys.IP, ip.getBytes());
 	}

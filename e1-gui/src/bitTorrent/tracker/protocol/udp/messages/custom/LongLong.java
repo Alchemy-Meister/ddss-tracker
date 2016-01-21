@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  * @author Irene
  * @author Jesus
  */
-public class LongLong {
+public class LongLong implements Comparable<LongLong> {
 
 	private BigInteger value = null; // just to print
 	private byte[] mostLeft, leastRight; // these hold the real value
@@ -68,21 +68,21 @@ public class LongLong {
 		return this.value;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof LongLong) {
-			return this.value.equals(((LongLong)obj).value);
-		} else {
-			return false;
-		}
-	};
 
 	@Override
 	public String toString() {
 		return this.value.toString();
 	}
 
-	public int compareTo(LongLong val) {
-		return value.compareTo(val.getValue());
+	@Override
+	public boolean equals(Object o) {
+		return value.equals( ((LongLong) o).getValue());
+	}
+
+	@Override
+	public int compareTo(LongLong o) {
+		if (value.toString().equals(o.getValue().toString()))
+			return 0;
+		return value.compareTo(o.getValue());
 	}
 }
