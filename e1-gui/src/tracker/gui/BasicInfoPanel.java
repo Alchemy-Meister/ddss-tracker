@@ -81,6 +81,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		this.add(lblIp, "cell 0 2,alignx trailing");
 		
 		tfIP = new JTextField();
+		tfIP.setText("228.1.1.4");
 		this.add(tfIP, "cell 1 2,growx");
 		tfIP.setColumns(10);
 		tfIP.addFocusListener(this);
@@ -91,6 +92,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		this.add(lblSwarmPort, "cell 0 3");
 		
 		tfSP = new JTextField();
+		tfSP.setText("1234");
 		this.add(tfSP, "cell 1 3,growx");
 		tfSP.setColumns(10);
 		tfSP.addFocusListener(this);
@@ -101,6 +103,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		this.add(lblPeerPort, "cell 0 4,alignx trailing");
 		
 		tfPP = new JTextField();
+		tfPP.setText("1235");
 		this.add(tfPP, "cell 1 4,growx");
 		tfPP.setColumns(10);
 		tfPP.addFocusListener(this);
