@@ -79,6 +79,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	public void run() {
 		Random myRandom = new Random(System.currentTimeMillis());
 		TrackerSubsystem.networker.subscribe(Topic.KA, this);
+		TrackerSubsystem.networker.subscribe(Topic.HI, this);
 		// 1- We start sending KAs with an unasigned id
 		timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
 				Const.UNASIGNED_ID), 0);
@@ -86,7 +87,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		waitingForMaster = true;
 		// 2- We also start sending HI messages
 		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
-				myRandom.nextLong()), 5);
+				myRandom.nextLong()), 0);
 
 		while(running) {
 			//checkOfflineMembers();
@@ -102,10 +103,13 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		}
 		//TODO Unsubscribre to networker
 		timerKA.cancel();
+		timerKA = new Timer();
 		timerHI.cancel();
+		timerHI = new Timer();
 	}
 
 	private void checkOfflineMembers() {
+		ipidTable.getFallenMembers();
 		List<TrackerMember> offlineMembers = ipidTable.getFallenMembers();
 		for (TrackerMember tm : offlineMembers) {
 			Map<String, TrackerMember> order = new HashMap<String, TrackerMember>();
@@ -129,7 +133,10 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
+		
 		if (topic == Topic.KA) {
+			if (Const.PRINTF_FTS)
+				System.out.println("\n [FTS] KA:" + bundle);
 			// update ip id table
 			KeepAliveM mess = (KeepAliveM) bundle.getMessage();
 			this.ipidTable.set(bundle.getIP(), mess.getId());
@@ -146,15 +153,18 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 			this.notifyObservers(info);
 			// Check if we where waiting to assign ourselves as master
 			if (waitingForMaster) {
-				// TODO clean debug
-				System.out.println(" - Waiting for master");
+				if (Const.PRINTF_FTS) {
+					System.out.println(" [FTS] I've been waiting for master: " +
+							(System.currentTimeMillis()
+									- waitFromToElectMyself) + "ms");
+				}
 				// check time limit
-				// TODO clean debug
-				System.out.println(" - time passed: "
-				+ (System.currentTimeMillis() - waitFromToElectMyself));
 				if (System.currentTimeMillis() - waitFromToElectMyself
 						>= Const.WAIT_BEFORE_IAM_MASTER)
 				{
+					if (Const.PRINTF_FTS) {
+						System.out.println(" [FTS] Timeout waiting master.");
+					}
 					waitingForMaster = false;
 					// I am the new master
 					LongLong master = PeerIdAssigner.assignId();
@@ -166,7 +176,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 							master), 0);
 					ipidTable.setMyId(bundle.getIP(), master);
 					ipidTable.electMaster(master);
-					System.out.println("electing as master: " + master);
+					if (Const.PRINTF_FTS)
+						System.out.println(" [FTS] I've elected myself as master");
 				}
 			}
 		} else {
@@ -177,6 +188,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 					HelloBaseM hellobase = (HelloBaseM) bundle.getMessage();
 					switch (hellobase.getSubtype()) {
 					case HelloM.HI_INI:
+						if (Const.PRINTF_FTS)
+							System.out.println("\n [FTS] HI_INI:" + hellobase);
 						if (amIMaster()) {
 							// Return everithing on the CONTENTS table
 							manager.connect();
@@ -241,9 +254,15 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 					default:
 						break;
 					}
+				} else {
+					if (Const.PRINTF_FTS)
+						System.out.println("\n [FTS] HI message ignored," +
+								" we are at ME process.");
 				}
 			}
 		}
+		// Finally check if someone is out
+		ipidTable.checkFallenMembers();
 	}
 
 

@@ -86,7 +86,8 @@ public class PacketParser {
 				// Connection id always
 				long connection_id = messageBytes.getLong(4);
 				if (12 == actualSize) {
-					System.out.println("[HelloM message]");
+					if (Const.PRINTF)
+						System.out.println("[HelloM message]");
 					return new HelloM(connection_id);
 				} else {
 					// if size > 12 we may have a a hi response or a hi close

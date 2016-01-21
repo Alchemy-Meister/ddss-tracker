@@ -34,16 +34,16 @@ public class TrackerTableModel extends DefaultTableModel {
 			for (int i = this.getRowCount() - 1; i > -1; i--) {
 				this.removeRow(i);
 			}
+			this.fireTableDataChanged();
 		}
-		this.fireTableDataChanged();
 	}
 
 	public void addall(List<String[]> data) {
 		cleanAll();
 		for (String[] array : data) {
-			System.out.println(array);
 			if (array != null) {
-				this.addRow(new Object[]{ array[0], array[1], array[2], array[3]});
+				this.addRow(new Object[]{ array[0], array[1], array[2],
+						array[3]});
 				this.fireTableDataChanged();
 			}
 		}

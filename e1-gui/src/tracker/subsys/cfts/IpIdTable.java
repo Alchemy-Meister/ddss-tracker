@@ -1,6 +1,8 @@
 package tracker.subsys.cfts;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,6 +10,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import tracker.Const;
 import tracker.db.model.TrackerMember;
 
 /**
@@ -16,19 +19,19 @@ import tracker.db.model.TrackerMember;
  * @author Jesus
  */
 public class IpIdTable {
-
-	
 	private final Lock masterIdLock = new ReentrantLock();
 	private final Lock myIdLock = new ReentrantLock();
-	private LongLong masterId = null, myId = null;
+	private String masterId = null, myId = null;
 	// NOTE: take into account members with an UNASSIGNED ID = 0
-	private ConcurrentHashMap<String, LongLong> ipid = null;
-	private ConcurrentHashMap<String, Long> ipTime = null;
+	
+	private ConcurrentHashMap<String, String> idIp = null;
+	private ConcurrentHashMap<String, Long> idTime = null;
+	
 	private static IpIdTable instance;
 
 	private IpIdTable(){
-		this.ipid = new ConcurrentHashMap<String, LongLong>();
-		this.ipTime = new ConcurrentHashMap<String, Long>();
+		this.idIp = new ConcurrentHashMap<String, String>();
+		this.idTime = new ConcurrentHashMap<String, Long>();
 	}
 
 	/**
@@ -43,24 +46,26 @@ public class IpIdTable {
 
 	public List<TrackerMember> getAll() {
 		List<TrackerMember> ret = new ArrayList<TrackerMember>();
-		Enumeration<String> en = ipid.keys();
+		Enumeration<String> en = idIp.keys();
 		while (en.hasMoreElements()) {
 			String key = en.nextElement();
-			LongLong id = ipid.get(key);
-			if (id != null)
-				ret.add(new TrackerMember(key, id));
+			String ip = idIp.get(key);
+			if (ip != null)
+				ret.add(new TrackerMember(ip, new LongLong(key)));
 		}
 		return ret;
 	}
 
 	public void set(String ip, LongLong id) {
-		ipid.put(ip, id);
-		ipTime.put(ip, System.nanoTime());
+		if (!id.equals(Const.UNASIGNED_ID)){   // do not track unassigned ids
+			idIp.put(id.toString(), ip);
+			idTime.put(id.toString(), System.currentTimeMillis());
+		}
 	}
 
-	public void remove(String ip) {
-		ipid.remove(ip);
-		ipTime.remove(ip);
+	public void remove(LongLong id) {
+		idIp.remove(id.toString());
+		idTime.remove(id.toString());	
 	}
 	
 	/** Set's the current trackers ip and id.
@@ -71,21 +76,21 @@ public class IpIdTable {
 		myIdLock.lock();
 		this.set(ip, id);
 		try {
-			this.myId = id;
+			this.myId = id.toString();
 		} finally{
 			myIdLock.unlock();
 		}
 	}
 	
 	public LongLong getMyId() {
-		LongLong temp = null;
+		String temp = null;
 		myIdLock.lock();
 		try {
 			temp = this.myId;
 		} finally {
 			myIdLock.unlock();
 		}
-		return temp;
+		return new LongLong(temp);
 	}
 	
 	/** Returns the member with the lowest id. This id is the first
@@ -94,50 +99,51 @@ public class IpIdTable {
 	 * @return
 	 */
 	public TrackerMember getMemberLowestId() {
-		Enumeration<String> en = ipid.keys();
-		LongLong lowest = null;
-		String key = null;
-		boolean oneFound = false;
-		while (en.hasMoreElements() && !oneFound) {
-			key = en.nextElement();
-			LongLong id = ipid.get(key);
-			if (id != null && !id.equals(new LongLong("0"))) {
-				if (id.equals(new LongLong("1"))) {
-					oneFound = true;
-					lowest = id;
-				} else {
-					if (id.compareTo(lowest) == -1)
-						lowest = id;
-				}
-			}
+		if (idIp.size() == 0)
+			return null;
+		List<String> keys = Collections.list(idIp.keys());
+		BigInteger min = null;
+		for (String key : keys) {
+			BigInteger temp = new BigInteger(key);
+			if (min == null)
+				min = temp;
+			if (temp.compareTo(min) == -1)
+				min = temp;
 		}
-		return lowest == null ? null : new TrackerMember(key, lowest);
+		return min == null ? null : new TrackerMember(idIp.get(min.toString()),
+				new LongLong(min.toString()));
 	}
 	
+	/**
+	 * Returns the highest id. Null if no ids are currently asigned. 
+	 * Unassigned ids do not count.
+	 * @return
+	 */
 	public LongLong getHighestId() {
-		Enumeration<String> en = ipid.keys();
-		LongLong highest = null;
-		String key = null;
-		while (en.hasMoreElements()) {
-			key = en.nextElement();
-			LongLong id = ipid.get(key);
-			if (id != null && !id.equals(new LongLong("0"))) {
-				if (id.compareTo(highest) == 1)
-					highest = id;
-			}
+		if (idIp.size() == 0)
+			return null;
+		List<String> keys = Collections.list(idIp.keys());
+		BigInteger max = null;
+		for (String key : keys) {
+			BigInteger temp = new BigInteger(key);
+			if (max == null)
+				max = temp;
+			if (temp.compareTo(max) == 1)
+				max = temp;
 		}
-		return highest;
+		return max == null ? null : new LongLong(max.toString());
 	}
 
 	public LongLong getMasterID() {
-		LongLong temp = null;
+		String temp = null;
 		masterIdLock.lock();
 		try{
 			temp = masterId;
 		} finally {
 			masterIdLock.unlock();
 		}
-		return temp;
+		
+		return temp == null ? null : new LongLong(temp);
 	}
 
 	/** Sets the given ID as the master's id.
@@ -146,9 +152,35 @@ public class IpIdTable {
 	public void electMaster(LongLong newMasterID) {
 		masterIdLock.lock();
 		try{
-			masterId = newMasterID;
+			masterId = newMasterID.toString();
 		} finally {
 			masterIdLock.unlock();
+		}
+	}
+	
+	public void setMasterFallen() {
+		masterIdLock.lock();
+		try {
+			masterId = null;
+		} finally {
+			masterIdLock.unlock();
+		}
+	}
+	
+	public void checkFallenMembers() {
+		List<String> members = Collections.list(idTime.keys());
+		LongLong mid = getMasterID();
+		String masterId = null;
+		if (mid != null)
+			masterId = mid.toString();
+		for (String key : members) {
+				long time = System.currentTimeMillis();
+				if (time - idTime.get(key) > (2 * 1000)) {
+					if (masterId != null && masterId.equals(key))
+						setMasterFallen();
+					idIp.remove(key);
+					idTime.remove(key);
+				}
 		}
 	}
 
@@ -158,16 +190,21 @@ public class IpIdTable {
 	 * @return
 	 */
 	public List<TrackerMember> getFallenMembers() {
-		System.nanoTime();
 		List<TrackerMember> ret = new ArrayList<TrackerMember>();
-		Enumeration<String> en = ipTime.keys();
-		while (en.hasMoreElements()) {
-			String key = en.nextElement();
-			if (System.nanoTime() - ipTime.get(key) >= (2 / 1000000000)) {
-				LongLong id = ipid.remove(key);
-				ipTime.remove(key);
-				ret.add(new TrackerMember(key, id));
-			}
+		List<String> members = Collections.list(idTime.keys());
+		LongLong mid = getMasterID();
+		String masterId = null;
+		if (mid != null)
+			masterId = mid.toString();
+		for (String key : members) {
+				long time = System.currentTimeMillis();
+				if (time - idTime.get(key) > (2 * 1000)) {
+					if (masterId != null && masterId.equals(key))
+						setMasterFallen();
+					String ip = idIp.remove(key);
+					idTime.remove(key);
+					ret.add(new TrackerMember(ip, new LongLong(key)));
+				}
 		}
 		return ret;
 	}
@@ -176,7 +213,10 @@ public class IpIdTable {
 		LongLong masterId = getMasterID();
 		if (masterId == null)
 			return false;
-		return getMyId().equals(masterId);
+		LongLong myid = getMyId();
+		if (myid == null || myid.toString().equals("0"))
+			return false;
+		return getMyId().toString().equals(masterId.toString());
 	}
 	
 	/** Returns an array with the info of the slaves. The array holds
@@ -187,20 +227,20 @@ public class IpIdTable {
 	public List<String[]> getSlaveInfo(int defaultPort) {
 		String port = new Integer(defaultPort).toString();
 		List<String[]> slaves = new ArrayList<String[]>();
-		Enumeration<String> en = ipid.keys();
-		while (en.hasMoreElements()) {
-			String key = en.nextElement();
-			LongLong id = ipid.get(key);
-			if (id != null) {
-				LongLong masterId = getMasterID();
-				if (masterId != null && !masterId.equals(id)) {
-					// id, ip, cluster port, latest KA
-					// TODO remove me
-					System.out.println("Adding slave - id: " + id + ", ip:" + key);
-					String[] temp = {id.toString(), key, port,
-							ipTime.get(key).toString()};
-					slaves.add(temp);
+		LongLong tid = getMasterID();
+		String masterId = null;
+		if (tid != null)
+			masterId = tid.toString();
+		for (String key: Collections.list(idIp.keys())) {
+			if (masterId != null && !masterId.equals(key)) {
+				// id, ip, cluster port, latest KA
+				if (Const.PRINTF_IPID) {
+					System.out.println(" [IPID-T] Slave, id: "
+							+ key + ", ip:" + idIp.get(key));
 				}
+				String[] temp = {key, idIp.get(key), port,
+						idTime.get(key).toString()};
+				slaves.add(temp);
 			}
 		}
 		return slaves;
@@ -215,23 +255,9 @@ public class IpIdTable {
 		String[] ret = null;
 		LongLong master = getMasterID();
 		if (master != null) {
-		Enumeration<String> en = ipid.keys();
-		boolean found = false;
-		while (!found && en.hasMoreElements()) {
-			String key = en.nextElement();
-			LongLong id = ipid.get(key);
-			if (id != null) {
-				if (getMasterID().equals(id)) {
-					// id, ip, cluster port, latest KA
-					found = true;
-					// TODO remove me
-					System.out.println("Adding master - id: " + id + ", ip:" + key);
-					ret = new String[] { id.toString(), key,
-							new Integer(defaultPort).toString(),
-							ipTime.get(key).toString()};
-				}
-			}
-		}
+			ret = new String[] {master.toString(), idIp.get(master.toString()),
+					new Integer(defaultPort).toString(),
+					idTime.get(master.toString()).toString()};
 		}
 		return ret;
 	}
