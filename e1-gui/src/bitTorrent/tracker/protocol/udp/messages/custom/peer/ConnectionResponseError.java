@@ -3,6 +3,8 @@ package bitTorrent.tracker.protocol.udp.messages.custom.peer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage;
+
 /**
 *
 * Offset  Size    			Name    			Value
@@ -13,18 +15,29 @@ import java.nio.ByteOrder;
 * 
 */
 
-public class ConnectionResponseError {
+public class ConnectionResponseError extends BitTorrentUDPMessage {
 	
 	private String errorString;
-	private int action, transactionId;
+	
+	public ConnectionResponseError() {
+		super(Action.CONNECT);
+	}
+	
+	public ConnectionResponseError(Action action, int transactionId,
+			String errorString)
+	{
+		super(action);
+		this.setTransactionId(transactionId);
+		this.errorString = errorString;
+	}
 	
 	public byte[] getBytes() {
 		int size = this.errorString.getBytes().length;
 		ByteBuffer byteBuffer = ByteBuffer.allocate(16 + size);
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 		
-		byteBuffer.putInt(0, this.action);
-		byteBuffer.putInt(8, this.transactionId);
+		byteBuffer.putInt(0, this.getAction().value());
+		byteBuffer.putInt(8, this.getTransactionId());
 		byteBuffer.putInt(12, size);
 		byteBuffer.position(16);
 		byteBuffer.put(this.errorString.getBytes());
@@ -38,7 +51,7 @@ public class ConnectionResponseError {
 		ByteBuffer bufferReceive = ByteBuffer.wrap(byteArray);
 		ConnectionResponseError request = new ConnectionResponseError();
 		
-		request.setAction(bufferReceive.getInt(0));
+		request.setAction(Action.valueOf(bufferReceive.getInt(0)));
 		request.setTransactionId(bufferReceive.getInt(8));
 		
 		int stringLength = bufferReceive.getInt(12);
@@ -55,21 +68,5 @@ public class ConnectionResponseError {
 	
 	public String getErrorString() {
 		return this.errorString;
-	}
-	
-	public void setAction(int action) {
-		this.action = action;
-	}
-	
-	public int getAction() {
-		return this.action;
-	}
-	
-	public void setTransactionId(int transactionID) {
-		this.transactionId = transactionID;
-	}
-	
-	public int getTransactionId() {
-		return this.transactionId;
 	}
 }

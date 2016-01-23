@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
 
+import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPRequestMessage;
+
 /**
 *
 * Offset  Size    			Name    			Value
@@ -14,28 +16,27 @@ import java.util.Random;
 * 
 */
 
-public class ConnectionRequest {
+public class ConnectionRequest extends BitTorrentUDPRequestMessage {
 	
 	private static String CONNECTION_ID_STRING = "FEE1DEADBAADBEEF";
 	
-	private long connectionId;
-	private int action, transactionId;
 	private Random random = new Random();
 	
 	public ConnectionRequest() {
-		this.connectionId = new BigInteger(
-				CONNECTION_ID_STRING, 16).longValue();
-		this.action = 0;
-		this.transactionId = random.nextInt();
+		super(Action.CONNECT);
+		
+		this.setConnectionId(new BigInteger(
+				CONNECTION_ID_STRING, 16).longValue());
+		this.setTransactionId(random.nextInt());
 	}
 	
 	public byte[] getBytes() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(16);
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 		
-		byteBuffer.putLong(0, this.connectionId);
-		byteBuffer.putInt(8, this.action);
-		byteBuffer.putInt(12, this.transactionId);
+		byteBuffer.putLong(0, this.getConnectionId());
+		byteBuffer.putInt(8, this.getAction().value());
+		byteBuffer.putInt(12, this.getTransactionId());
 		
 		byteBuffer.flip();
 		
@@ -47,41 +48,16 @@ public class ConnectionRequest {
 		ConnectionRequest request = new ConnectionRequest();
 		
 		request.setConnectionId(bufferReceive.getLong(0));
-		request.setAction(bufferReceive.getInt(8));
+		request.setAction(Action.valueOf(bufferReceive.getInt(8)));
 		request.setTransactionId(bufferReceive.getInt(12));
 		
 		return request;
 	}
-	
-	public void setTransactionId(int transactionId) {
-		this.transactionId = transactionId;
-		
-	}
-	
-	public int getTransactionId() {
-		return this.transactionId;
-	}
-
-	public void setAction(int action) {
-		this.action = action;
-	}
-	
-	public int getAction() {
-		return this.action;
-	}
-
-	public void setConnectionId(long connectionId) {
-		this.connectionId = connectionId;
-	}
-	
-	public long getConnectionId() {
-		return this.connectionId;
-	}
 
 	@Override
 	public String toString() {
-		return "CR:\r\n\tConnection_id: " + this.connectionId +
-				"\r\n\tAction: " + this.action +
-				"\r\n\tTransaction_id: " + this.transactionId;
-	}	
+		return "CR:\r\n\tConnection_id: " + this.getConnectionId() +
+				"\r\n\tAction: " + this.getAction() +
+				"\r\n\tTransaction_id: " + this.getTransactionId();
+	}
 }

@@ -41,7 +41,7 @@ public class NetworkerWriteRunnable implements Runnable {
 		// TODO Auto-generated method stub
 		if (this.initialized) {
 			while(!Thread.currentThread().isInterrupted()) {
-				System.out.println("Write running!!");
+				
 			}
 		}
 	}

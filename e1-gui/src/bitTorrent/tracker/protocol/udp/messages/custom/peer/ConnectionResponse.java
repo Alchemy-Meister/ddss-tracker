@@ -3,6 +3,8 @@ package bitTorrent.tracker.protocol.udp.messages.custom.peer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPRequestMessage;
+
 /**
 *
 * Offset  Size    			Name    			Value
@@ -12,18 +14,28 @@ import java.nio.ByteOrder;
 * 
 */
 
-public class ConnectionResponse {
+public class ConnectionResponse extends BitTorrentUDPRequestMessage {
 	
-	private long connectionId;
-	private int action, transactionId;
+	public ConnectionResponse() {
+		super(Action.CONNECT);
+	}
+	
+	public ConnectionResponse(long connectionId, Action action,
+			int transactionId) 
+	{
+		super(Action.CONNECT);
+		this.setConnectionId(connectionId);
+		this.setAction(action);
+		this.setTransactionId(transactionId);
+	}
 	
 	public byte[] getBytes() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(16);
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 		
-		byteBuffer.putLong(0, this.connectionId);
-		byteBuffer.putInt(8, this.action);
-		byteBuffer.putInt(12, this.transactionId);
+		byteBuffer.putLong(0, this.getConnectionId());
+		byteBuffer.putInt(8, this.getAction().value());
+		byteBuffer.putInt(12, this.getTransactionId());
 		
 		byteBuffer.flip();
 		
@@ -35,33 +47,9 @@ public class ConnectionResponse {
 		ConnectionResponse request = new ConnectionResponse();
 		
 		request.setConnectionId(bufferReceive.getLong(0));
-		request.setAction(bufferReceive.getInt(8));
+		request.setAction(Action.valueOf(bufferReceive.getInt(8)));
 		request.setTransactionId(bufferReceive.getInt(12));
 		
 		return request;
-	}
-	
-	public void setConnectionId(long connectionId) {
-		this.connectionId = connectionId;
-	}
-	
-	public long getConnecitonId() {
-		return this.connectionId;
-	}
-	
-	public void setAction(int action) {
-		this.action = action;
-	}
-	
-	public int getAction() {
-		return this.action;
-	}
-	
-	public void setTransactionId(int transactionID) {
-		this.transactionId = transactionID;
-	}
-	
-	public int getTransactionId() {
-		return this.transactionId;
 	}
 }
