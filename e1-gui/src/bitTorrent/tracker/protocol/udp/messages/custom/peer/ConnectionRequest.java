@@ -83,11 +83,5 @@ public class ConnectionRequest {
 		return "CR:\r\n\tConnection_id: " + this.connectionId +
 				"\r\n\tAction: " + this.action +
 				"\r\n\tTransaction_id: " + this.transactionId;
-	}
-	
-	public static void main(String[] args) {
-		ConnectionRequest a = new ConnectionRequest();
-		System.out.println(a.toString());
-	}
-	
+	}	
 }
