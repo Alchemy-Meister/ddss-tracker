@@ -6,6 +6,7 @@ import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSCommitM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSDoneM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSReadyM;
@@ -100,37 +101,50 @@ public class PacketParser {
 						System.out.println();
 					}
 					// and contents sha
-					byte contents_sha[] = new byte[16];
-					System.arraycopy(bytes, 4 + 8 + 16, contents_sha, 0, 16);
+					byte contents_sha[] = new byte[20];
+					System.arraycopy(bytes, 4 + 8 + 8, contents_sha, 0, 20);
 					if (Const.PRINTF) {
 						for (byte i : contents_sha)
 							System.out.printf("0x%02X ", i);
 						System.out.println();
 					}
 					// when the message does not have more data is a close
-					if (44 == actualSize) {
+					if (50 == actualSize) {
 						System.out.println("[HelloClose message]");
-						return new HelloCloseM(connection_id,
-								new LongLong(assigned_id),
-								new LongLong(contents_sha));
+						try {
+							return new HelloCloseM(connection_id,
+									new LongLong(assigned_id),
+									new SHA1(contents_sha));
+						} catch (Exception e) {
+							throw new PacketParserException("Error parsing HI");
+						}
 					} else {
 						List<Contents> contents = new ArrayList<Contents>();
-						int offset = 4 + 8 + 16 + 16;
+						int offset = 4 + 8 + 16 + 20;
 						while (offset < tempPos - 1) {
-							byte info_hash[] = new byte[16];
-							System.arraycopy(bytes, offset, info_hash,0, 16);
+							byte info_hash[] = new byte[20];
+							System.arraycopy(bytes, offset, info_hash,0, 20);
 							offset += 16;
 							int host = messageBytes.getInt(offset);
 							offset += 4;
 							short port = messageBytes.getShort(offset);
 							offset += 2;
-							contents.add(new Contents(new LongLong(info_hash),
+							try {
+								contents.add(new Contents(new SHA1(info_hash),
 									host, port));
+							} catch(Exception e) {
+								throw new PacketParserException("Error parsing HI");
+							}
 						}
 						System.out.println("[HelloResponse message]");
-						return new HelloResponseM(connection_id,
+						
+						try {
+							return new HelloResponseM(connection_id,
 									new LongLong(assigned_id),
-									new LongLong(contents_sha), contents);
+									new SHA1(contents_sha), contents);
+						} catch(Exception e) {
+							throw new PacketParserException("Error parsing HI");
+						}
 					}
 				}
 			} else
