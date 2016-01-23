@@ -24,4 +24,12 @@ public class Utilities {
 			return false;
 		}
 	}
+	
+	public static String toHexString(byte[] byteArray) {
+		StringBuilder builder = new StringBuilder();
+	    for(byte b : byteArray) {
+	        builder.append(String.format("%02x", b));
+	    }
+	    return builder.toString();
+	}
 }

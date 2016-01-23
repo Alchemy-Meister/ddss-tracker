@@ -38,6 +38,10 @@ public class NetworkerReadRunnable implements Runnable {
 	
 	@Override
 	public void run() {
-		
+		if(this.initialized) {
+			while(!Thread.currentThread().isInterrupted()) {
+				System.out.println("Read running!!!");
+			}
+		}
 	}
 }

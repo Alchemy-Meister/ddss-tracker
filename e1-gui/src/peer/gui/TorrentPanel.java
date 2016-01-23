@@ -14,6 +14,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import common.gui.CustomJTable;
 import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
+import peer.controllers.TorrentController;
+
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
@@ -26,7 +28,9 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 	private JTable slaveTable;
 	private JButton btnTorrent;
 	
-	private TorrentTableModel trackerModel;
+	private TorrentTableModel torrentModel;
+	
+	private TorrentController controller;
 
 	public TorrentPanel(Color color) {
 		super();
@@ -34,7 +38,7 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 		
 		this.setLayout(new MigLayout("", "[grow]", "[grow][grow]"));
 		
-		this.trackerModel = 
+		this.torrentModel = 
 				new TorrentTableModel();
 		
 		JPanel panel = new JPanel();
@@ -48,11 +52,13 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 		btnTorrent = new JButton("Add new");
 		panel.add(btnTorrent, BorderLayout.EAST);
 		
-		this.slaveTable = new CustomJTable(trackerModel);
+		this.slaveTable = new CustomJTable(this.torrentModel);
 		this.slaveTable.setEnabled(false);
 		this.add(new JScrollPane(slaveTable), "cell 0 6 1 2,grow");
 		
 		btnTorrent.addActionListener(this);
+		
+		controller = new TorrentController();
 	}
 
 	@Override
@@ -72,7 +78,8 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 	 
 	        int returnValue = fileChooser.showOpenDialog(null);
 	        if (returnValue == JFileChooser.APPROVE_OPTION) {
-	          File newFile = fileChooser.getSelectedFile();
+	          File torrent = fileChooser.getSelectedFile();
+	          controller.addTorrent(this.torrentModel, torrent);
 	        }
 		}
 	}
