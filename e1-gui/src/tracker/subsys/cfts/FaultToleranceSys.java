@@ -1,5 +1,6 @@
 package tracker.subsys.cfts;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.TimerTask;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.Contents;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloBaseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloCloseM;
@@ -44,6 +46,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private long waitFromToElectMyself = -1;
 	private boolean waitingForMaster = true;
+	private boolean updateMaster = false;
+	private List<Long> myHiConnectionIds = null;
 
 
 	private FaultToleranceSys() {
@@ -53,6 +57,15 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		timerKA = new Timer();
 		timerHI = new Timer();
 		manager = DBManager.getInstance();
+		try {
+			manager.createTables();
+		} catch (SQLException e) {
+			e.printStackTrace(System.err);
+		}
+		myHiConnectionIds = new ArrayList<Long>();
+		if (Const.PRINTF_FTS) {
+			System.out.println(" [FTS] Up and running.");
+		}
 	}
 
 	/** 
@@ -77,7 +90,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * the incomming ACK messages.
 	 */
 	public void run() {
-		Random myRandom = new Random(System.currentTimeMillis());
+		
 		TrackerSubsystem.networker.subscribe(Topic.KA, this);
 		TrackerSubsystem.networker.subscribe(Topic.HI, this);
 		// 1- We start sending KAs with an unasigned id
@@ -87,13 +100,15 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		waitingForMaster = true;
 		// 2- We also start sending HI messages
 		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
-				myRandom.nextLong()), 0);
+				myHiConnectionIds), 0);
 
+		/*
 		while(running) {
 			//checkOfflineMembers();
 			// check if the current master is ok
 			//checkMaster();
 		}
+		*/
 
 	}
 
@@ -102,20 +117,11 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 			running = false;
 		}
 		//TODO Unsubscribre to networker
+		myHiConnectionIds.clear();
 		timerKA.cancel();
 		timerKA = new Timer();
 		timerHI.cancel();
 		timerHI = new Timer();
-	}
-
-	private void checkOfflineMembers() {
-		ipidTable.getFallenMembers();
-		List<TrackerMember> offlineMembers = ipidTable.getFallenMembers();
-		for (TrackerMember tm : offlineMembers) {
-			Map<String, TrackerMember> order = new HashMap<String, TrackerMember>();
-			order.put(Const.DELETE_ROW, tm);
-			this.notifyObservers(order);
-		}
 	}
 
 	private void checkMaster() {
@@ -133,7 +139,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
-		
 		if (topic == Topic.KA) {
 			if (Const.PRINTF_FTS)
 				System.out.println("\n [FTS] KA:" + bundle);
@@ -190,8 +195,12 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 					case HelloM.HI_INI:
 						if (Const.PRINTF_FTS)
 							System.out.println("\n [FTS] HI_INI:" + hellobase);
-						if (amIMaster()) {
-							// Return everithing on the CONTENTS table
+						// Check that we hadn't sent that hi
+						boolean hiIamMaster = amIMaster();
+						if (hiIamMaster && !myHiConnectionIds.contains(
+								hellobase.getConnection_id()))
+						{
+							// Return everything on the CONTENTS table
 							manager.connect();
 							try {
 								List<Contents> table = manager.getAllContents();
@@ -201,9 +210,9 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 								// Thereby we are sending a triplet with
 								// info_hash -> rubbish, host -> -1, port -> -1
 								if (table.isEmpty()) {
-									byte[] bytes = new byte[16];
+									byte[] bytes = new byte[20];
 									new SecureRandom().engineNextBytes(bytes);
-									table.add(new Contents(new LongLong(bytes),
+									table.add(new Contents(new SHA1(bytes),
 											-1, (short)-1));
 								}
 								String alltohash = "";
@@ -212,44 +221,84 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 								
 								HelloM hellom = (HelloM) hellobase;
 								byte[] hashBytes = DigestUtils.sha1(alltohash);
-								networker.publish(Topic.HI,
-										new HelloResponseM(
-												hellom.getConnection_id(),
-												PeerIdAssigner.assignId(),
-												new LongLong(hashBytes),
-												table));
+								if (Const.PRINTF_FTS) {
+									System.out.println(" [FTS] Giving info"
+											+ " and assigning id to slave.");
+								}
+								networker.publish(Topic.HI,new HelloResponseM(
+										hellom.getConnection_id(),
+										PeerIdAssigner.assignId(),
+										new SHA1(hashBytes), table));
 							} catch (Exception e) {
+								e.printStackTrace(System.err);
 							} finally {
-								manager.disconnect();
+									manager.disconnect();
+							}
+						} else {
+							if (Const.PRINTF_FTS && hiIamMaster) {
+								System.out.println(" [FTS] I'm ignoring"
+											+ " a HI message that I sent"
+											+ " before (now I AM master).");
 							}
 						}
+							
 						break;
 					case HelloResponseM.HI_RES:
 						if (!amIMaster()) {
-							// we are assigned an id by the master and sent db info
-							timerKA.cancel();
-							timerHI.cancel();
-							timerKA = new Timer();
-							timerHI = new Timer();
 							HelloResponseM responseM = (HelloResponseM) hellobase;
-							LongLong myID = responseM.getAssigned_id();
-							// TODO - check what is my ip
-							ipidTable.setMyId(bundle.getIP(), myID);
-							timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
-									myID), 0);
-							// Save contents, remember that when host -> -1
-							// and port -> -1 we don't have to save that
-							for (Contents cont : responseM.getTriplets()) {
-								if (cont.getHost() != -1 && cont.getPort() != -1) {
-									manager.connect();
-									// TODO insert contents
-									manager.disconnect();
+							// Check that we haven't already processed that hi
+							if (myHiConnectionIds.contains(
+									hellobase.getConnection_id())) {
+								myHiConnectionIds.remove(
+										hellobase.getConnection_id());
+								waitingForMaster = false;
+								// we are assigned an id by the master
+								// and sent db info
+								timerKA.cancel();
+								timerHI.cancel();
+								timerKA = new Timer();
+								timerHI = new Timer();
+								LongLong myID = responseM.getAssigned_id();
+								ipidTable.setMyId(bundle.getIP(), myID);
+								updateMaster = true;
+								timerKA.schedule(
+										new KATimerTask(
+												TrackerSubsystem.networker,
+												myID), 0);
+								if (Const.PRINTF_FTS) {
+									System.out.println(" [FTS] Master has " +
+											"assigne me this id: "
+											+ myID.toString());
 								}
+								// Save contents, remember that when host -> -1
+								// and port -> -1 we don't have to save that
+								manager.connect();
+								for (Contents cont : responseM.getTriplets()) {
+									if (cont.getHost() != -1 
+											&& cont.getPort() != -1)
+									{
+										try{
+										manager.insertContents(
+												cont.getInfo_hash().toString(),
+												Integer.toString(cont.getHost()),
+												cont.getHost());
+										} catch (Exception e) {
+											e.printStackTrace(System.err);
+										}
+									}
+								}
+								manager.disconnect();
+								networker.publish(Topic.HI,
+										new HelloCloseM(responseM.getConnection_id(),
+												myID,
+												responseM.getContents_sha()));
 							}
 						}
 						break;
 					case HelloCloseM.HI_CLOSE:
-						// TODO tomorrow
+						if (amIMaster()) {
+							
+						}
 						break;
 					default:
 						break;
@@ -263,6 +312,19 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		}
 		// Finally check if someone is out
 		ipidTable.checkFallenMembers();
+		// If master has sent us a HIResponse we wait until a KA
+		// to know the master ID and set up in our table who is master
+		if (updateMaster) {
+			boolean updated = ipidTable.updateMaster();
+			updateMaster = !updated;
+		}
+		// Check if master is down
+		if (!waitingForMaster) {
+			if (ipidTable.isMasterFallen()) {
+				if (Const.PRINTF_FTS)
+					System.out.println(" [FTS] MASTER DOWN!!! ABANDON SHIP!!");
+			}
+		}
 	}
 
 
@@ -288,17 +350,21 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private class HITimerTask extends TimerTask {
 
 		private Networker networker;
-		private long connection_id;
+		private List<Long> hiConnectIds;
+		private Random random;
 
-		public HITimerTask(Networker networker, long connection_id) {
+		public HITimerTask(Networker networker, List<Long> hiConnectIds) {
+			random = new Random(System.currentTimeMillis());
 			this.networker = networker;
-			this.connection_id = connection_id;
+			this.hiConnectIds = hiConnectIds;
 		}
 
 		@Override
 		public void run() {
-			networker.publish(Topic.HI, new HelloM(connection_id));
-			timerHI.schedule(new HITimerTask(this.networker, connection_id),
+			long newRandom = random.nextLong();
+			hiConnectIds.add(newRandom);
+			networker.publish(Topic.HI, new HelloM(newRandom));
+			timerHI.schedule(new HITimerTask(this.networker, hiConnectIds),
 					Const.HI_EVERY);
 		}
 

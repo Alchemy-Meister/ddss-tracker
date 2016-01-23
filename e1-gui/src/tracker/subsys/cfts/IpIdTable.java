@@ -28,6 +28,7 @@ public class IpIdTable {
 	private ConcurrentHashMap<String, Long> idTime = null;
 	
 	private static IpIdTable instance;
+	private boolean masterHasFallen = false;
 
 	private IpIdTable(){
 		this.idIp = new ConcurrentHashMap<String, String>();
@@ -104,12 +105,14 @@ public class IpIdTable {
 		List<String> keys = Collections.list(idIp.keys());
 		BigInteger min = null;
 		for (String key : keys) {
+			System.out.println("id: " + key + ", ip: " + idIp.get(key));
 			BigInteger temp = new BigInteger(key);
 			if (min == null)
 				min = temp;
 			if (temp.compareTo(min) == -1)
 				min = temp;
 		}
+		System.out.println("min is: " + min);
 		return min == null ? null : new TrackerMember(idIp.get(min.toString()),
 				new LongLong(min.toString()));
 	}
@@ -142,7 +145,9 @@ public class IpIdTable {
 		} finally {
 			masterIdLock.unlock();
 		}
-		
+		if (Const.PRINTF_IPID) {
+			System.out.println(" [IPID-T] Master is: " + temp);
+		}
 		return temp == null ? null : new LongLong(temp);
 	}
 
@@ -153,15 +158,44 @@ public class IpIdTable {
 		masterIdLock.lock();
 		try{
 			masterId = newMasterID.toString();
+			masterHasFallen = false;
 		} finally {
 			masterIdLock.unlock();
 		}
+		if (Const.PRINTF_IPID) {
+			System.out.println(" [IPID-T] Electing master: "
+					+ newMasterID.toString());
+		}
+	}
+	
+	public boolean updateMaster() {
+		if (Const.PRINTF_IPID) {
+			System.out.println(" [IPID-T] I have " + idIp.size() + " members.");
+		}
+		if (idIp.size() > 1) {
+			TrackerMember t = getMemberLowestId();
+			electMaster(t.getId());
+			return true;
+		} else 
+			return false;
+	}
+	
+	public boolean isMasterFallen() {
+		boolean ret = false;
+		masterIdLock.lock();
+		try {
+			ret = masterHasFallen;
+		} finally {
+			masterIdLock.unlock();
+		}
+		return ret;
 	}
 	
 	public void setMasterFallen() {
 		masterIdLock.lock();
 		try {
 			masterId = null;
+			masterHasFallen = true;
 		} finally {
 			masterIdLock.unlock();
 		}
@@ -232,16 +266,20 @@ public class IpIdTable {
 		if (tid != null)
 			masterId = tid.toString();
 		for (String key: Collections.list(idIp.keys())) {
-			if (masterId != null && !masterId.equals(key)) {
-				// id, ip, cluster port, latest KA
-				if (Const.PRINTF_IPID) {
-					System.out.println(" [IPID-T] Slave, id: "
-							+ key + ", ip:" + idIp.get(key));
-				}
+			if (masterId == null) {
 				String[] temp = {key, idIp.get(key), port,
 						idTime.get(key).toString()};
 				slaves.add(temp);
-			}
+			} else if (!masterId.equals(key)) {
+					// id, ip, cluster port, latest KA
+					if (Const.PRINTF_IPID) {
+						System.out.println(" [IPID-T] Slave, id: "
+								+ key + ", ip:" + idIp.get(key));
+					}
+					String[] temp = {key, idIp.get(key), port,
+							idTime.get(key).toString()};
+					slaves.add(temp);
+				}
 		}
 		return slaves;
 	}
