@@ -76,9 +76,9 @@ public class AnnounceRequest extends BitTorrentUDPRequestMessage {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(98);
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 		
-		byteBuffer.putLong(0, getConnectionId());
-		byteBuffer.putInt(8, getAction().value());
-		byteBuffer.putInt(12,getTransactionId());
+		byteBuffer.putLong(0, this.getConnectionId());
+		byteBuffer.putInt(8, this.getAction().value());
+		byteBuffer.putInt(12, this.getTransactionId());
 		byteBuffer.position(16);
 		byteBuffer.put(infoHash.getBytes());
 		byteBuffer.position(36);
@@ -86,7 +86,7 @@ public class AnnounceRequest extends BitTorrentUDPRequestMessage {
 		byteBuffer.putLong(56, downloaded);
 		byteBuffer.putLong(64, left );
 		byteBuffer.putLong(72, uploaded);
-		byteBuffer.putInt(80, getEvent().value());
+		byteBuffer.putInt(80, this.getEvent().value());
 		byteBuffer.putInt(84,peerInfo.getIpAddress());
 		byteBuffer.putInt(88,key);
 		byteBuffer.putInt(92, numWant);
