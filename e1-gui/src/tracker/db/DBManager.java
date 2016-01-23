@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.Contents;
+import tracker.Const;
 import tracker.db.model.Peer;
 
 /** Manages the sqlite database
@@ -31,6 +32,8 @@ public class DBManager {
 		dbname = "";
 		for (int i = 0; i<15; i++)
 			dbname += ((char) (r.nextInt(26) + 'a'));
+		if (Const.PRINTF_DB)
+			System.out.println(" [DB] Assigned DB name: " + dbname);
 	}
 
 	public static synchronized DBManager getInstance() {
@@ -40,7 +43,7 @@ public class DBManager {
 	}
 
 	public void connect() {
-		if (conn != null) {
+		if (conn == null) {
 			try {
 				Class.forName("org.sqlite.JDBC");
 				conn = DriverManager.getConnection(
@@ -66,6 +69,7 @@ public class DBManager {
 	}
 
 	public void createTables() throws SQLException {
+		connect();
 		Statement sta = conn.createStatement();
 		String peer = "CREATE TABLE PEERINFO (" +
 				" ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
@@ -77,13 +81,14 @@ public class DBManager {
 		sta.executeUpdate(peer);
 		sta.executeUpdate(que);
 		sta.close();
+		disconnect();
 	}
 
 	/** Returns all the entries in the CONTENTS table of the db.
 	 * @return
 	 * @throws SQLException 
 	 */
-	public List<Contents> getAllContents() throws SQLException {
+	public List<Contents> getAllContents() throws Exception {
 		String a = "SELECT * from CONTENTS;";
 		Map<Integer, Peer> idtopeer = new HashMap<Integer, Peer>();
 		List<Contents> ret = new ArrayList<Contents>();
@@ -99,7 +104,7 @@ public class DBManager {
 
 			}
 			if (idtopeer.get(id) != null) {
-				ret.add(new Contents(new LongLong(sha1.getBytes()),
+				ret.add(new Contents(new SHA1(sha1.getBytes()),
 						idtopeer.get(id).getHost(),
 						idtopeer.get(id).getPort()));
 			}

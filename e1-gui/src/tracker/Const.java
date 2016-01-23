@@ -10,6 +10,7 @@ public class Const {
 	public static boolean PRINTF_BYTES = false; // debug of bytes
 	public static boolean PRINTF_IPID = true; // debug of ip-id table
 	public static boolean PRINTF_FTS = true; // debug of fault tolerance system
+	public static boolean PRINTF_DB = true; // debug of db manager
 
 	// Control strings
 	public static final String DELETE_ROW = "DELETE_ROW";
