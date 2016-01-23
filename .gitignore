@@ -3,6 +3,9 @@
 \#*\#
 .\#*
 
+# Sqlite
+.sqlite
+    
 # Java
 *.class
 
@@ -10,7 +13,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
