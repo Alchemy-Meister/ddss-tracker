@@ -5,6 +5,7 @@ import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import tracker.Const;
 
 /**
@@ -14,9 +15,9 @@ import tracker.Const;
  * --
  * 12	   128-bit integer  assigned_id
  * 28      128-bit integer  contents_sha
- * 44      128-bit integer  info_hash                         |
- * 60      32-bit integer   host							  | Repeat
- * 64      16-bit integer   port							  |
+ * 44      160-bit integer  info_hash                         |
+ * 64      32-bit integer   host							  | Repeat
+ * 68      16-bit integer   port							  |
  * @author Irene
  * @author Jesus
  *
@@ -24,13 +25,13 @@ import tracker.Const;
 public class HelloResponseM extends HelloBaseM {
 
 	private LongLong assigned_id;
-	private LongLong contents_sha;
+	private SHA1 contents_sha;
 	private List<Contents> triplets;
 	public static final String HI_RES = "HI_RES";
 
 
 	public HelloResponseM(long connection_id, LongLong assigned_id,
-			LongLong contents_sha, List<Contents> triplets)
+			SHA1 contents_sha, List<Contents> triplets)
 	{
 		super(connection_id, HI_RES);
 		this.assigned_id = assigned_id;
@@ -46,11 +47,11 @@ public class HelloResponseM extends HelloBaseM {
 		this.assigned_id = assigned_id;
 	}
 
-	public LongLong getContents_sha() {
+	public SHA1 getContents_sha() {
 		return contents_sha;
 	}
 
-	public void setContents_sha(LongLong contents_sha) {
+	public void setContents_sha(SHA1 contents_sha) {
 		this.contents_sha = contents_sha;
 	}
 	

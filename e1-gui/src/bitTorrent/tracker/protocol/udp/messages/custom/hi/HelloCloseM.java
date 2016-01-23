@@ -2,8 +2,11 @@ package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
 import java.nio.ByteBuffer;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import tracker.Const;
 
 /**
@@ -12,7 +15,7 @@ import tracker.Const;
  * 4       64-bit integer   connection_id   
  * --
  * 12	   128-bit integer  assigned_id
- * 28      128-bit integer  contents_sha
+ * 28      160-bit integer  contents_sha
  * @author Irene
  * @author Jesus
  *
@@ -20,11 +23,11 @@ import tracker.Const;
 public class HelloCloseM extends HelloBaseM {
 
 	private LongLong assigned_id;
-	private LongLong contents_sha;
+	private SHA1 contents_sha;
 	public static final String HI_CLOSE = "HI_CLOSE";
 	
 	public HelloCloseM(long connection_id, LongLong assigned_id,
-			LongLong contents_sha)
+			SHA1 contents_sha)
 	{
 		super(connection_id, HI_CLOSE);
 		this.assigned_id = assigned_id;
@@ -39,11 +42,11 @@ public class HelloCloseM extends HelloBaseM {
 		this.assigned_id = assigned_id;
 	}
 
-	public LongLong getContents_sha() {
+	public SHA1 getContents_sha() {
 		return contents_sha;
 	}
 
-	public void setContents_sha(LongLong contents_sha) {
+	public void setContents_sha(SHA1 contents_sha) {
 		this.contents_sha = contents_sha;
 	}
 
@@ -85,6 +88,12 @@ public class HelloCloseM extends HelloBaseM {
 				+ this.connection_id + ", assigned_id: "
 				+ this.assigned_id.toString() + ", contents_sha: "
 				+ this.contents_sha.toString() + "]";
+	}
+	
+	public static void main(String [] args) throws Exception {
+		HelloCloseM m = new HelloCloseM(2222, new LongLong("34"),
+				new SHA1(DigestUtils.sha1("Hello")));
+		System.out.println(m.getBytes().length); // 50
 	}
 
 }

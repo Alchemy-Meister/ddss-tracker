@@ -3,7 +3,10 @@ package test;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSCommitM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSDoneM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSReadyM;
@@ -73,12 +76,15 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 				new LongLong("9494"))); // ok 
 	 */
 	// hi response -> ok
+		try{ 
 		List<Contents> triplets = new ArrayList<Contents>();
 		short s = -1;
-		triplets.add(new Contents(new LongLong("1"), -1, s));
+		triplets.add(new Contents(new SHA1(DigestUtils.sha1("Hello world")), -1, s));
 		net.publish(Topic.HI, new HelloResponseM(10, new LongLong("11"),
-				new LongLong("2"), triplets)); // ok
-	 
+				new SHA1(DigestUtils.sha1("Hello world")), triplets)); // ok
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		/*
 		List<LongLong> info_hashes = new ArrayList<LongLong>();
 		info_hashes.add(new LongLong("11"));

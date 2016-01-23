@@ -2,7 +2,9 @@ package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
 import java.nio.ByteBuffer;
 
-import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import org.apache.commons.codec.digest.DigestUtils;
+
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import tracker.Const;
 
 /**
@@ -12,17 +14,17 @@ import tracker.Const;
  * @author Jesus 
  */
 public class Contents {
-	private LongLong info_hash;
+	private SHA1 info_hash;
 	private int host;
 	private short port;
 	
-	public Contents(LongLong info_hash, int host, short port) {
+	public Contents(SHA1 info_hash, int host, short port) {
 		this.info_hash = info_hash;
 		this.host = host;
 		this.port = port;
 	}
 	
-	public LongLong getInfo_hash() {
+	public SHA1 getInfo_hash() {
 		return info_hash;
 	}
 	public int getHost() {
@@ -66,5 +68,16 @@ public class Contents {
 	public String prepareForHash() {
 		return new String(info_hash.getBytes()) + Integer.toString(host) 
 			+ Short.toString(port);
+	}
+	
+	public static void main(String [] args) throws Exception {
+		Contents c = new Contents(new SHA1(DigestUtils.sha1("Hello world")),
+				1, (short) 1);
+		byte [] bytes = c.getBytes();
+		System.out.print("\n[Contents] : ");
+		String print = "";
+		for (byte i : bytes)
+			print += String.format("0x%02X ", i);
+		System.out.println(print + "\n");
 	}
 }
