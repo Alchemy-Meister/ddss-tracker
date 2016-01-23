@@ -12,16 +12,20 @@ public class Networker {
 	private NetworkerWriteRunnable netWriteRunnable;
 	
 	private Networker(int port, String ip) {
-		this.netReadRunnable = new NetworkerReadRunnable(port, ip, instance);
-		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip, instance);
+		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
+		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
 	}
 	
 	public static Networker getInstance(int port, String ip) {
-		if(instance != null) {
-			return instance;
+		if (instance == null) {
+			instance = new Networker(port, ip);
 		} else {
-			return new Networker(port, ip);
+			instance.netReadRunnable.setIP(ip);
+			instance.netReadRunnable.setPort(port);
+			instance.netWriteRunnable.setIP(ip);
+			instance.netWriteRunnable.setPort(port);
 		}
+		return instance;
 	}
 	
 	public boolean isNetThreadRunning() {
@@ -30,7 +34,9 @@ public class Networker {
 	}
 	
 	public void startRW() throws SocketException {
+		netReadRunnable.setNetworker(this);
 		netReadRunnable.init();
+		netWriteRunnable.setNetworker(this);
 		netWriteRunnable.init();
 		
 		netReadThread = new Thread(netReadRunnable);
@@ -48,5 +54,9 @@ public class Networker {
 		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
 			this.netWriteThread.interrupt();
 		}
+	}
+	
+	public void setReceivedConnectionMessage(boolean received) {
+		this.netWriteRunnable.setcResponseReceived(received);
 	}
 }

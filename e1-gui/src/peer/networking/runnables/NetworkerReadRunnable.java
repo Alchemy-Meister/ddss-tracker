@@ -1,11 +1,14 @@
 package peer.networking.runnables;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import peer.networking.Networker;
 
 public class NetworkerReadRunnable implements Runnable {
@@ -16,10 +19,9 @@ public class NetworkerReadRunnable implements Runnable {
 	private InetAddress group;
 	private boolean initialized = false;
 	
-	public NetworkerReadRunnable(int port, String ip, Networker networker) {
+	public NetworkerReadRunnable(int port, String ip) {
 		this.port = port;
 		this.ip = ip;
-		this.networker = networker;
 	}
 
 	public void init() throws SocketException {
@@ -36,11 +38,51 @@ public class NetworkerReadRunnable implements Runnable {
 		}
 	}
 	
+	public void setNetworker(Networker networker) {
+		this.networker = networker;
+	}
+	
+	public void setIP(String ip) {
+		this.ip = ip;
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
+	private boolean isConnectionMessage(DatagramPacket packet) {
+		boolean isConnectionMessage = true;
+		if(packet.getLength() == 16) {
+			ConnectionRequest request = ConnectionRequest.parse(
+					packet.getData());
+			if(!request.getAction().equals(Action.CONNECT)) {
+				isConnectionMessage = false;
+			}
+		} else {
+			isConnectionMessage = false;
+		}
+		
+		return isConnectionMessage;
+	}
+	
 	@Override
 	public void run() {
 		if(this.initialized) {
 			while(!Thread.currentThread().isInterrupted()) {
-				System.out.println("Read running!!!");
+				try {
+					byte[] buffer = new byte[1000];	
+					DatagramPacket messageIn = new DatagramPacket(
+							buffer, buffer.length,
+							group, port);
+					this.socket.receive(messageIn);
+					if(messageIn != null) {
+						if(isConnectionMessage(messageIn)) {
+							networker.setReceivedConnectionMessage(true);
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

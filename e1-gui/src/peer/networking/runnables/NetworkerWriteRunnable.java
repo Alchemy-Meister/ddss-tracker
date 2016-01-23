@@ -1,11 +1,14 @@
 package peer.networking.runnables;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import peer.networking.Networker;
 
 public class NetworkerWriteRunnable implements Runnable {
@@ -16,10 +19,12 @@ public class NetworkerWriteRunnable implements Runnable {
 	private InetAddress group;
 	private boolean initialized = false;
 	
-	public NetworkerWriteRunnable(int port, String ip, Networker networker) {
+	private static final long RETRYTIME = 15000;
+	private boolean cResponseReceived = false;
+	
+	public NetworkerWriteRunnable(int port, String ip) {
 		this.port = port;
 		this.ip = ip;
-		this.networker = networker;
 	}
 
 	public void init() throws SocketException {
@@ -36,12 +41,65 @@ public class NetworkerWriteRunnable implements Runnable {
 		}
 	}
 	
+	public void setIP(String ip) {
+		this.ip = ip;
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
+	public void setNetworker(Networker networker) {
+		this.networker = networker;
+	}
+
+	public void setcResponseReceived(boolean cResponseReceived) {
+		this.cResponseReceived = cResponseReceived;
+	}
+	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		if (this.initialized) {
+			long startTime = System.currentTimeMillis();
+			long currentTime = startTime;
+			long elapsetTime = NetworkerWriteRunnable.RETRYTIME;
+			
 			while(!Thread.currentThread().isInterrupted()) {
-				
+				if(elapsetTime >= NetworkerWriteRunnable.RETRYTIME) {
+					//check if master has sent connection response.
+					if(!this.cResponseReceived) {
+						//Sends Connection Request.
+						System.out.println("sending connection.");
+						try {
+							ConnectionRequest request = new ConnectionRequest();
+							DatagramPacket messageOut = new DatagramPacket(
+									request.getBytes(),
+									request.getBytes().length,
+									group, port);
+							this.socket.send(messageOut);
+							
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					} else {
+						//Sends announce request.
+						System.out.println("sending announce.");
+						try {
+							AnnounceRequest request = new AnnounceRequest();
+							DatagramPacket messageOut = new DatagramPacket(
+									request.getBytes(),
+									request.getBytes().length,
+									group, port);
+								this.socket.send(messageOut);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					
+					startTime = System.currentTimeMillis();
+				}
+				currentTime = System.currentTimeMillis();
+				elapsetTime = currentTime - startTime;
 			}
 		}
 	}
