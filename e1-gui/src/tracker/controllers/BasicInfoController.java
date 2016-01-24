@@ -42,7 +42,7 @@ public class BasicInfoController {
 		// TODO HERE IT BEGINS
 		networker = Networker.getInstance(port, peerPort, ip);
 		networker.startRW();
-		FaultToleranceSys.setNetwork(ip, peerPort, port);
+		FaultToleranceSys.setNetwork(ip, port, peerPort);
 		fts = FaultToleranceSys.getInstance();
 		fts.run();
 	}

@@ -37,6 +37,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 	public void init() throws NetProtoException {
 		try {
 			this.socket = new MulticastSocket(port);
+			System.out.println(port);
 			this.group = InetAddress.getByName(ip);
 			this.socket.joinGroup(this.group);
 			this.initialized = true;
@@ -77,6 +78,8 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							new DatagramPacket(buffer, buffer.length);
 					this.socket.receive(messageIn);
 					
+					System.out.println(messageIn.getLength());
+					
 					ByteBuffer byteBuffer = ByteBuffer.wrap(
 							messageIn.getData());
 					Action action = Action.valueOf(byteBuffer.getInt(8));
@@ -84,6 +87,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 					if(action != null) {
 						switch (action) {
 						case CONNECT:
+							System.out.println("connect!!!!");
 							ConnectionRequest cRequest = ConnectionRequest.parse(
 									messageIn.getData());
 							ConnectionResponse response =
@@ -91,11 +95,12 @@ public class NetworkerPeerReadRunnable implements Runnable {
 											cRequest.getConnectionId(),
 											cRequest.getTransactionId());
 							if(IpIdTable.getInstance().amIMaster()) {
-								new Thread(new NetworkerPeerWriteRunnable(
+								Thread asd = new Thread(new NetworkerPeerWriteRunnable(
 										response,
 										messageIn.getAddress().getHostAddress(),
-										messageIn.getPort()))
-								.start();	
+										messageIn.getPort()));
+								asd.start();
+								System.out.println("connection response sended");
 							}	
 							break;
 						case ANNOUNCE:
@@ -113,7 +118,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 										aResponse,
 										messageIn.getAddress().getHostAddress(),
 										messageIn.getPort()))
-								.start();	
+								.start();
 							}	
 							break;
 						case SCRAPE:
