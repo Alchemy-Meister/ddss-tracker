@@ -5,6 +5,7 @@
 
 # Sqlite
 .sqlite
+e1-gui/*.sqlite
     
 # Java
 *.class

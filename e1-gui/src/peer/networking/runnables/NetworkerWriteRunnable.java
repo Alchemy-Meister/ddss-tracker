@@ -37,8 +37,9 @@ public class NetworkerWriteRunnable implements Runnable {
 	public void init() throws SocketException {
 		try {
 			this.socket = new DatagramSocket();
+			this.group = InetAddress.getByName(this.ip);
 			this.initialized = true;
-		} catch (SocketException  e) {
+		} catch (SocketException | UnknownHostException e) {
 			e.printStackTrace();
 		}
 	}

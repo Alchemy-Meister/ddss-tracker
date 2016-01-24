@@ -27,9 +27,10 @@ public class NetworkerReadRunnable implements Runnable {
 
 	public void init() throws SocketException {
 		try {
-			this.socket = new DatagramSocket(port, InetAddress.getByName(ip));
+			this.socket = new DatagramSocket();
+			this.group = InetAddress.getByName(this.ip);
 			this.initialized = true;
-		} catch (UnknownHostException | SocketException e) {
+		} catch (SocketException | UnknownHostException e) {
 			throw new SocketException();
 		}
 	}
@@ -44,6 +45,10 @@ public class NetworkerReadRunnable implements Runnable {
 	
 	public void setPort(int port) {
 		this.port = port;
+	}
+	
+	public void interrupt() {
+		this.socket.close();
 	}
 	
 	private boolean isConnectionMessage(DatagramPacket packet) {
@@ -78,7 +83,7 @@ public class NetworkerReadRunnable implements Runnable {
 	
 	@Override
 	public void run() {
-		if(this.initialized) {
+		if(!initialized) {
 			while(!Thread.currentThread().isInterrupted()) {
 				try {
 					byte[] buffer = new byte[1000];	
@@ -87,9 +92,8 @@ public class NetworkerReadRunnable implements Runnable {
 							group, port);
 					this.socket.receive(messageIn);
 					if(messageIn != null) {
+						System.out.println("received something");
 						if(isConnectionMessage(messageIn)) {
-							System.out.println(this.socket.getRemoteSocketAddress());
-							System.out.println(this.socket.getLocalSocketAddress());
 							if(this.socket.getRemoteSocketAddress() != null && 
 									this.socket.getRemoteSocketAddress()
 									!= this.socket.getLocalSocketAddress())
@@ -110,7 +114,7 @@ public class NetworkerReadRunnable implements Runnable {
 						}
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 			}
 		}

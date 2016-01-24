@@ -48,8 +48,7 @@ public class Networker {
 	public void stopNetThread() {
 		if(this.netReadThread != null && this.netReadThread.isAlive()) {
 			this.netReadThread.interrupt();
-			// TODO CHECK
-			// this.netReadRunnable.interrupt();
+			this.netReadRunnable.interrupt();
 		}
 		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
 			this.netWriteThread.interrupt();

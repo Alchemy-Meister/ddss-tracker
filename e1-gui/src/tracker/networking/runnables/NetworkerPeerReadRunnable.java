@@ -63,6 +63,10 @@ public class NetworkerPeerReadRunnable implements Runnable {
 		this.port = port;
 	}
 	
+	public void interrupt() {
+		this.socket.close();
+	}
+	
 	@Override
 	public void run() {
 		if(this.initialized) {
@@ -122,7 +126,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 					}
 					
 				} catch (IOException e) {
-					e.printStackTrace();
+					Thread.currentThread().interrupt();
 				}
 				
 			}

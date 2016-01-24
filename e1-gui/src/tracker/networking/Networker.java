@@ -60,7 +60,7 @@ public class Networker implements Publisher {
 		}
 		if(this.netPeerReadThread != null && this.netPeerReadThread.isAlive()) {
 			this.netPeerReadThread.interrupt();
-			//TODO CHECK IF REALLY INTERRUPTS.
+			this.netPeerRunnable.interrupt();
 		}
 
 	}
