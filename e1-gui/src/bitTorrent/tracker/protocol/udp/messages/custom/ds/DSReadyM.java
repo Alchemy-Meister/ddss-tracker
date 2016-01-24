@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
-import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.Type;
 import tracker.Const;
 
@@ -14,7 +14,7 @@ import tracker.Const;
  * 4       64-bit integer   connection_id
  * 12	   32-bit integer   action
  * 16      32-bit integer   transaction_id
- * 20      128-bit integer  info_hash       | Repeat, at least one
+ * 20      160-bit integer  info_hash       | Repeat, at least one
  * @author Irene
  * @author Jesus
  *
@@ -22,10 +22,10 @@ import tracker.Const;
 public class DSReadyM extends DatabaseSyncM {
 	
     private int action, transaction_id;
-    private List<LongLong> info_hashes;
+    private List<SHA1> info_hashes;
 
 	public DSReadyM(long connection_id, int action, int transaction_id,
-			List<LongLong> info_hashes)
+			List<SHA1> info_hashes)
 	{
 		super(Type.DS_READY, connection_id);
 		this.action = action;
@@ -42,11 +42,11 @@ public class DSReadyM extends DatabaseSyncM {
 		byte[] actionbytes = ByteBuffer.allocate(4).putInt(this.action).array();
 		byte[] transbytes = ByteBuffer.allocate(4).putInt(
 				this.transaction_id).array();
-		byte[] infohashesbytes = new byte[16 * info_hashes.size()];
+		byte[] infohashesbytes = new byte[20 * info_hashes.size()];
 		int offset = 0;
-		for (LongLong l : info_hashes) {
-			System.arraycopy(l.getBytes(), 0, infohashesbytes, (offset * 16),
-					16);
+		for (SHA1 l : info_hashes) {
+			System.arraycopy(l.getBytes(), 0, infohashesbytes, (offset * 20),
+					20);
 			offset++;
 		}
 		byte[] ret = new byte[typeBytes.length + connIdBytes.length
@@ -79,7 +79,7 @@ public class DSReadyM extends DatabaseSyncM {
 	public String toString() {
 		String infos = "";
 		boolean first = true;
-		for (LongLong l : info_hashes) {
+		for (SHA1 l : info_hashes) {
 			if (first){
 				first = false;
 				infos += l.toString(); 

@@ -28,15 +28,15 @@ import tracker.subsys.TrackerSubsystem;
 public class RWThreadsTest {
 
 	public static void main(String [] args) throws NetProtoException {
-		Networker net = Networker.getInstance(9000, "228.5.6.7");
+		Networker net = Networker.getInstance(9000, 9001, "228.5.6.7");
 		TestingReadSubsystem systemR = new TestingReadSubsystem();
 		TestingWriteSubsystem systemW = new TestingWriteSubsystem(net);
 		//net.subscribe(Topic.KA, systemR);
 		net.subscribe(Topic.HI, systemR);
 		//net.subscribe(Topic.KA, systemW);
 		net.subscribe(Topic.ME, systemR);
-		/*net.subscribe(Topic.DS_READY, systemR);
-		net.subscribe(Topic.DS_COMMIT, systemR);
+		net.subscribe(Topic.DS_READY, systemR);
+		/*net.subscribe(Topic.DS_COMMIT, systemR);
 		net.subscribe(Topic.DS_DONE, systemR);*/
 		net.startRW();
 		new Thread(systemW).start();
@@ -71,36 +71,38 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	public void run() {;
 	/*
 		net.publish(Topic.KA, new KeepAliveM(new LongLong("23"))); // ok
-	*/
 		net.publish(Topic.ME, new MasterElectionM(new LongLong("9996"),
 				new LongLong("555"))); // ok
-	/*
 		net.publish(Topic.HI, new HelloM(23));// ok
 		net.publish(Topic.HI, new HelloCloseM(21, new LongLong("9393"),
 				new LongLong("9494"))); // ok 
 	 */
+	/*
 	// hi response -> ok
 		try{ 
-		List<Contents> triplets = new ArrayList<Contents>();
-		short s = -1;
-		triplets.add(new Contents(new SHA1(DigestUtils.sha1("Hello world")), -1, s));
-		net.publish(Topic.HI, new HelloResponseM(10, new LongLong("11"),
+			List<Contents> triplets = new ArrayList<Contents>();
+			short s = -1;
+			triplets.add(new Contents(new SHA1(DigestUtils.sha1("Hello world")), -1, s));
+			net.publish(Topic.HI, new HelloResponseM(10, new LongLong("11"),
 				new SHA1(DigestUtils.sha1("Hello world")), triplets)); // ok
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		/*
-		List<LongLong> info_hashes = new ArrayList<LongLong>();
-		info_hashes.add(new LongLong("11"));
-		info_hashes.add(new LongLong("12"));
-		info_hashes.add(new LongLong("13"));
-		info_hashes.add(new LongLong("14"));
-		info_hashes.add(new LongLong("15"));
-		info_hashes.add(new LongLong("16"));
-		net.publish(Topic.DS_READY, new DSReadyM(2, 5, 10, info_hashes)); // ok
-		net.publish(Topic.DS_COMMIT, new DSCommitM(10, 10, 10)); // ok
-		net.publish(Topic.DS_DONE, new DSDoneM(222222222));
 		*/
+		try {
+			List<SHA1> info_hashes = new ArrayList<SHA1>();
+			info_hashes.add(new SHA1(DigestUtils.sha1("11")));
+			info_hashes.add(new SHA1(DigestUtils.sha1("12")));
+			info_hashes.add(new SHA1(DigestUtils.sha1("13")));
+			info_hashes.add(new SHA1(DigestUtils.sha1("14")));
+			info_hashes.add(new SHA1(DigestUtils.sha1("15")));
+			info_hashes.add(new SHA1(DigestUtils.sha1("16")));
+			net.publish(Topic.DS_READY, new DSReadyM(2, 5, 10, info_hashes)); // ok
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//net.publish(Topic.DS_COMMIT, new DSCommitM(10, 10, 10)); // ok
+		//net.publish(Topic.DS_DONE, new DSDoneM(222222222));
 	}
 
 	@Override

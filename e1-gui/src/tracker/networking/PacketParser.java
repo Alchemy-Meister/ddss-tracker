@@ -31,7 +31,6 @@ public class PacketParser {
 	 * @return
 	 * @throws PacketParserException when the message is corrupt
 	 */
-	// TODO may change when we are geting peer messages
 	public static CustomMessage parse(byte [] bytes) 
 			throws PacketParserException
 	{
@@ -158,12 +157,16 @@ public class PacketParser {
 				int action = messageBytes.getInt(12);
 				int transaction_id = messageBytes.getInt(16);
 				int current_post = 16 + 4;
-				List<LongLong> infohashes = new ArrayList<LongLong>();
+				List<SHA1> infohashes = new ArrayList<SHA1>();
 				while (current_post < tempPos) {
-					byte[] longlong = new byte[16];
-					System.arraycopy(bytes, current_post, longlong, 0, 16);
-					infohashes.add(new LongLong(longlong));
-					current_post += 16;
+					byte[] sha1bytes = new byte[20];
+					System.arraycopy(bytes, current_post, sha1bytes, 0, 20);
+					try {
+						infohashes.add(new SHA1(sha1bytes));
+					} catch (Exception e) {
+						throw new PacketParserException("Error parsing DS_READY");
+					}
+					current_post += 20;
 				}
 				return new DSReadyM(connection_id, action, transaction_id,
 						infohashes);
