@@ -58,6 +58,10 @@ public class Networker implements Publisher {
 		if(this.netWriteThread != null && this.netWriteThread.isAlive()) {
 			this.netWriteThread.interrupt();
 		}
+		if(this.netPeerReadThread != null && this.netPeerReadThread.isAlive()) {
+			this.netPeerReadThread.interrupt();
+			//TODO CHECK IF REALLY INTERRUPTS.
+		}
 
 	}
 
@@ -66,11 +70,16 @@ public class Networker implements Publisher {
 		netReadRunnable.init();
 		netWriteRunnable.setNetworker(this);
 		netWriteRunnable.init();
+		netPeerRunnable.setNetworker(this);
+		netPeerRunnable.init();
+		
 
 		netReadThread = new Thread(netReadRunnable);
 		netWriteThread = new Thread(netWriteRunnable);
+		netPeerReadThread = new Thread(netPeerRunnable);
 		netReadThread.start();
 		netWriteThread.start();
+		netPeerReadThread.start();
 	}
 
 	/** Requests a subscrition to the given topic by the given susbsystem.

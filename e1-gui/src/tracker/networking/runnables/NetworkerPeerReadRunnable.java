@@ -13,7 +13,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
-
+import tracker.exceptions.NetProtoException;
 import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
@@ -34,14 +34,14 @@ public class NetworkerPeerReadRunnable implements Runnable {
 		this.ip = ip;
 	}
 	
-	public void init() throws SocketException {
+	public void init() throws NetProtoException {
 		try {
 			this.socket = new MulticastSocket(port);
 			this.group = InetAddress.getByName(ip);
 			this.socket.joinGroup(this.group);
 			this.initialized = true;
 		} catch (UnknownHostException | SocketException e) {
-			throw new SocketException();
+			throw new NetProtoException("Unknow host: " + ip);
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
