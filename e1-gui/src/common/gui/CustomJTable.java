@@ -29,11 +29,18 @@ public class CustomJTable extends JTable {
 	}
 	
 	@Override
-    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-        Component component = super.prepareRenderer(renderer, row, column);
-        int rendererWidth = component.getPreferredSize().width;
-        TableColumn tableColumn = getColumnModel().getColumn(column);
-        tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-        return component;
+    public Component prepareRenderer(TableCellRenderer renderer, int row,
+    		int column)
+	{
+		try {
+			Component component = super.prepareRenderer(renderer, row, column);
+			int rendererWidth = component.getPreferredSize().width;
+			TableColumn tableColumn = getColumnModel().getColumn(column);
+			tableColumn.setPreferredWidth(Math.max(
+					rendererWidth + getIntercellSpacing().width,
+					tableColumn.getPreferredWidth()));
+        	return component;
+		} catch(Exception e) {};
+		return editorComp;
      }
 }
