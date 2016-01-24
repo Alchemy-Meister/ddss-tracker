@@ -25,5 +25,10 @@ public class Const {
 	public static final long HI_EVERY = 2000;
 	public static final long ME_EVERY = 1000;
 	public static final long WAIT_BEFORE_IAM_MASTER = 3000;
-
+	
+	// retry waits
+	// if no ds-ready is listened in ANNOUNCE_RETRY ms the announce is resend 
+	public static final long ANNOUNCE_RETRY = 10000;
+	// if no ds-commit is listened in DS_COMMIT_RETRY ms the commitis resend
+	public static final long DS_COMMIT_RETRY = 10000;
 }

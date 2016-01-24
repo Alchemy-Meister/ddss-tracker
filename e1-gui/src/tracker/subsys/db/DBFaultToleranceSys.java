@@ -39,10 +39,15 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private Map<Integer, AnnounceRequest> waitingAR;
 	// order of the waiting anno. requests
 	private List<Integer> waitingAROrder;
-	// when the anno. r. was received
-	private Map<Integer, Long> waitingARTime; 
 	// lock for the above variables
 	private final Lock announceOrderLock = new ReentrantLock();
+	
+	// when the anno. r. was received
+	private Map<Integer, Long> transIDARSentTime;
+	
+	// when the commit for a transaction id was ordered
+	private final Lock transIDCommitSentTimeLock = new ReentrantLock();
+	private Map<Integer, Long> transIDCommitSentTime;
 	
 	// id of peers ready for transaction_id
 	private Map<Integer, List<String>> transIdReady;
@@ -74,6 +79,8 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		this.waitingAROrder = new ArrayList<Integer>();
 		this.alreadyCommited = new ArrayList<Integer>();
 		this.transIdReady = new HashMap<Integer, List<String>>();
+		this.transIDARSentTime = new HashMap<Integer, Long>();
+		this.transIDCommitSentTime = new HashMap<Integer, Long>();
 	}
 	
 	/** Singleton. Just one thread.
@@ -94,22 +101,100 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		
 		while(true) {
 			if (canIParticipate()) {
-				if (getCheckTimeToRetryAnnounce()) {
-					// TODO
-					
-				}
-				if (getCheckTimeToRetryCommit()) {
-					
+				Integer first_transaction = getFirstTransaction();
+				if (first_transaction != null) {
+					if (getCheckTimeToRetryAnnounce()) {
+						Long announceSent = getARSendTime(first_transaction);
+						if (announceSent != null) {
+							// check if the waiting time has exceeded
+							// (just master)
+							if (ipidtable.amIMaster())
+							{
+								if (System.currentTimeMillis() - announceSent
+										> Const.ANNOUNCE_RETRY)
+								{
+									AnnounceRequest ar = getAR(first_transaction);
+									networker.notify(Topic.ANNOUNCE_R,
+									// impossible to indent properly U_U
+									 new Bundle(new String(Utilities.unpack(
+										ar.getPeerInfo().getIpAddress())),
+													ar.getPeerInfo().getPort(),
+													ar));
+								}
+							}
+							if (haveThemAllReady(first_transaction)) {
+								setCheckTineToRetryAnnounce(false);
+							}
+						}
+					} 
+					if (getCheckTimeToRetryCommit()) {
+						Long commitSent = getTransIdCommitSentTime(first_transaction);
+						if (commitSent != null) {
+							// check if the waiting time has exceeded
+							// (just master)
+							if (ipidtable.amIMaster())
+							{
+								if (System.currentTimeMillis() - commitSent
+										> Const.DS_COMMIT_RETRY)
+								{
+									AnnounceRequest ar = getAR(first_transaction);
+									if (ar != null) {
+										DSCommitM commit = new DSCommitM(
+												ar.getConnectionId(),
+												ar.getAction().value(),
+												first_transaction);
+										putTransIdCommitSendTime(first_transaction);
+										networker.publish(Topic.DS_COMMIT,
+												commit);
+									}
+								}
+							}
+							// check again if they have all commited
+							if (haveThemAllCommited(first_transaction)) {
+								setCheckTimeToRetryCommit(false);
+								cleanTransactionId(first_transaction);
+							}
+						}
+					}
 				}
 			}
-			
-			
 			try { Thread.sleep(100);} catch (Exception e) {}
 		}
 	}
 	
 	private boolean canIParticipate() {
-		return false; // TODO
+		LongLong l = ipidtable.getMyId();
+		if (l != null && !l.toString().equals(Const.UNASIGNED_ID.toString()))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Returns the first transaction that we have to check.
+	 * @return
+	 */
+	private Integer getFirstTransaction() {
+		Integer ret = null;
+		announceOrderLock.lock();
+		try {
+			if (waitingAROrder.size() > 0)
+				ret = waitingAROrder.get(0);
+		} finally {
+			announceOrderLock.unlock();
+		}
+		return ret;
+	}
+	
+	/** When a transaction is completely processed, delete it.
+	 * @param transaction_id
+	 */
+	private synchronized void cleanTransactionId(int transaction_id) {
+		// announces
+		removeAR(transaction_id);
+		// readys
+		removeReady(transaction_id);
+		// commits
+		removeCommit(transaction_id);
 	}
 
 	@Override
@@ -118,21 +203,17 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 			if (topic == Topic.ANNOUNCE_R) {
 				AnnounceRequest announce = bundle.getPeerMessage();
 				putAR(announce);
-				if (ipidtable.amIMaster()) {
-					// initialise the list of peers ready for this tran id
-					transIdReadyLock.lock();
-					try {
-						if (!transIdReady.containsKey(
-								announce.getTransactionId()))
-						{
-							transIdReady.put(announce.getTransactionId(),
-									new ArrayList<String>());
-						}
-					} finally {
-						transIdReadyLock.unlock();
+				// initialise the list of peers ready for this tran id
+				transIdReadyLock.lock();
+				try {
+					if (!transIdReady.containsKey(announce.getTransactionId())) {
+						transIdReady.put(announce.getTransactionId(),
+								new ArrayList<String>());
 					}
-				} else {
-					
+				} finally {
+					transIdReadyLock.unlock();
+				}
+				if (!ipidtable.amIMaster()) {
 					// send a DS_READY if I am ready to commit
 					try {
 						List<SHA1> info_hashes = new ArrayList<SHA1>();
@@ -161,22 +242,23 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				}
 			} else if (topic == Topic.DS_READY) {
 				DSReadyM dsready = (DSReadyM) bundle.getMessage();
+				// update the list of peers ready for the given trans id
+				String id = dsready.getId().toString();
+				setTransIdReady(dsready.getTransactionId(), id);
 				if (ipidtable.amIMaster()) {
-					// update the list of peers ready for the given trans id
-					String id = dsready.getId().toString();
-					if (!id.equals(ipidtable.getMyId().toString())) {
-						setTransIdReady(dsready.getTransactionId(), id);
-						// after updating check if we have them all to send 
-						// a DS_COMMIT
-						if (haveThemAllReady(dsready.getTransactionId())) {
+					// after updating check if we have them all to send 
+					// a DS_COMMIT for the first transaction id
+					Integer first_transaction = getFirstTransaction();
+					if (first_transaction != null) {
+						if (haveThemAllReady(first_transaction)) {
 							setCheckTineToRetryAnnounce(false);
-							AnnounceRequest ar = getAR(
-									dsready.getTransactionId());
+							AnnounceRequest ar = getAR(first_transaction);
 							if (ar != null) {
 								DSCommitM commit = new DSCommitM(
-										dsready.getConnection_id(),
+										ar.getConnectionId(),
 										ar.getAction().value(),
-										dsready.getTransactionId());
+										first_transaction);
+								putTransIdCommitSendTime(first_transaction);
 								networker.publish(Topic.DS_COMMIT, commit);
 							}
 						} else {
@@ -215,14 +297,68 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				}
 			} else if (topic == Topic.DS_DONE) {
 				DSDoneM done = (DSDoneM) bundle.getMessage();
+				setTransIdCommited((int) done.getConnection_id(),
+						done.getSenderId().toString());
 				if (ipidtable.amIMaster()) {
-					setTransIdCommited((int) done.getConnection_id(),
-							done.getSenderId().toString());
+					// check if all have commited the first transaction
+					Integer first_transaction = getFirstTransaction();
+					if (first_transaction != null) {
+						if (haveThemAllCommited(first_transaction)) {
+							setCheckTimeToRetryCommit(false);
+							cleanTransactionId(first_transaction);
+						} else {
+							setCheckTimeToRetryCommit(true);
+						}
+					}
+					
 				}
 			}
 		}
 	}
 	
+	private void removeCommit(int transaction_id) {
+		transIdCommitedLock.lock();
+		try {
+			transIdCommited.remove(transaction_id);
+		} finally {
+			transIdCommitedLock.unlock();
+		}
+		transIDCommitSentTimeLock.lock();
+		try {
+			transIDCommitSentTime.remove(transaction_id);
+		} finally {
+			transIdCommitedLock.unlock();
+		}
+		alreadyCommitedLock.lock();
+		try {
+			alreadyCommited.remove(transaction_id);
+		} finally {
+			alreadyCommitedLock.unlock();
+		}
+	}
+	
+	private void putTransIdCommitSendTime(int transactionId) {
+		transIDCommitSentTimeLock.lock();
+		try {
+			if (transIDCommitSentTime.get(transactionId) == null)
+				transIDCommitSentTime.put(transactionId,
+						System.currentTimeMillis());
+		} finally {
+			transIDCommitSentTimeLock.unlock();
+		}
+	}
+	
+	private Long getTransIdCommitSentTime(int transactionId) {
+		Long ret = null;
+		transIDCommitSentTimeLock.lock();
+		try {
+			ret = transIDCommitSentTime.get(transactionId);
+		} finally {
+			transIDCommitSentTimeLock.unlock();
+		}
+		return ret;
+	}
+
 	// Track the slave ids that have a given transaction id ready
 	private void setTransIdReady(int transaction_id, String slaveid) {
 		transIdReadyLock.lock();
@@ -317,12 +453,23 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 			if (!waitingAR.containsKey(announce.getTransactionId())) { 
 				waitingAROrder.add(announce.getTransactionId());
 				waitingAR.put(announce.getTransactionId(), announce);
-				waitingARTime.put(announce.getTransactionId(),
+				transIDARSentTime.put(announce.getTransactionId(),
 						System.currentTimeMillis());
 			}
 		} finally {
 			announceOrderLock.unlock();
 		}
+	}
+	
+	private Long getARSendTime(int transactionId) {
+		Long ret = null;
+		announceOrderLock.lock();
+		try {
+			ret = transIDARSentTime.get(transactionId);
+		} finally {
+			announceOrderLock.unlock();
+		}
+		return ret;
 	}
 	
 	/** Deletes an announce request given its connection_id from the queue
@@ -333,7 +480,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		try {
 			waitingAROrder.remove(transaction_id);
 			waitingAR.remove(transaction_id);
-			waitingARTime.remove(transaction_id);
+			transIDARSentTime.remove(transaction_id);
 		} finally {
 			announceOrderLock.unlock();
 		}
@@ -356,6 +503,17 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	
 	// end Announce request storage
 	
+	/** Removes the given trans id from the ready list
+	 * @param transaction_id
+	 */
+	private void removeReady(int transaction_id) {
+		transIdReadyLock.lock();
+		try {
+			transIdReady.remove(transaction_id);
+		} finally {
+			transIdReadyLock.unlock();
+		}
+	}
 	
 	// Transaction commit: for a given instance stores the transaction_ids
 	// that have been already commited
@@ -396,9 +554,26 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * @return
 	 */
 	private boolean haveThemAllReady(int transaction_id) {
-		// TODO
 		List<TrackerMember> members = ipidtable.getAll();
-		return false;
+		List<String> copyIdReady = null;
+		transIdReadyLock.lock();
+		try {
+			if (transIdReady.containsKey(transaction_id))
+				copyIdReady = new ArrayList<String>(transIdReady.get(transaction_id));
+		} finally {
+			transIdReadyLock.unlock();
+		}
+		boolean allReady = true;
+		if (copyIdReady != null) {
+			for (TrackerMember member : members) {
+				if (!copyIdReady.contains(member.getId().toString())) {
+					allReady = false;
+					break;
+				}
+			}
+		} else
+			allReady = false;
+		return allReady;
 	}
 	
 	/** Checks if all the instances at this given point in time have
@@ -407,8 +582,25 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * @return
 	 */
 	private boolean haveThemAllCommited(int transaction_id) {
-		// TODO
 		List<TrackerMember> members = ipidtable.getAll();
-		return false;
+		List<String> copyIdCommit = null;
+		transIdCommitedLock.lock();
+		try {
+			if (transIdCommited.containsKey(transaction_id))
+				copyIdCommit = new ArrayList<String>(transIdCommited.get(transaction_id));
+		} finally {
+			transIdCommitedLock.unlock();
+		}
+		boolean allcommit = true;
+		if (copyIdCommit != null) {
+			for (TrackerMember member : members) {
+				if (!copyIdCommit.contains(member.getId().toString())) {
+					allcommit = false;
+					break;
+				}
+			}
+		} else
+			allcommit = false;
+		return allcommit;
 	}
 }
