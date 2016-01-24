@@ -309,6 +309,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 				try {
 					this.biController.connect(
 							Integer.parseInt(this.tfSP.getText()),
+							Integer.parseInt(this.tfPP.getText()),
 							this.tfIP.getText());
 					this.connectButton.setText(DISCONNECT_MGS);
 					this.tfIP.setEnabled(false);

@@ -35,9 +35,9 @@ public abstract class TrackerSubsystem implements Subscriber {
 				o.update(null, param);
 	}
 	
-	public static void setNetwork(String ip, int port) {
+	public static void setNetwork(String ip, int port, int peerPort) {
 		if (networker == null)
-			networker = Networker.getInstance(port, ip);
+			networker = Networker.getInstance(port, peerPort, ip);
 	}
 	
 }
