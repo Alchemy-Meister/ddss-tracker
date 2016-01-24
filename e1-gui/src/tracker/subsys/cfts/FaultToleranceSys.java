@@ -101,15 +101,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		// 2- We also start sending HI messages
 		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
 				myHiConnectionIds), 0);
-
-		/*
-		while(running) {
-			//checkOfflineMembers();
-			// check if the current master is ok
-			//checkMaster();
-		}
-		*/
-
 	}
 
 	public void stop() {
@@ -127,8 +118,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
 		if (topic == Topic.KA) {
-			if (Const.PRINTF_FTS)
-				System.out.println("\n [FTS] KA:" + bundle);
+			//if (Const.PRINTF_FTS)
+			//	System.out.println("\n [FTS] KA:" + bundle);
 			// update ip id table
 			KeepAliveM mess = (KeepAliveM) bundle.getMessage();
 			this.ipidTable.set(bundle.getIP(), mess.getId());
@@ -254,7 +245,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 												myID), 0);
 								if (Const.PRINTF_FTS) {
 									System.out.println(" [FTS] Master has " +
-											"assigne me this id: "
+											"assigned this id: "
 											+ myID.toString());
 								}
 								// Save contents, remember that when host -> -1
@@ -302,8 +293,8 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		// If master has sent us a HIResponse we wait until a KA
 		// to know the master ID and set up in our table who is master
 		if (updateMaster) {
-			boolean updated = ipidTable.updateMaster();
-			updateMaster = !updated;
+			ipidTable.electMaster(ipidTable.getMemberLowestId().getId());
+			updateMaster = false;
 		}
 		// Check if master is down
 		if (!waitingForMaster) {
@@ -314,14 +305,21 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 			}
 		}
 		// Check if I am wrongly master
-		if (amIMaster()) {
+		if (!masterElection.isInProgress()) {
 			LongLong mid = ipidTable.getMasterID();
 			TrackerMember lowestMem = ipidTable.getMemberLowestId();
-			if (mid != null && lowestMem != null) {
-				if (!lowestMem.getId().toString().equals(mid)) {
-					ipidTable.electMaster(ipidTable.getMemberLowestId().getId());
-					updateMaster = false;
+			if (mid != null) {
+				if (lowestMem != null) {
+					if (!lowestMem.getId().toString().equals(mid.toString())) {
+						System.out.println(" [FTS] Inconsistency, lowest: " 
+								+ lowestMem.getId().toString() + ", master: "
+								+ mid.toString());
+						ipidTable.electMaster(lowestMem.getId());
+						updateMaster = false;
+					}
 				}
+			} else {
+				masterElection.startMasterElection();
 			}
 		}
 	}
