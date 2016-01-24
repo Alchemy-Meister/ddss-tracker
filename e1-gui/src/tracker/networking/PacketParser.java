@@ -157,6 +157,10 @@ public class PacketParser {
 				int action = messageBytes.getInt(12);
 				int transaction_id = messageBytes.getInt(16);
 				int current_post = 16 + 4;
+				byte [] sender_id = new byte[16];
+				System.arraycopy(bytes, current_post, sender_id, 0, 16);
+				LongLong senderIdL = new LongLong(sender_id);
+				current_post += 16;
 				List<SHA1> infohashes = new ArrayList<SHA1>();
 				while (current_post < tempPos) {
 					byte[] sha1bytes = new byte[20];
@@ -169,7 +173,7 @@ public class PacketParser {
 					current_post += 20;
 				}
 				return new DSReadyM(connection_id, action, transaction_id,
-						infohashes);
+						senderIdL, infohashes);
 			} else
 				throw new PacketParserException("0x0A 0x0D not found on DS-C");
 		case 4: // DS_COMMIT
@@ -185,7 +189,9 @@ public class PacketParser {
 			tempPos = getCRLFpos(bytes, 4);
 			if (tempPos != -1) { // we are at 0x0A
 				long connection_id = messageBytes.getLong(4);
-				return new DSDoneM(connection_id);
+				byte [] senderId = new byte[16];
+				System.arraycopy(bytes, 4 + 8, senderId, 0, 16);
+				return new DSDoneM(connection_id, new LongLong(senderId));
 			} else
 				throw new PacketParserException("0x0A 0x0D not found on DS-D");
 		default:

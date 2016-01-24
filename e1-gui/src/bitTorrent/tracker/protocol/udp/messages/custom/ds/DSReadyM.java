@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
+import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.Type;
 import tracker.Const;
@@ -14,7 +15,8 @@ import tracker.Const;
  * 4       64-bit integer   connection_id
  * 12	   32-bit integer   action
  * 16      32-bit integer   transaction_id
- * 20      160-bit integer  info_hash       | Repeat, at least one
+ * 20 	   128-bit integer  sender's ID
+ * 36      160-bit integer  info_hash       | Repeat, at least one
  * @author Irene
  * @author Jesus
  *
@@ -22,15 +24,25 @@ import tracker.Const;
 public class DSReadyM extends DatabaseSyncM {
 	
     private int action, transaction_id;
+    private LongLong id;
     private List<SHA1> info_hashes;
 
 	public DSReadyM(long connection_id, int action, int transaction_id,
-			List<SHA1> info_hashes)
+			LongLong id, List<SHA1> info_hashes)
 	{
 		super(Type.DS_READY, connection_id);
 		this.action = action;
 		this.transaction_id = transaction_id;
+		this.id = id;
 		this.info_hashes = info_hashes;
+	}
+	
+	public int getTransactionId() {
+		return this.transaction_id;
+	}
+	
+	public LongLong getId() {
+		return this.id;
 	}
 
 	@Override
@@ -42,6 +54,7 @@ public class DSReadyM extends DatabaseSyncM {
 		byte[] actionbytes = ByteBuffer.allocate(4).putInt(this.action).array();
 		byte[] transbytes = ByteBuffer.allocate(4).putInt(
 				this.transaction_id).array();
+		byte[] idbytes = id.getBytes();
 		byte[] infohashesbytes = new byte[20 * info_hashes.size()];
 		int offset = 0;
 		for (SHA1 l : info_hashes) {
@@ -51,7 +64,7 @@ public class DSReadyM extends DatabaseSyncM {
 		}
 		byte[] ret = new byte[typeBytes.length + connIdBytes.length
 		                      + actionbytes.length + transbytes.length
-		                      + infohashesbytes.length
+		                      + idbytes.length + infohashesbytes.length
 		                      + CustomMessage.CRLF.length];
 		System.arraycopy(typeBytes, 0, ret, 0, typeBytes.length);
 		System.arraycopy(connIdBytes, 0, ret, typeBytes.length,
@@ -60,12 +73,17 @@ public class DSReadyM extends DatabaseSyncM {
 				+ connIdBytes.length, actionbytes.length);
 		System.arraycopy(transbytes, 0, ret, typeBytes.length
 				 + connIdBytes.length + actionbytes.length, transbytes.length);
-		System.arraycopy(infohashesbytes, 0, ret, typeBytes.length
+		System.arraycopy(idbytes, 0, ret, typeBytes.length
 				 + connIdBytes.length + actionbytes.length + transbytes.length,
+				 idbytes.length);
+		System.arraycopy(infohashesbytes, 0, ret, typeBytes.length
+				 + connIdBytes.length + actionbytes.length + transbytes.length
+				 + idbytes.length,
 				 infohashesbytes.length);
 		System.arraycopy(CustomMessage.CRLF, 0, ret, typeBytes.length
 				 + connIdBytes.length + actionbytes.length + transbytes.length
-				 + infohashesbytes.length, CustomMessage.CRLF.length);
+				 + idbytes.length + infohashesbytes.length,
+				 CustomMessage.CRLF.length);
 		if (Const.PRINTF_BYTES) {
 			System.out.print("[ DS-R] HEX: ");
 			for (byte i : ret)

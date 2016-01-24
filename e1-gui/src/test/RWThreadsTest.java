@@ -36,8 +36,8 @@ public class RWThreadsTest {
 		//net.subscribe(Topic.KA, systemW);
 		net.subscribe(Topic.ME, systemR);
 		net.subscribe(Topic.DS_READY, systemR);
-		/*net.subscribe(Topic.DS_COMMIT, systemR);
-		net.subscribe(Topic.DS_DONE, systemR);*/
+		//net.subscribe(Topic.DS_COMMIT, systemR);
+		net.subscribe(Topic.DS_DONE, systemR);
 		net.startRW();
 		new Thread(systemW).start();
 	}
@@ -97,12 +97,13 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 			info_hashes.add(new SHA1(DigestUtils.sha1("14")));
 			info_hashes.add(new SHA1(DigestUtils.sha1("15")));
 			info_hashes.add(new SHA1(DigestUtils.sha1("16")));
-			net.publish(Topic.DS_READY, new DSReadyM(2, 5, 10, info_hashes)); // ok
+			net.publish(Topic.DS_READY, new DSReadyM(2, 5, 10,
+					new LongLong("4"), info_hashes)); // ok
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		//net.publish(Topic.DS_COMMIT, new DSCommitM(10, 10, 10)); // ok
-		//net.publish(Topic.DS_DONE, new DSDoneM(222222222));
+		net.publish(Topic.DS_DONE, new DSDoneM(222222222, new LongLong("23")));
 	}
 
 	@Override

@@ -27,6 +27,10 @@ public class DSCommitM extends DatabaseSyncM {
 		this.action = action;
 		this.transaction_id = transaction_id;
 	}
+	
+	public int getTransactionId() {
+		return this.transaction_id;
+	}
 
 	@Override
 	public byte[] getBytes() {
