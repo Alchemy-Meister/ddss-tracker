@@ -65,15 +65,18 @@ public class PacketParser {
 			// ME messages are similar to KA
 			tempPos = getCRLFpos(bytes, 4);
 			if (tempPos != -1) { // we are at 0x0A
-				byte payload[] = new byte[tempPos - 4];
-				System.arraycopy(bytes, 4, payload, 0, tempPos - 4);
+				byte payload[] = new byte[16];
+				System.arraycopy(bytes, 4, payload, 0, 16);
+				byte author[] = new byte[16];
+				System.arraycopy(bytes, 4 + 16, author, 0, 16);
 				if (Const.PRINTF) {
 					System.out.print("\n[PaPa] read payload: ");
 					for (byte i : payload)
 						System.out.printf("0x%02X ", i);
 					System.out.println();
 				}
-				return new MasterElectionM(new LongLong(payload));
+				return new MasterElectionM(new LongLong(payload),
+							new LongLong(author));
 			} else
 				throw new PacketParserException("0x0A 0x0D not found on ME");
 		case 2: // HI
@@ -136,7 +139,6 @@ public class PacketParser {
 								throw new PacketParserException("Error parsing HI");
 							}
 						}
-						System.out.println("[HelloResponse message]");
 						
 						try {
 							return new HelloResponseM(connection_id,

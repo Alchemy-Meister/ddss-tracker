@@ -24,6 +24,7 @@ import tracker.networking.PacketParser;
 import tracker.networking.Topic;
 import tracker.subsys.TrackerSubsystem;
 
+@SuppressWarnings("unused")
 public class RWThreadsTest {
 
 	public static void main(String [] args) throws NetProtoException {
@@ -33,7 +34,7 @@ public class RWThreadsTest {
 		//net.subscribe(Topic.KA, systemR);
 		net.subscribe(Topic.HI, systemR);
 		//net.subscribe(Topic.KA, systemW);
-		//net.subscribe(Topic.ME, systemR);
+		net.subscribe(Topic.ME, systemR);
 		/*net.subscribe(Topic.DS_READY, systemR);
 		net.subscribe(Topic.DS_COMMIT, systemR);
 		net.subscribe(Topic.DS_DONE, systemR);*/
@@ -70,7 +71,10 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 	public void run() {;
 	/*
 		net.publish(Topic.KA, new KeepAliveM(new LongLong("23"))); // ok
-		net.publish(Topic.ME, new MasterElectionM(new LongLong("9996"))); // ok
+	*/
+		net.publish(Topic.ME, new MasterElectionM(new LongLong("9996"),
+				new LongLong("555"))); // ok
+	/*
 		net.publish(Topic.HI, new HelloM(23));// ok
 		net.publish(Topic.HI, new HelloCloseM(21, new LongLong("9393"),
 				new LongLong("9494"))); // ok 
