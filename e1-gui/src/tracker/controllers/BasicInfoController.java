@@ -37,12 +37,12 @@ public class BasicInfoController {
 			return true;
 	}
 
-	public void connect(int port, String ip) 
+	public void connect(int port, int peerPort, String ip) 
 			throws NetProtoException {
 		// TODO HERE IT BEGINS
-		networker = Networker.getInstance(port, ip);
+		networker = Networker.getInstance(port, peerPort, ip);
 		networker.startRW();
-		FaultToleranceSys.setNetwork(ip, port);
+		FaultToleranceSys.setNetwork(ip, peerPort, port);
 		fts = FaultToleranceSys.getInstance();
 		fts.run();
 	}

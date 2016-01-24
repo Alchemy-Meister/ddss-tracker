@@ -6,6 +6,7 @@ import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import tracker.exceptions.NetProtoException;
+import tracker.networking.runnables.NetworkerPeerReadRunnable;
 import tracker.networking.runnables.NetworkerReadRunnable;
 import tracker.networking.runnables.NetworkerWriteRunnable;
 import tracker.subsys.TrackerSubsystem;
@@ -17,20 +18,22 @@ import tracker.subsys.TrackerSubsystem;
 public class Networker implements Publisher {
 
 	private static Networker instance = null;
-	private Thread netReadThread, netWriteThread;
+	private Thread netReadThread, netWriteThread, netPeerReadThread;
 	private NetworkerReadRunnable netReadRunnable;
+	private NetworkerPeerReadRunnable netPeerRunnable;
 	private NetworkerWriteRunnable netWriteRunnable;
 	private HashMap<Topic, List<TrackerSubsystem>> subscribers;
 
-	private Networker(int port, String ip) {
+	private Networker(int port, int peerPort, String ip) {
 		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
 		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
+		this.netPeerRunnable = new NetworkerPeerReadRunnable(port, ip);
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 	}
 
-	public static Networker getInstance(int port, String ip) {
+	public static Networker getInstance(int port, int peerPort, String ip) {
 		if (instance == null) {
-			instance = new Networker(port, ip);
+			instance = new Networker(port, peerPort, ip);
 		} else {
 			instance.netReadRunnable.setIP(ip);
 			instance.netReadRunnable.setPort(port);
@@ -42,7 +45,9 @@ public class Networker implements Publisher {
 
 	public boolean isNetThreadRunning() {
 		return (this.netReadThread != null && this.netReadThread.isAlive()) 
-				|| (this.netWriteThread != null && this.netWriteThread.isAlive());
+				|| (this.netWriteThread != null && this.netWriteThread.isAlive())
+				|| (this.netPeerReadThread != null && 
+				this.netPeerReadThread.isAlive());
 	}
 
 	public void stopNetThread() {
