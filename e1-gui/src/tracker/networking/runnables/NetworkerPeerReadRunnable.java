@@ -13,7 +13,10 @@ import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
-import peer.networking.Networker;
+
+import tracker.networking.Bundle;
+import tracker.networking.Networker;
+import tracker.networking.Topic;
 import tracker.subsys.cfts.IpIdTable;
 
 public class NetworkerPeerReadRunnable implements Runnable {
@@ -46,6 +49,10 @@ public class NetworkerPeerReadRunnable implements Runnable {
 	
 	public void setNetworker(Networker networker) {
 		this.networker = networker;
+	}
+	
+	private void notify(Topic topic, Bundle bundle) {
+		this.networker.notify(topic, bundle);
 	}
 	
 	public void setIP(String ip) {
@@ -90,6 +97,11 @@ public class NetworkerPeerReadRunnable implements Runnable {
 						case ANNOUNCE:
 							AnnounceRequest aRequest = AnnounceRequest.parse(
 									messageIn.getData());
+							notify(Topic.ANNOUNCE_R,
+									// line too long, U_U
+									new Bundle(messageIn.getAddress().getHostAddress(),
+											messageIn.getPort(),
+											aRequest));
 							AnnounceResponse aResponse = new AnnounceResponse();
 							//TODO SET SHITTY PARAMS.
 							if(IpIdTable.getInstance().amIMaster()) {

@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
+import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPRequestMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.CustomMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import tracker.exceptions.PacketParserException;
 
 public class Bundle extends HashMap<BundleKeys, byte[]> {
@@ -15,12 +17,23 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 		super();
 	}
 	
+	private boolean comesFromPeer = false;
+	
 	public Bundle(String ip, int port, CustomMessage message) {
 		super();
 		this.setIP(ip);
 		this.setPort(port);
 		this.setMessage(message);
 		this.setCurrentTimeStamp();
+		this.comesFromPeer = false;
+	}
+	
+	public Bundle(String ip, int port, AnnounceRequest message) {
+		this.setIP(ip);
+		this.setPort(port);
+		this.setMessage(message);
+		this.setCurrentTimeStamp();
+		this.comesFromPeer = true;
 	}
 	
 	@Override
@@ -35,6 +48,10 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 	
 	public void setPort(int port) {
 		this.put(BundleKeys.PORT, Integer.toString(port).getBytes());
+	}
+	
+	public void setMessage(BitTorrentUDPRequestMessage message) {
+		this.put(BundleKeys.MESSAGE, message.getBytes());
 	}
 	
 	public void setMessage(CustomMessage message) {
@@ -56,16 +73,27 @@ public class Bundle extends HashMap<BundleKeys, byte[]> {
 	}
 	
 	public CustomMessage getMessage() {
-		try {
-			return PacketParser.parse(this.get(BundleKeys.MESSAGE));
-		} catch (PacketParserException e) {
+		if (!this.comesFromPeer) {
+			try {
+				return PacketParser.parse(this.get(BundleKeys.MESSAGE));
+			} catch (PacketParserException e) {
+				return null;
+			}	
+		} else 
 			return null;
-		}
+	}
+	
+	public AnnounceRequest getPeerMessage() {
+		if (this.comesFromPeer)
+			return AnnounceRequest.parse(this.get(BundleKeys.MESSAGE));
+		else
+			return null;
 	}
 	
 	public String getTimestamp() {
 		return new String(this.get(BundleKeys.TIMESTAMP));
 	}
+	
 	
 	public boolean equal(Bundle bundle) {
 		return this.getIP().equals(bundle.getIP()) && 

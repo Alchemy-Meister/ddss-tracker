@@ -4,7 +4,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.Type;
 
 public enum Topic {
 
-	KA(0), ME(1), HI(2), DS_READY(3), DS_COMMIT(4), DS_DONE(5),
+	KA(0), ME(1), HI(2), DS_READY(3), DS_COMMIT(4), DS_DONE(5), ANNOUNCE_R(6),
 	ERROR(-1);
 	
 	private int value;
@@ -31,6 +31,8 @@ public enum Topic {
 			return Topic.DS_COMMIT;
 		case 5:
 			return Topic.DS_DONE;
+		case 6:
+			return Topic.ANNOUNCE_R;
 		default:
 			return Topic.ERROR;
 		}
