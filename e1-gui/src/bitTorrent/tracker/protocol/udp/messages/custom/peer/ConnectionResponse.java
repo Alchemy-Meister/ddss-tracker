@@ -8,9 +8,9 @@ import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPRequestMessage;
 /**
 *
 * Offset  Size    			Name    			Value
-* 0       64-bit integer  	connection_id
-* 8       32-bit integer  	action          	
-* 12      32-bit integer  	transaction_id
+* 0       32-bit integer  	action  
+* 4	      32-bit integer  	transaction_id
+* 12      64-bit integer  	connection_id        	
 * 
 */
 
@@ -31,9 +31,9 @@ public class ConnectionResponse extends BitTorrentUDPRequestMessage {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(16);
 		byteBuffer.order(ByteOrder.BIG_ENDIAN);
 		
-		byteBuffer.putLong(0, this.getConnectionId());
-		byteBuffer.putInt(8, this.getAction().value());
-		byteBuffer.putInt(12, this.getTransactionId());
+		byteBuffer.putInt(0, this.getAction().value());
+		byteBuffer.putInt(4, this.getTransactionId());
+		byteBuffer.putLong(8, this.getConnectionId());
 		
 		byteBuffer.flip();
 		
@@ -44,9 +44,9 @@ public class ConnectionResponse extends BitTorrentUDPRequestMessage {
 		ByteBuffer bufferReceive = ByteBuffer.wrap(byteArray);
 		ConnectionResponse request = new ConnectionResponse();
 		
-		request.setConnectionId(bufferReceive.getLong(0));
-		request.setAction(Action.valueOf(bufferReceive.getInt(8)));
-		request.setTransactionId(bufferReceive.getInt(12));
+		request.setAction(Action.valueOf(bufferReceive.getInt(0)));
+		request.setTransactionId(bufferReceive.getInt(8));
+		request.setConnectionId(bufferReceive.getLong(12));
 		
 		return request;
 	}

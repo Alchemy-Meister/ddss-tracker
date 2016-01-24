@@ -1,5 +1,6 @@
 package peer.networking;
 
+import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import peer.networking.runnables.NetworkerReadRunnable;
@@ -12,16 +13,19 @@ public class Networker {
 	private NetworkerWriteRunnable netWriteRunnable;
 	
 	private Networker(int port, String ip) {
-		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
-		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
+		try {
+			DatagramSocket socket = new DatagramSocket();
+			this.netReadRunnable = new NetworkerReadRunnable(socket);
+			this.netWriteRunnable = new NetworkerWriteRunnable(port, ip, socket);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static Networker getInstance(int port, String ip) {
 		if (instance == null) {
 			instance = new Networker(port, ip);
 		} else {
-			instance.netReadRunnable.setIP(ip);
-			instance.netReadRunnable.setPort(port);
 			instance.netWriteRunnable.setIP(ip);
 			instance.netWriteRunnable.setPort(port);
 		}
@@ -35,7 +39,6 @@ public class Networker {
 	
 	public void startRW() throws SocketException {
 		netReadRunnable.setNetworker(this);
-		netReadRunnable.init();
 		netWriteRunnable.setNetworker(this);
 		netWriteRunnable.init();
 		

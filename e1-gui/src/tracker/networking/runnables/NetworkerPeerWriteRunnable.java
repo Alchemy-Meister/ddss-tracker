@@ -29,10 +29,9 @@ public class NetworkerPeerWriteRunnable implements Runnable {
 				DatagramPacket datagram = new DatagramPacket(
 						message.getBytes(), message.getBytes().length,
 						InetAddress.getByName(ip), port);
-
 				socket.send(datagram);
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 	}
 }
