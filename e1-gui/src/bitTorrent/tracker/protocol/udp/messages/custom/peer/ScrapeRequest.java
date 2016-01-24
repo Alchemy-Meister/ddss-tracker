@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -27,6 +28,7 @@ public class ScrapeRequest extends BitTorrentUDPRequestMessage {
 	public ScrapeRequest() {
 		super(Action.SCRAPE);
 		this.infoHashes = new ArrayList<>();
+		this.setTransactionId(new Random().nextInt());
 	}
 	
 	@Override

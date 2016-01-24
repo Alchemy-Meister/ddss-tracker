@@ -6,6 +6,7 @@ import bitTorrent.metainfo.InfoDictionarySingleFile;
 import bitTorrent.metainfo.MetainfoFile;
 import bitTorrent.metainfo.handler.MetainfoHandlerSingleFile;
 import peer.gui.TorrentTableModel;
+import peer.model.Torrents;
 
 public class TorrentController {
 	
@@ -14,6 +15,7 @@ public class TorrentController {
 		handler.parseTorrenFile(torrent.getPath());
 		
 		MetainfoFile<InfoDictionarySingleFile> metainfo = handler.getMetainfo();
+		Torrents.addTorrent(metainfo.getInfo().getHexInfoHash(), metainfo);
 		
 		tableModel.addRow(metainfo);
 	}

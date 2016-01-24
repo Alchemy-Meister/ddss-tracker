@@ -77,7 +77,14 @@ public class NetworkerReadRunnable implements Runnable {
 					this.socket.receive(messageIn);
 					if(messageIn != null) {
 						if(isConnectionMessage(messageIn)) {
-							networker.setReceivedConnectionMessage(true);
+							System.out.println(this.socket.getRemoteSocketAddress());
+							System.out.println(this.socket.getLocalSocketAddress());
+							if(this.socket.getRemoteSocketAddress() != null && 
+									this.socket.getRemoteSocketAddress()
+									!= this.socket.getLocalSocketAddress())
+							{
+								networker.setReceivedConnectionMessage(true);
+							}
 						}
 					}
 				} catch (IOException e) {
