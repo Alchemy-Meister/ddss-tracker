@@ -27,7 +27,7 @@ public class Networker implements Publisher {
 	private Networker(int port, int peerPort, String ip) {
 		this.netReadRunnable = new NetworkerReadRunnable(port, ip);
 		this.netWriteRunnable = new NetworkerWriteRunnable(port, ip);
-		this.netPeerRunnable = new NetworkerPeerReadRunnable(port, ip);
+		this.netPeerRunnable = new NetworkerPeerReadRunnable(peerPort, ip);
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 	}
 
@@ -39,6 +39,8 @@ public class Networker implements Publisher {
 			instance.netReadRunnable.setPort(port);
 			instance.netWriteRunnable.setIP(ip);
 			instance.netWriteRunnable.setPort(port);
+			instance.netPeerRunnable.setIP(ip);
+			instance.netPeerRunnable.setPort(peerPort);
 		}
 		return instance;
 	}
