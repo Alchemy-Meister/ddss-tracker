@@ -59,4 +59,8 @@ public class Networker {
 	public void setReceivedConnectionMessage(boolean received) {
 		this.netWriteRunnable.setcResponseReceived(received);
 	}
+	
+	public void setConnectionId(long connectionId) {
+		this.netWriteRunnable.setConnectionID(connectionId);
+	}
 }

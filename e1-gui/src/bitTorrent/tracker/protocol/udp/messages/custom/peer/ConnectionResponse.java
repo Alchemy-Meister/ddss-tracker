@@ -20,12 +20,10 @@ public class ConnectionResponse extends BitTorrentUDPRequestMessage {
 		super(Action.CONNECT);
 	}
 	
-	public ConnectionResponse(long connectionId, Action action,
-			int transactionId) 
+	public ConnectionResponse(long connectionId, int transactionId) 
 	{
 		super(Action.CONNECT);
 		this.setConnectionId(connectionId);
-		this.setAction(action);
 		this.setTransactionId(transactionId);
 	}
 	

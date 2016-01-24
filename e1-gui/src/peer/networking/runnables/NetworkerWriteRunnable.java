@@ -2,8 +2,8 @@ package peer.networking.runnables;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -20,7 +20,7 @@ public class NetworkerWriteRunnable implements Runnable {
 	private int port;
 	private String ip;
 	private Networker networker = null;
-	private MulticastSocket socket;
+	private DatagramSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
 	
@@ -36,14 +36,9 @@ public class NetworkerWriteRunnable implements Runnable {
 
 	public void init() throws SocketException {
 		try {
-			this.group = InetAddress.getByName(ip);
-			MulticastSocket socket = new MulticastSocket(port);
-			this.socket = socket; // TODO check
-			socket.joinGroup(this.group);
+			this.socket = new DatagramSocket();
 			this.initialized = true;
-		} catch (UnknownHostException | SocketException  e) {
-			throw new SocketException();
-		} catch (IOException e) {
+		} catch (SocketException  e) {
 			e.printStackTrace();
 		}
 	}

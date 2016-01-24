@@ -2,20 +2,21 @@ package peer.networking.runnables;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
-import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
 import peer.networking.Networker;
 
 public class NetworkerReadRunnable implements Runnable {
 	private int port;
 	private String ip;
 	private Networker networker = null;
-	private MulticastSocket socket;
+	private DatagramSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
 	
@@ -26,15 +27,10 @@ public class NetworkerReadRunnable implements Runnable {
 
 	public void init() throws SocketException {
 		try {
-			this.group = InetAddress.getByName(ip);
-			MulticastSocket socket = new MulticastSocket(port);
-			this.socket = socket; // TODO check
-			socket.joinGroup(this.group);
+			this.socket = new DatagramSocket(port, InetAddress.getByName(ip));
 			this.initialized = true;
 		} catch (UnknownHostException | SocketException e) {
 			throw new SocketException();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	
@@ -53,9 +49,9 @@ public class NetworkerReadRunnable implements Runnable {
 	private boolean isConnectionMessage(DatagramPacket packet) {
 		boolean isConnectionMessage = true;
 		if(packet.getLength() == 16) {
-			ConnectionRequest request = ConnectionRequest.parse(
+			ConnectionResponse response = ConnectionResponse.parse(
 					packet.getData());
-			if(!request.getAction().equals(Action.CONNECT)) {
+			if(!response.getAction().equals(Action.CONNECT)) {
 				isConnectionMessage = false;
 			}
 		} else {
@@ -63,6 +59,21 @@ public class NetworkerReadRunnable implements Runnable {
 		}
 		
 		return isConnectionMessage;
+	}
+	
+	private boolean isAnnounceMessage(DatagramPacket packet) {
+		boolean isAnnounceMessage = true;
+		if(packet.getLength() >= 160) {
+			AnnounceResponse response = AnnounceResponse.parse(
+					packet.getData());
+			if(!response.getAction().equals(Action.ANNOUNCE)) {
+				isAnnounceMessage = false;
+			}
+		} else {
+			isAnnounceMessage = false;
+		}
+		
+		return isAnnounceMessage;
 	}
 	
 	@Override
@@ -83,8 +94,19 @@ public class NetworkerReadRunnable implements Runnable {
 									this.socket.getRemoteSocketAddress()
 									!= this.socket.getLocalSocketAddress())
 							{
+								ConnectionResponse response = 
+										ConnectionResponse.parse(
+												messageIn.getData());
+								networker.setConnectionId(
+										response.getConnectionId());
 								networker.setReceivedConnectionMessage(true);
 							}
+						} else if(isAnnounceMessage(messageIn)) {
+							AnnounceResponse response = AnnounceResponse.parse(
+											messageIn.getData());
+							
+							//TODO publish response
+							System.out.println(response);
 						}
 					}
 				} catch (IOException e) {
