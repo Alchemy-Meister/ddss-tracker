@@ -3,6 +3,15 @@ package tracker.subsys.election;
 import tracker.subsys.TrackerSubsystem;
 import tracker.subsys.cfts.IpIdTable;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
+import bitTorrent.tracker.protocol.udp.messages.custom.me.MasterElectionM;
+import tracker.Const;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.networking.Topic;
@@ -16,11 +25,14 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 	private static MasterElectionSys instance = null;
 	private IpIdTable ipidTable = null;
 	private Boolean inProgress = false;
-	
+	private Map<String, String> meAuthorVote = null;
+	private Timer timerME = null;
 	
 	private MasterElectionSys() {
 		super();
 		ipidTable = IpIdTable.getInstance();
+		meAuthorVote = new HashMap<String, String>();
+		timerME = new Timer();
 	}
 	
 	public static MasterElectionSys getInstance() {
@@ -31,39 +43,98 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		synchronized (inProgress) {
-			inProgress = true;
-			
-		}
-		// do whatever
-		
-		synchronized (inProgress) {
-			inProgress = false;	
-		}
+		TrackerSubsystem.networker.subscribe(Topic.ME, this);
 	}
 	
 	/**
 	 * Starts a new master election process.
 	 */
 	public void startMasterElection() {
-		boolean consensus = false;
+		
 		TrackerMember myVote = ipidTable.getMemberLowestId();
-		// whole process goes here
-		// ...
-		// TODO: wrong var (just to suppress warnings)
-		// the master will be elected in the process
-		TrackerMember newMaster = myVote; 
-		// ...
-		if (consensus)
-			ipidTable.electMaster(newMaster.getId());
-		//else
-			//startMasterElection();
+		meAuthorVote.put(ipidTable.getMyId().toString(),
+				myVote.getId().toString());
+		if (Const.PRINTF_ME) {
+			System.out.println(" [ME] New Master Election started!");
+			System.out.println(" [ME] I have voted to: " + myVote.getId());
+		}
+		inProgress = true;
+		timerME.schedule(new METimerTask(ipidTable.getMyId(), myVote.getId()),
+				0);
+		
+		while(inProgress) {
+			if (allVotesReceived()) {
+				if (Const.PRINTF_ME) {
+					System.out.println(" [ME] All the votes received");
+				}
+				Map<String, Integer> idVotes = new HashMap<>();
+				for (String author : meAuthorVote.keySet()) {
+					if (idVotes.get(author) == null)
+							idVotes.put(author, 0);
+					idVotes.put(author, idVotes.get(author) + 1);
+				}
+				boolean broken = false;
+				String author = null;
+				int maxVotes = 0;
+				for (String id : idVotes.keySet()) {
+					if (idVotes.get(id) > maxVotes) {
+						author = id;
+						maxVotes = idVotes.get(id);
+					} else if (idVotes.get(id) == maxVotes)
+						broken = true;
+				}
+				if (Const.PRINTF_ME) {
+					System.out.println(" [ME] Results: " + idVotes.toString());
+				}
+				if (!broken && author != null) {
+					if (Const.PRINTF_ME) {
+						System.out.println(" [ME] The winner is: "
+								+ author);
+					}
+					ipidTable.electMaster(new LongLong(author));
+					inProgress = false;
+					timerME.cancel();
+					timerME = new Timer();
+					ipidTable.updateMaster();
+				} else {
+					if (Const.PRINTF_ME) {
+						System.out.println(" [ME] Consensus unreached.");
+					}
+					
+				}
+				// if there is an error the me-process will continue
+			}
+		}
+		
+	}
+	
+	private boolean allVotesReceived() {
+		ipidTable.checkFallenMembers();
+		List<TrackerMember> members = ipidTable.getAll();
+		for (TrackerMember m : members) {
+			if (meAuthorVote.get(m.getId().toString()) == null) {
+				System.out.println("I need the vote of: " + m.getId().toString());
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
-		// TODO Auto-generated method stub
+		if (inProgress) {
+			if (topic == Topic.ME) {
+				MasterElectionM mem = (MasterElectionM) bundle.getMessage();
+				if (!ipidTable.getMyId().equals(mem.getAuthor().toString())) {
+					meAuthorVote.put(mem.getAuthor().toString(),
+							mem.getPayload().toString());
+					if (Const.PRINTF_ME) {
+						System.out.println(" [ME] Vote to: " + mem.getPayload()
+						+ ", from: " + mem.getAuthor());
+					}
+				}
+			}
+		}
 		
 	}
 	
@@ -73,5 +144,20 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 			ret = inProgress;
 		}
 		return ret;
+	}
+	
+	private class METimerTask extends TimerTask {
+		
+		private LongLong author, vote;
+		
+		public METimerTask(LongLong author, LongLong vote) {
+			this.author = author;
+			this.vote = vote;
+		}
+		@Override
+		public void run() {
+			networker.publish(Topic.ME, new MasterElectionM(vote, author));
+			timerME.schedule(new METimerTask(author, vote), Const.ME_EVERY);
+		}
 	}
 }

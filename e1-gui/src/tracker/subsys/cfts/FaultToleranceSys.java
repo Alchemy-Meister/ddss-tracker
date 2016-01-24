@@ -21,7 +21,6 @@ import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import sun.security.provider.SecureRandom;
 import tracker.Const;
 import tracker.db.DBManager;
-import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
@@ -122,19 +121,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		timerKA = new Timer();
 		timerHI.cancel();
 		timerHI = new Timer();
-	}
-
-	private void checkMaster() {
-		// check if the master is down (null on ip-id table)
-		if (ipidTable.getMasterID() == null)
-			masterElection.startMasterElection();
-		else {
-			// if the master's id is not the lowest, start a election process
-			if (ipidTable.getMasterID().compareTo(
-					ipidTable.getMemberLowestId().getId()) != 0)
-				masterElection.startMasterElection();
-		}
-
 	}
 
 	@Override
@@ -320,9 +306,19 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		}
 		// Check if master is down
 		if (!waitingForMaster) {
-			if (ipidTable.isMasterFallen()) {
+			if (ipidTable.isMasterFallen() && !masterElection.isInProgress()) {
 				if (Const.PRINTF_FTS)
 					System.out.println(" [FTS] MASTER DOWN!!! ABANDON SHIP!!");
+				masterElection.startMasterElection();
+			}
+		}
+		// Check if I am wrongly master
+		if (amIMaster()) {
+			if (!ipidTable.getMemberLowestId().getId().toString().equals(
+					ipidTable.getMasterID()))
+			{
+				ipidTable.electMaster(ipidTable.getMemberLowestId().getId());
+				updateMaster = true;
 			}
 		}
 	}

@@ -105,14 +105,12 @@ public class IpIdTable {
 		List<String> keys = Collections.list(idIp.keys());
 		BigInteger min = null;
 		for (String key : keys) {
-			System.out.println("id: " + key + ", ip: " + idIp.get(key));
 			BigInteger temp = new BigInteger(key);
 			if (min == null)
 				min = temp;
 			if (temp.compareTo(min) == -1)
 				min = temp;
 		}
-		System.out.println("min is: " + min);
 		return min == null ? null : new TrackerMember(idIp.get(min.toString()),
 				new LongLong(min.toString()));
 	}
