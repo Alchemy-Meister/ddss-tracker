@@ -11,7 +11,8 @@ import bitTorrent.metainfo.InfoDictionarySingleFile;
 import bitTorrent.metainfo.MetainfoFile;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
-import bitTorrent.tracker.protocol.udp.messages.custom.peer.ScrapeRequest;
+import common.utils.Utilities;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest.Event;
 import peer.model.Torrents;
 import peer.networking.Networker;
 
@@ -84,7 +85,7 @@ public class NetworkerWriteRunnable implements Runnable {
 								NetworkerWriteRunnable.GIVE_UP_TIME)
 						{
 							//Sends Connection Request.
-							System.out.println("sending connection.");
+							System.out.println("sending connect.");
 							try {
 								ConnectionRequest request = 
 										new ConnectionRequest();
@@ -107,38 +108,56 @@ public class NetworkerWriteRunnable implements Runnable {
 							//Updates first time for announce requests.
 							firstTime = System.currentTimeMillis();
 						}
-						//Sends announce and scraping request.
-						System.out.println("sending announce and scraping.");
-						
-						ScrapeRequest scrapeRequest =
-								new ScrapeRequest();
-						scrapeRequest.setConnectionId(
-								this.connectionID);
-						try {
-							for(MetainfoFile<InfoDictionarySingleFile> torrent :
-								Torrents.getTorrents())
-							{
+						if(currentTime - firstTime <
+								NetworkerWriteRunnable.GIVE_UP_TIME)
+						{
+							//Sends announce and scraping request.
+							System.out.println("sending announce.");
 							
-								AnnounceRequest request = new AnnounceRequest();
-								request.setInfoHash(
-										torrent.getInfo().getHexInfoHash());
-								
-								scrapeRequest.addInfoHash(
-										torrent.getInfo().getHexInfoHash());
-								
-								DatagramPacket messageOut = new DatagramPacket(
-										request.getBytes(),
-										request.getBytes().length,
-										group, port);
-								this.socket.send(messageOut);
+							try {
+								for(MetainfoFile<InfoDictionarySingleFile>
+								torrent : Torrents.getTorrents())
+								{
+									AnnounceRequest request = 
+											new AnnounceRequest();
+									
+									request.setConnectionId(this.connectionID);
+									//TODO CHECK IF SHA1
+									request.setInfoHash(
+											torrent.getInfo().getHexInfoHash());
+									
+									request.getPeerInfo().setIpAddress(
+											Utilities.pack(
+													InetAddress.getLocalHost()
+													.getAddress()));
+									
+									//TODO Same port as the server, should be different.
+									request.getPeerInfo().setPort(this.port);
+									
+									//TODO for the server get ip form int.
+									// System.out.println(InetAddress.getByAddress(Utilities.unpack(asd)).getHostAddress());
+									
+									//Never downloads or uploads anything.
+									request.setDownloaded(0);
+									request.setUploaded(0);
+									request.setEvent(Event.NONE);
+									request.setLeft(torrent.getInfo().getLength());
+									
+									
+									DatagramPacket messageOut =
+											new DatagramPacket(
+											request.getBytes(),
+											request.getBytes().length,
+											group, port);
+									this.socket.send(messageOut);
+								}
+							} catch (IOException e) {
+								e.printStackTrace();
 							}
-							DatagramPacket messageOut = new DatagramPacket(
-									scrapeRequest.getBytes(),
-									scrapeRequest.getBytes().length,
-									group, port);
-							this.socket.send(messageOut);
-						} catch (IOException e) {
-							e.printStackTrace();
+						} else {
+							//Stop thread.
+							Thread.currentThread().interrupt();
+							//TODO notify panels somehow...
 						}
 					}
 					
@@ -147,6 +166,9 @@ public class NetworkerWriteRunnable implements Runnable {
 				currentTime = System.currentTimeMillis();
 				elapsetTime = currentTime - startTime;
 			}
+			socket.close();
+			this.connectionID = null;
+			this.cResponseReceived = false;
 		}
 	}
 }

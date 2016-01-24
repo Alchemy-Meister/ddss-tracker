@@ -69,6 +69,11 @@ public class AnnounceRequest extends BitTorrentUDPRequestMessage {
 		this.key = AnnounceRequest.random.nextInt(Integer.MAX_VALUE);
 		this.peerInfo = new PeerInfo();
 		this.peerInfo.setIpAddress(-1);
+		
+		//Default value.
+		this.numWant = -1;
+		//Random value.
+		this.setTransactionId(random.nextInt());
 	}
 	
 	@Override
