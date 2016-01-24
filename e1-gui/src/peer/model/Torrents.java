@@ -3,13 +3,15 @@ package peer.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import bitTorrent.metainfo.InfoDictionarySingleFile;
 import bitTorrent.metainfo.MetainfoFile;
 
 public class Torrents {
-	private static HashMap<String, 
-		MetainfoFile<InfoDictionarySingleFile>> torrents = new HashMap<>();
+	private static ConcurrentHashMap<String, 
+		MetainfoFile<InfoDictionarySingleFile>> torrents = 
+		new ConcurrentHashMap<>();
 	
 	public static void addTorrent(String hash, 
 			MetainfoFile<InfoDictionarySingleFile> torrent)

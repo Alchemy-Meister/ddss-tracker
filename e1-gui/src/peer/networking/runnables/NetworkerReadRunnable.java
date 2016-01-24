@@ -50,21 +50,20 @@ public class NetworkerReadRunnable implements Runnable {
 							ConnectionResponse.parse(response);
 							networker.setConnectionId(
 									cResponse.getConnectionId());
-							networker.setReceivedConnectionMessage(true);
-							System.out.println(cResponse);
+							networker.receivedConnectionMessage();
+							System.out.println("connect received.");
 							break;
 						case ANNOUNCE:
 							AnnounceResponse aResponse = AnnounceResponse.parse(
 									response);
-					
 							//TODO publish response
-							System.out.println(aResponse);
+							System.out.println("announce received.");
 							break;
 						case SCRAPE:
-							
+							//TODO Nothing to do here.
 							break;
 						case ERROR:
-							
+							//TODO check if error.
 							break;
 						}
 					}

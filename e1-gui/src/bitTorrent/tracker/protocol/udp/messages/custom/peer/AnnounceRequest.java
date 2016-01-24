@@ -45,6 +45,15 @@ public class AnnounceRequest extends BitTorrentUDPRequestMessage {
 		public int value() {
 			return this.value;
 		}
+		
+		public static Event valueOf(int value) {
+			for (Event event : Event.values()) {
+				if (event.value == value) {
+					return event;
+				}
+			}
+			return null;
+		}
 	}
 	
 	private static Random random = new Random();
@@ -122,8 +131,7 @@ public class AnnounceRequest extends BitTorrentUDPRequestMessage {
 		request.setDownloaded(bufferReceive.getLong(56));
 		request.setLeft(bufferReceive.getLong(64));
 		request.setUploaded(bufferReceive.getLong(72));
-		request.setEvent(
-				Event.valueOf(String.valueOf(bufferReceive.getInt(80))));
+		request.setEvent(Event.valueOf(bufferReceive.getInt(80)));
 		PeerInfo peerInfo = new PeerInfo();
 		peerInfo.setIpAddress(bufferReceive.getInt(84));
 		peerInfo.setPort(bufferReceive.getChar(96));

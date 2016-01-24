@@ -78,8 +78,6 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							new DatagramPacket(buffer, buffer.length);
 					this.socket.receive(messageIn);
 					
-					System.out.println(messageIn.getLength());
-					
 					ByteBuffer byteBuffer = ByteBuffer.wrap(
 							messageIn.getData());
 					Action action = Action.valueOf(byteBuffer.getInt(8));
@@ -87,7 +85,6 @@ public class NetworkerPeerReadRunnable implements Runnable {
 					if(action != null) {
 						switch (action) {
 						case CONNECT:
-							System.out.println("connect!!!!");
 							ConnectionRequest cRequest = ConnectionRequest.parse(
 									messageIn.getData());
 							ConnectionResponse response =
@@ -100,7 +97,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 										messageIn.getAddress().getHostAddress(),
 										messageIn.getPort()));
 								asd.start();
-								System.out.println("connection response sended");
+								System.out.println("connection response sent.");
 							}	
 							break;
 						case ANNOUNCE:
@@ -119,6 +116,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 										messageIn.getAddress().getHostAddress(),
 										messageIn.getPort()))
 								.start();
+								System.out.println("announce request sent.");
 							}	
 							break;
 						case SCRAPE:
