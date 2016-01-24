@@ -91,7 +91,7 @@ public class IpIdTable {
 		} finally {
 			myIdLock.unlock();
 		}
-		return new LongLong(temp);
+		return temp == null ? null : new LongLong(temp);
 	}
 	
 	/** Returns the member with the lowest id. This id is the first
@@ -166,7 +166,7 @@ public class IpIdTable {
 		}
 	}
 	
-	public boolean updateMaster() {
+	public synchronized boolean updateMaster() {
 		if (Const.PRINTF_IPID) {
 			System.out.println(" [IPID-T] I have " + idIp.size() + " members.");
 		}
@@ -199,7 +199,7 @@ public class IpIdTable {
 		}
 	}
 	
-	public void checkFallenMembers() {
+	public synchronized void checkFallenMembers() {
 		List<String> members = Collections.list(idTime.keys());
 		LongLong mid = getMasterID();
 		String masterId = null;
@@ -241,7 +241,7 @@ public class IpIdTable {
 		return ret;
 	}
 	
-	public boolean amIMaster() {
+	public synchronized boolean amIMaster() {
 		LongLong masterId = getMasterID();
 		if (masterId == null)
 			return false;
@@ -256,7 +256,7 @@ public class IpIdTable {
 	 * @param defaultPort
 	 * @return
 	 */
-	public List<String[]> getSlaveInfo(int defaultPort) {
+	public synchronized List<String[]> getSlaveInfo(int defaultPort) {
 		String port = new Integer(defaultPort).toString();
 		List<String[]> slaves = new ArrayList<String[]>();
 		LongLong tid = getMasterID();
@@ -287,13 +287,16 @@ public class IpIdTable {
 	 * @param defaultPort
 	 * @return
 	 */
-	public String[] getMasterInfo(int defaultPort) {
+	public synchronized String[] getMasterInfo(int defaultPort) {
 		String[] ret = null;
 		LongLong master = getMasterID();
 		if (master != null) {
-			ret = new String[] {master.toString(), idIp.get(master.toString()),
-					new Integer(defaultPort).toString(),
-					idTime.get(master.toString()).toString()};
+			Long time = idTime.get(master.toString());
+			String ip = idIp.get(master.toString());
+			if (time != null && ip != null) {
+				ret = new String[] {master.toString(), ip,
+						new Integer(defaultPort).toString(), time.toString()};
+			} 
 		}
 		return ret;
 	}
