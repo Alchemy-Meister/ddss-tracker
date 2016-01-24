@@ -7,8 +7,12 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import bitTorrent.metainfo.InfoDictionarySingleFile;
+import bitTorrent.metainfo.MetainfoFile;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.ScrapeRequest;
+import peer.model.Torrents;
 import peer.networking.Networker;
 
 public class NetworkerWriteRunnable implements Runnable {
@@ -19,8 +23,10 @@ public class NetworkerWriteRunnable implements Runnable {
 	private InetAddress group;
 	private boolean initialized = false;
 	
-	private static final long RETRYTIME = 15000;
+	private static final long RETRY_TIME = 15000;
+	private static final long GIVE_UP_TIME = 60000;
 	private boolean cResponseReceived = false;
+	private Long connectionID = null;
 	
 	public NetworkerWriteRunnable(int port, String ip) {
 		this.port = port;
@@ -57,40 +63,80 @@ public class NetworkerWriteRunnable implements Runnable {
 		this.cResponseReceived = cResponseReceived;
 	}
 	
+	public void setConnectionID(long connectionID) {
+		this.connectionID = connectionID;
+	}
+	
 	@Override
 	public void run() {
 		if (this.initialized) {
-			long startTime = System.currentTimeMillis();
+			boolean firstTimeBool = true;
+			long firstTime = System.currentTimeMillis();
+			long startTime = firstTime;
 			long currentTime = startTime;
-			long elapsetTime = NetworkerWriteRunnable.RETRYTIME;
+			long elapsetTime = NetworkerWriteRunnable.RETRY_TIME;
 			
 			while(!Thread.currentThread().isInterrupted()) {
-				if(elapsetTime >= NetworkerWriteRunnable.RETRYTIME) {
+				if(elapsetTime >= NetworkerWriteRunnable.RETRY_TIME) {
 					//check if master has sent connection response.
 					if(!this.cResponseReceived) {
-						//Sends Connection Request.
-						System.out.println("sending connection.");
+						if(currentTime - firstTime <
+								NetworkerWriteRunnable.GIVE_UP_TIME)
+						{
+							//Sends Connection Request.
+							System.out.println("sending connection.");
+							try {
+								ConnectionRequest request = 
+										new ConnectionRequest();
+								DatagramPacket messageOut = new DatagramPacket(
+										request.getBytes(),
+										request.getBytes().length,
+										group, port);
+								this.socket.send(messageOut);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						} else {
+							//Stop thread.
+							Thread.currentThread().interrupt();
+							//TODO notify panels somehow...
+						}
+						
+					} else {
+						if(firstTimeBool) {
+							//Updates first time for announce requests.
+							firstTime = System.currentTimeMillis();
+						}
+						//Sends announce and scraping request.
+						System.out.println("sending announce and scraping.");
+						
+						ScrapeRequest scrapeRequest =
+								new ScrapeRequest();
+						scrapeRequest.setConnectionId(
+								this.connectionID);
 						try {
-							ConnectionRequest request = new ConnectionRequest();
+							for(MetainfoFile<InfoDictionarySingleFile> torrent :
+								Torrents.getTorrents())
+							{
+							
+								AnnounceRequest request = new AnnounceRequest();
+								request.setInfoHash(
+										torrent.getInfo().getHexInfoHash());
+								
+								scrapeRequest.addInfoHash(
+										torrent.getInfo().getHexInfoHash());
+								
+								DatagramPacket messageOut = new DatagramPacket(
+										request.getBytes(),
+										request.getBytes().length,
+										group, port);
+								this.socket.send(messageOut);
+							}
 							DatagramPacket messageOut = new DatagramPacket(
-									request.getBytes(),
-									request.getBytes().length,
+									scrapeRequest.getBytes(),
+									scrapeRequest.getBytes().length,
 									group, port);
 							this.socket.send(messageOut);
-							
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					} else {
-						//Sends announce request.
-						System.out.println("sending announce.");
-						try {
-							AnnounceRequest request = new AnnounceRequest();
-							DatagramPacket messageOut = new DatagramPacket(
-									request.getBytes(),
-									request.getBytes().length,
-									group, port);
-								this.socket.send(messageOut);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
