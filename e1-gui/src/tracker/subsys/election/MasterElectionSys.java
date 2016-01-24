@@ -75,7 +75,7 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 				if (allVotesReceived()) {
 					if (Const.PRINTF_ME) {
 						System.out.println(" [ME] All the votes received");
-						System.out.println(" votes: " + meAuthorVote.toString());
+						System.out.println(" [ME] votes: " + meAuthorVote.toString());
 					}
 					Map<String, Integer> idVotes = new HashMap<>();
 					for (String author : meAuthorVote.keySet()) {
