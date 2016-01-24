@@ -104,6 +104,11 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 				}
 				// if there is an error the me-process will continue
 			}
+			try { 
+				Thread.sleep(100);
+			} catch(Exception e) {
+				e.printStackTrace(System.err);
+			}
 		}
 		
 	}
@@ -113,7 +118,6 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 		List<TrackerMember> members = ipidTable.getAll();
 		for (TrackerMember m : members) {
 			if (meAuthorVote.get(m.getId().toString()) == null) {
-				System.out.println("I need the vote of: " + m.getId().toString());
 				return false;
 			}
 		}

@@ -21,6 +21,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import sun.security.provider.SecureRandom;
 import tracker.Const;
 import tracker.db.DBManager;
+import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
@@ -314,11 +315,13 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		}
 		// Check if I am wrongly master
 		if (amIMaster()) {
-			if (!ipidTable.getMemberLowestId().getId().toString().equals(
-					ipidTable.getMasterID()))
-			{
-				ipidTable.electMaster(ipidTable.getMemberLowestId().getId());
-				updateMaster = true;
+			LongLong mid = ipidTable.getMasterID();
+			TrackerMember lowestMem = ipidTable.getMemberLowestId();
+			if (mid != null && lowestMem != null) {
+				if (!lowestMem.getId().toString().equals(mid)) {
+					ipidTable.electMaster(ipidTable.getMemberLowestId().getId());
+					updateMaster = false;
+				}
 			}
 		}
 	}
