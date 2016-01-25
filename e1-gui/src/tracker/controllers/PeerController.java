@@ -1,9 +1,12 @@
 package tracker.controllers;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
 
+import common.utils.Utilities;
 import tracker.db.DBManager;
 import tracker.db.model.Peer;
 
@@ -17,7 +20,24 @@ public class PeerController {
 	
 	public String[][] getPeerBasicData(String id) {
 		// TODO return real data from DB.
-		return new String[][]{{randomIP(), randomPort()}};
+		int idnum = Integer.valueOf(id.split("_")[1]);
+		Peer peer = null;
+		this.db.connect();
+		try {
+			peer = this.db.getPeer(idnum);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		this.db.disconnect();
+		if(peer != null) {
+			try {
+				return new String[][]{{InetAddress.getByAddress(Utilities.unpack(peer.getHost())).getHostName(), String.valueOf(peer.getPort())}};
+			} catch (UnknownHostException e) {
+				return new String[][]{{"", ""}};
+			}
+		} else {
+			return new String[][]{{"", ""}};
+		}
 	}
 	
 	public String[][] getPeerTorrents(String id) {
@@ -52,7 +72,7 @@ public class PeerController {
 		if(peerlist != null) {
 			String[][] string = new String[peerlist.size()][1];
 			for(int i = 0; i < peerlist.size(); i++) {
-				string[i][0] = "Peer_" + i;
+				string[i][0] = "Peer_" + peerlist.get(i).getId();
 			}
 			return string;
 		} else {
@@ -87,18 +107,6 @@ public class PeerController {
 			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
 				"98%", "72%", "u are a pirate!"}
 			};
-	}
-	
-	private String randomPort() {
-		Random r = new Random();
-		StringBuilder sb = new StringBuilder();
-		return sb.append(r.nextInt((65535 - 1024) + 1) + 1024).toString();
-	}
-	
-	private String randomIP() {
-		Random r = new Random();
-		return r.nextInt(256) + "." + r.nextInt(256) +
-				"." + r.nextInt(256) + "." + r.nextInt(256);
 	}
 	
 	private String[][] shuffleArray(String[][] ar)

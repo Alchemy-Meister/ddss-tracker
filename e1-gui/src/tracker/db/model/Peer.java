@@ -4,10 +4,12 @@ public class Peer {
 
 	private int host;
 	private short port;
+	private int id;
 	
-	public Peer(int host, short port) {
+	public Peer(int id, int host, short port) {
 		this.host = host;
 		this.port = port;
+		this.id = id;
 	}
 
 	public int getHost() {
@@ -24,5 +26,13 @@ public class Peer {
 
 	public void setPort(short port) {
 		this.port = port;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getId() {
+		return this.id;
 	}
 }
