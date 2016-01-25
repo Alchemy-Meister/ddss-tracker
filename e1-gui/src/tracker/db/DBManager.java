@@ -132,17 +132,17 @@ public class DBManager {
 		return ret;
 	}
 
-	private Peer getPeer(int id) throws Exception {
+	public Peer getPeer(int id) throws Exception {
 		Peer ret = null;
 		String a = "SELECT * from PEERINFO where ID = ?;";
 		PreparedStatement pre = conn.prepareStatement(a);
 		pre.setInt(1, id);
 		ResultSet re = pre.executeQuery();
 		if (re.next()) {
-			// int dumpid = re.getInt(1);
+			int dumpid = re.getInt(1);
 			String host = re.getString(2);
 			short port = re.getShort(3);
-			ret = new Peer(Utilities.pack(
+			ret = new Peer(dumpid, Utilities.pack(
 					InetAddress.getByName(host).getAddress()), port);
 			if (Const.PRINTF_DB) {
 				System.out.println(" [DB] (getPeer) ip: " + host + ", to int: "
@@ -232,7 +232,7 @@ public class DBManager {
 		while(re.next()) {
 			Peer peer = null;
 			try {
-				peer = new Peer(Utilities.pack(
+				peer = new Peer(re.getInt(1), Utilities.pack(
 						InetAddress.getByName(re.getString(2)).getAddress()),
 						re.getShort(3));
 			} catch (UnknownHostException e) {
@@ -261,7 +261,7 @@ public class DBManager {
 		while(re.next()) {
 			Peer peer = null;
 			try {
-				peer = new Peer(Utilities.pack(
+				peer = new Peer(re.getInt(1), Utilities.pack(
 						InetAddress.getByName(re.getString(2)).getAddress()),
 						re.getShort(3));
 			} catch (UnknownHostException e) {
