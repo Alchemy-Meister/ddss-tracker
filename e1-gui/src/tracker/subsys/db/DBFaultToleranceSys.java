@@ -129,12 +129,22 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 										> Const.ANNOUNCE_RETRY)
 								{
 									AnnounceRequest ar = getAR(first_transaction);
+									if (Const.ENABLE_JMS) {
+										dispatcher.notify(Topic.ANNOUNCE_R,
+												// impossible to indent properly U_U
+												 new Bundle(new String(Utilities.unpack(
+													ar.getPeerInfo().getIpAddress())),
+																ar.getPeerInfo().getPort(),
+																ar));
+												
+									} else {
 									networker.notify(Topic.ANNOUNCE_R,
 									// impossible to indent properly U_U
 									 new Bundle(new String(Utilities.unpack(
 										ar.getPeerInfo().getIpAddress())),
 													ar.getPeerInfo().getPort(),
 													ar));
+									}
 								}
 							}
 							if (haveThemAllReady(first_transaction)) {
