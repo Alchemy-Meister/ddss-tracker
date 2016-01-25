@@ -104,7 +104,8 @@ public class PacketParser {
 					}
 					// and contents sha
 					byte contents_sha[] = new byte[20];
-					System.arraycopy(bytes, 4 + 8 + 8, contents_sha, 0, 20);
+					//System.arraycopy(bytes, 4 + 8 + 8, contents_sha, 0, 20);
+					System.arraycopy(bytes, 4 + 8 + 16, contents_sha, 0, 20);
 					if (Const.PRINTF) {
 						for (byte i : contents_sha)
 							System.out.printf("0x%02X ", i);
@@ -126,7 +127,7 @@ public class PacketParser {
 						while (offset < tempPos - 1) {
 							byte info_hash[] = new byte[20];
 							System.arraycopy(bytes, offset, info_hash,0, 20);
-							offset += 16;
+							offset += 20; // + 16
 							int host = messageBytes.getInt(offset);
 							offset += 4;
 							short port = messageBytes.getShort(offset);

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import bitTorrent.tracker.protocol.udp.messages.PeerInfo;
 import bitTorrent.tracker.protocol.udp.messages.custom.LongLong;
 import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSCommitM;
@@ -15,7 +16,6 @@ import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSDoneM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSReadyM;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import common.utils.Utilities;
-import test.DBftTest;
 import tracker.Const;
 import tracker.db.DBManager;
 import tracker.db.model.TrackerMember;
@@ -125,7 +125,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 								}
 							}
 							if (haveThemAllReady(first_transaction)) {
-								setCheckTineToRetryAnnounce(false);
+								setCheckTimeToRetryAnnounce(false);
 							}
 						}
 					} 
@@ -161,7 +161,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				}
 			}
 			
-			try { Thread.sleep(100);} catch (Exception e) {}
+			try { Thread.sleep(1100);} catch (Exception e) {}
 		} 
 	}
 	
@@ -200,25 +200,51 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		removeCommit(transaction_id);
 	}
 
+	private void insertContents(String sha, int address, int port) {
+		manager.connect();
+		try {
+			manager.insertContents(sha,	PeerInfo.toStringIpAddress(address),
+					port);
+		} catch (SQLException e) {
+			e.printStackTrace(System.err);
+		}
+		manager.disconnect();
+	}
+	
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
 		if (canIParticipate()) {
+			if (Const.PRINTF_DBFTS)
+				System.out.println();
 			if (topic == Topic.ANNOUNCE_R) {
 				AnnounceRequest announce = bundle.getPeerMessage();
 				if (Const.PRINTF_DBFTS) {
 					System.out.println(" [DB-FTS] Announce received, transac: " +
-							announce.getTransactionId());
+							announce.getTransactionId() + ", sha1: "
+							+ announce.getInfoHash());
 				}
-				putAR(announce);
-				// initialise the list of peers ready for this tran id
-				transIdReadyLock.lock();
-				try {
-					if (!transIdReady.containsKey(announce.getTransactionId())) {
-						transIdReady.put(announce.getTransactionId(),
-								new ArrayList<String>());
+				// If I am master without peers, I don't have to handle
+				// this transaction_id
+				if (ipidtable.amIMaster() && ipidtable.getCountMembers() > 1) {
+					// initialise the list of peers ready for this tran id
+					transIdReadyLock.lock();
+					try {
+						if (!transIdReady.containsKey(announce.getTransactionId())) {
+							transIdReady.put(announce.getTransactionId(),
+									new ArrayList<String>());
+						}
+					} finally {
+						transIdReadyLock.unlock();
 					}
-				} finally {
-					transIdReadyLock.unlock();
+					putAR(announce);
+				} else {
+					if (Const.PRINTF_DBFTS) {
+						System.out.println(" [DB-FTS] Master alone, auto-saving " 
+								 + " announce data.");
+					}
+					insertContents(announce.getInfoHash(),
+							announce.getPeerInfo().getIpAddress(),
+							announce.getPeerInfo().getPort());				
 				}
 				if (!ipidtable.amIMaster()) {
 					// send a DS_READY if I am ready to commit
@@ -265,6 +291,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 					// after updating check if we have them all to send 
 					// a DS_COMMIT for the first transaction id
 					Integer first_transaction = getFirstTransaction();
+					if (Const.PRINTF_DBFTS) {
+						System.out.println(" [DB-FTS] Checking ready trans: "
+								+ first_transaction);
+					}
 					if (first_transaction != null) {
 						if (haveThemAllReady(first_transaction)) {
 							if (Const.PRINTF_DBFTS) {
@@ -272,7 +302,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 										+ " for trans_id: " +
 										first_transaction);
 							}
-							setCheckTineToRetryAnnounce(false);
+							setCheckTimeToRetryAnnounce(false);
 							AnnounceRequest ar = getAR(first_transaction);
 							if (ar != null) {
 								DSCommitM commit = new DSCommitM(
@@ -282,14 +312,19 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 								putTransIdCommitSendTime(first_transaction);
 								networker.publish(Topic.DS_COMMIT, commit);
 								if (Const.PRINTF_DBFTS) {
-									System.out.println(" [DB-FTS] DS-Commit sent, trans_id: " +
+									System.out.println(" [DB-FTS] DS-Commit "
+											+ "sent, trans_id: " +
 											commit.getTransactionId());
 								}
 							}
 						} else {
+							if (Const.PRINTF_DBFTS) {
+								System.out.println(" [DB-FTS] Not ready "
+										+ "for trans: " + first_transaction);
+							}
 							// The other thread checks if we have to send the
 							// announce again or not
-							setCheckTineToRetryAnnounce(true);
+							setCheckTimeToRetryAnnounce(true);
 						}
 					}
 				}
@@ -303,17 +338,12 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				}
 				// Check whether we have commited such transaction id yet
 				if (!haveIAlreadyCommited(commit.getTransactionId())) {
-					manager.connect();
-					try {
-						manager.insertContents(an.getInfoHash(),
-								new String(Utilities.unpack(
-										an.getPeerInfo().getIpAddress())),
-								an.getPeerInfo().getPort());
-						putIHaveAlreadyCommited(commit.getTransactionId());
-					} catch (SQLException e) {
-						e.printStackTrace(System.err);
+					if (an.getInfoHash() != null && an.getPeerInfo() != null) {
+							insertContents(an.getInfoHash(),
+									an.getPeerInfo().getIpAddress(),
+									an.getPeerInfo().getPort());
+							putIHaveAlreadyCommited(commit.getTransactionId());
 					}
-					manager.disconnect();
 					if (Const.PRINTF_DBFTS) {
 						System.out.println(" [DB-FTS] Commited trans_id: " +
 								commit.getTransactionId());
@@ -348,6 +378,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				if (ipidtable.amIMaster()) {
 					// check if all have commited the first transaction
 					Integer first_transaction = getFirstTransaction();
+					if (Const.PRINTF_DBFTS) {
+						System.out.println(" [DB-FTS] Checking commit trans: "
+								+ first_transaction);
+					}
 					if (first_transaction != null) {
 						if (haveThemAllCommited(first_transaction)) {
 							setCheckTimeToRetryCommit(false);
@@ -357,6 +391,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 										first_transaction + " done!");
 							}
 						} else {
+							if (Const.PRINTF_DBFTS) {
+								System.out.println(" [DB-FTS] Not ready "
+										+ "for trans: " + first_transaction);
+							}
 							setCheckTimeToRetryCommit(true);
 						}
 					}
@@ -420,6 +458,11 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 			{
 				transIdReady.get(transaction_id).add(slaveid);
 			}
+			if (Const.PRINTF_DBFTS) {
+				System.out.println(" [DB-DTS] Ready for trans ("
+						+ transaction_id + ") : "
+						+ transIdReady.get(transaction_id).toString());
+			}
 		} finally {
 			transIdReadyLock.unlock();
 		}
@@ -446,7 +489,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	
 	// Announce retry	
 	
-	private void setCheckTineToRetryAnnounce(boolean status) {
+	private void setCheckTimeToRetryAnnounce(boolean status) {
 		checkTimeToRetryAnnounceLock.lock();
 		try {
 			checkTimeToRetryAnnounce = status;
@@ -504,6 +547,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				waitingAR.put(announce.getTransactionId(), announce);
 				transIDARSentTime.put(announce.getTransactionId(),
 						System.currentTimeMillis());
+			}
+			if (Const.PRINTF_DBFTS) {
+				System.out.println(" [DB-FTS] trans in queue: "
+						+ waitingAROrder.toString());
 			}
 		} finally {
 			announceOrderLock.unlock();
@@ -603,21 +650,31 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * @return
 	 */
 	private boolean haveThemAllReady(int transaction_id) {
+		// We have to ignore master, since it does not send ds_ready messages
 		List<TrackerMember> members = ipidtable.getAll();
 		List<String> copyIdReady = null;
 		transIdReadyLock.lock();
 		try {
 			if (transIdReady.containsKey(transaction_id))
-				copyIdReady = new ArrayList<String>(transIdReady.get(transaction_id));
+				copyIdReady = new ArrayList<String>(transIdReady.get(
+						transaction_id));
 		} finally {
 			transIdReadyLock.unlock();
 		}
 		boolean allReady = true;
-		if (copyIdReady != null) {
+		LongLong masterId = ipidtable.getMasterID();
+		if (masterId != null && copyIdReady != null) {
 			for (TrackerMember member : members) {
-				if (!copyIdReady.contains(member.getId().toString())) {
-					allReady = false;
-					break;
+				if (!member.getId().toString().equals(masterId.toString())) {
+					if (!copyIdReady.contains(member.getId().toString())) {
+						if (Const.PRINTF_DBFTS) {
+							System.out.println(" [DB-FTS] I miss DS_READY"
+									+ " trans: " + transaction_id + ", from:"
+									+ member.getId().toString());
+						}
+						allReady = false;
+						break;
+					}
 				}
 			}
 		} else
@@ -631,21 +688,31 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * @return
 	 */
 	private boolean haveThemAllCommited(int transaction_id) {
+		// We have to ignore master, since it does not send ds_done messages
 		List<TrackerMember> members = ipidtable.getAll();
 		List<String> copyIdCommit = null;
 		transIdCommitedLock.lock();
 		try {
 			if (transIdCommited.containsKey(transaction_id))
-				copyIdCommit = new ArrayList<String>(transIdCommited.get(transaction_id));
+				copyIdCommit = new ArrayList<String>(transIdCommited.get(
+						transaction_id));
 		} finally {
 			transIdCommitedLock.unlock();
 		}
 		boolean allcommit = true;
-		if (copyIdCommit != null) {
+		LongLong masterId = ipidtable.getMasterID();
+		if (masterId != null && copyIdCommit != null) {
 			for (TrackerMember member : members) {
-				if (!copyIdCommit.contains(member.getId().toString())) {
-					allcommit = false;
-					break;
+				if (!member.getId().toString().equals(masterId.toString())) {
+					if (!copyIdCommit.contains(member.getId().toString())) {
+						if (Const.PRINTF_DBFTS) {
+							System.out.println(" [DB-FTS] I miss DS_DONE"
+									+ " trans: " + transaction_id + ", from:"
+									+ member.getId().toString());
+						}
+						allcommit = false;
+						break;
+					}
 				}
 			}
 		} else

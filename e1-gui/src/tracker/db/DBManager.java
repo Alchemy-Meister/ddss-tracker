@@ -1,5 +1,6 @@
 package tracker.db;
 
+import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,6 +15,7 @@ import java.util.Random;
 
 import bitTorrent.tracker.protocol.udp.messages.custom.SHA1;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.Contents;
+import common.utils.Utilities;
 import tracker.Const;
 import tracker.db.model.Peer;
 
@@ -72,11 +74,11 @@ public class DBManager {
 		connect();
 		Statement sta = conn.createStatement();
 		String peer = "CREATE TABLE PEERINFO (" +
-				" ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+				" ID INTEGER NOT NULL PRIMARY KEY," +
 				" HOST VARCHAR(255), PORT INTEGER);";
 		String que = "CREATE TABLE CONTENTS (" +
 				" SHA1 CHAR(40) NOT NULL PRIMARY KEY," +
-				" PEER_ID INTEGER NOT NULL REFERENCES PEERINFO (SHA1) ON DELETE CASCADE"
+				" PEER_ID INTEGER NOT NULL REFERENCES PEERINFO (ID) ON DELETE CASCADE"
 				+ ");"; 
 		sta.executeUpdate(peer);
 		sta.executeUpdate(que);
@@ -84,6 +86,19 @@ public class DBManager {
 		disconnect();
 	}
 
+	private int getMaxId() throws SQLException {
+		// prinary key autoincrement seems not to work the way I want it to
+		// behave, since db is not critical I am doing this
+		String query = "SELECT max(ID) from PEERINFO;";
+		Statement pre = conn.createStatement();
+		ResultSet re = pre.executeQuery(query);
+		int ret = -1;
+		if(re.next())
+			ret = re.getInt(1);
+		pre.close();
+		re.close();
+		return ret;
+	}
 	/** Returns all the entries in the CONTENTS table of the db.
 	 * @return
 	 * @throws SQLException 
@@ -104,7 +119,8 @@ public class DBManager {
 
 			}
 			if (idtopeer.get(id) != null) {
-				ret.add(new Contents(new SHA1(sha1.getBytes()),
+				ret.add(new Contents(new SHA1(
+						Utilities.hexStringToByteArray(sha1)),
 						idtopeer.get(id).getHost(),
 						idtopeer.get(id).getPort()));
 			}
@@ -114,16 +130,23 @@ public class DBManager {
 		return ret;
 	}
 
-	private Peer getPeer(int id) throws SQLException {
+	private Peer getPeer(int id) throws Exception {
 		Peer ret = null;
 		String a = "SELECT * from PEERINFO where ID = ?;";
 		PreparedStatement pre = conn.prepareStatement(a);
 		pre.setInt(1, id);
 		ResultSet re = pre.executeQuery();
 		if (re.next()) {
-			int host = re.getInt(1);
-			short port = re.getShort(2);
-			ret = new Peer(host, port);
+			// int dumpid = re.getInt(1);
+			String host = re.getString(2);
+			short port = re.getShort(3);
+			ret = new Peer(Utilities.pack(
+					InetAddress.getByName(host).getAddress()), port);
+			if (Const.PRINTF_DB) {
+				System.out.println(" [DB] (getPeer) ip: " + host + ", to int: "
+						+ Utilities.pack(
+								InetAddress.getByName(host).getAddress()));
+			}
 		}
 		re.close();
 		pre.close();
@@ -138,23 +161,62 @@ public class DBManager {
 		ResultSet re = pre.executeQuery();
 		int peerID = -1;
 		if (re.next()) {
-			re.getInt(1);
+			peerID = re.getInt(1);
 		}
 		pre.close();
+		re.close();
+		if (Const.PRINTF_DB)
+			System.out.println(" [DB] " + ip + ":" + port + "-> id: " + peerID);
 		return peerID;
 	}
 
+	public void insertPeer(String ip, int port) throws SQLException {
+		if (getPeerId(ip, port) == -1) {
+			int id = getMaxId() + 1;
+			String a = "INSERT into PEERINFO values (?, ?, ?);";
+			PreparedStatement pre = conn.prepareStatement(a);
+			pre.setInt(1, id);
+			pre.setString(2, ip);
+			pre.setInt(3, port);
+			pre.executeUpdate();
+			pre.close();
+		}
+	}
+	
+	private boolean doIHaveHashPeer(String sha1, int peerId) throws SQLException {
+		sha1 = sha1.toLowerCase();
+		boolean ret = false;
+		String query = "SELECT * from CONTENTS where SHA1 = ? and PEER_ID = ?;";
+		PreparedStatement pre = conn.prepareStatement(query);
+		pre.setString(1, sha1);
+		pre.setInt(2, peerId);
+		ResultSet re = pre.executeQuery();
+		if (re.next())
+			ret = true;
+		return ret;
+	}
+	
 	public void insertContents(String sha1, String ip, int port)
 			throws SQLException
 	{
+		sha1 = sha1.toLowerCase();
 		int peerId = getPeerId(ip, port);
+		if (peerId == -1) {
+			insertPeer(ip, port);
+			peerId = getPeerId(ip, port);
+		}
 		if (peerId != -1) {
-			String a = "INSERT into CONTENTS values (?, ?);";
-			PreparedStatement pre = conn.prepareStatement(a);
-			pre.setString(1, sha1);
-			pre.setInt(2, peerId);
-			pre.executeUpdate();
-			pre.close();
+			if (!doIHaveHashPeer(sha1, peerId)) {
+				String a = "INSERT into CONTENTS values (?, ?);";
+				PreparedStatement pre = conn.prepareStatement(a);
+				pre.setString(1, sha1);
+				pre.setInt(2, peerId);
+				pre.executeUpdate();
+				pre.close();
+			} else {
+				if (Const.PRINTF_DB)
+					System.out.println(" [DB] I already have the pair sha1-peer");
+			}
 		}
 
 	}

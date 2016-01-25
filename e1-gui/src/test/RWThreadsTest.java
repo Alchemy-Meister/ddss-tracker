@@ -1,5 +1,6 @@
 package test;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloM;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloResponseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
 import bitTorrent.tracker.protocol.udp.messages.custom.me.MasterElectionM;
+import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.exceptions.PacketParserException;
 import tracker.networking.Bundle;
@@ -34,10 +36,10 @@ public class RWThreadsTest {
 		//net.subscribe(Topic.KA, systemR);
 		net.subscribe(Topic.HI, systemR);
 		//net.subscribe(Topic.KA, systemW);
-		net.subscribe(Topic.ME, systemR);
-		net.subscribe(Topic.DS_READY, systemR);
+		//net.subscribe(Topic.ME, systemR);
+		//net.subscribe(Topic.DS_READY, systemR);
 		//net.subscribe(Topic.DS_COMMIT, systemR);
-		net.subscribe(Topic.DS_DONE, systemR);
+		//net.subscribe(Topic.DS_DONE, systemR);
 		net.startRW();
 		new Thread(systemW).start();
 	}
@@ -48,10 +50,11 @@ class TestingReadSubsystem extends TrackerSubsystem {
 
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
-		try{
-			System.err.println("[ TestingReadSubsystem ] received-> topic: " +
-					topic + ", param: "
-					+ PacketParser.parse(bundle.getMessage().getBytes()));
+		try {
+			System.err.println("[ TestingWriteSubsystem ] received-> topic: " +
+					topic);
+			System.err.println("param: " + PacketParser.parse(
+					bundle.getMessage().getBytes()).toString());
 		} catch (PacketParserException e) {
 			e.printStackTrace();
 		}
@@ -77,18 +80,23 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		net.publish(Topic.HI, new HelloCloseM(21, new LongLong("9393"),
 				new LongLong("9494"))); // ok 
 	 */
-	/*
+
 	// hi response -> ok
 		try{ 
 			List<Contents> triplets = new ArrayList<Contents>();
-			short s = -1;
-			triplets.add(new Contents(new SHA1(DigestUtils.sha1("Hello world")), -1, s));
-			net.publish(Topic.HI, new HelloResponseM(10, new LongLong("11"),
-				new SHA1(DigestUtils.sha1("Hello world")), triplets)); // ok
+			short s = 10;
+			int host = -1062718710;
+			byte[] hostBytes = ByteBuffer.allocate(4).putInt(host).array();
+			triplets.add(
+					new Contents(new SHA1(DigestUtils.sha1("Hello world")),
+							-1062718710, s));
+			HelloResponseM hr = new HelloResponseM(10, new LongLong("11"),
+					new SHA1(DigestUtils.sha1("Hello world")), triplets);
+			net.publish(Topic.HI, hr); // ok
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		*/
+		/*
 		try {
 			List<SHA1> info_hashes = new ArrayList<SHA1>();
 			info_hashes.add(new SHA1(DigestUtils.sha1("11")));
@@ -102,16 +110,18 @@ class TestingWriteSubsystem extends TrackerSubsystem implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		*/
 		//net.publish(Topic.DS_COMMIT, new DSCommitM(10, 10, 10)); // ok
-		net.publish(Topic.DS_DONE, new DSDoneM(222222222, new LongLong("23")));
+		//net.publish(Topic.DS_DONE, new DSDoneM(222222222, new LongLong("23")));
 	}
 
 	@Override
 	public void receive(Topic topic, Bundle bundle) {
 		try {
 			System.err.println("[ TestingWriteSubsystem ] received-> topic: " +
-					topic + ", param: "
-					+ PacketParser.parse(bundle.getMessage().getBytes()).toString());
+					topic);
+			System.err.println("param: " + PacketParser.parse(
+					bundle.getMessage().getBytes()).toString());
 		} catch (PacketParserException e) {
 			e.printStackTrace();
 		}

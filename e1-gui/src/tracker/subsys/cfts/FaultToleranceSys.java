@@ -1,5 +1,7 @@
 package tracker.subsys.cfts;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloCloseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloM;
 import bitTorrent.tracker.protocol.udp.messages.custom.hi.HelloResponseM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ka.KeepAliveM;
+import common.utils.Utilities;
 import sun.security.provider.SecureRandom;
 import tracker.Const;
 import tracker.db.DBManager;
@@ -82,6 +85,21 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		return ipidTable.amIMaster();
 	}
 
+	private void insertContents(String sha, int address, int port) {
+		manager.connect();
+		try {
+			try {
+				manager.insertContents(sha,	InetAddress.getByAddress(
+						Utilities.unpack(address)).getHostAddress(),
+						port);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace(System.err);
+		}
+		manager.disconnect();
+	}
 
 	@Override
 	/**
@@ -181,6 +199,10 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 							manager.connect();
 							try {
 								List<Contents> table = manager.getAllContents();
+								if (Const.PRINTF_FTS) {
+									System.out.println(" [FTS] contents: "
+											+ table.toString());
+								}
 								// NOTE: when the contents table is empty
 								// the HelloResponse Messages may be interpreted
 								// as HelloClose Messages (see reference)
@@ -249,24 +271,24 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 								}
 								// Save contents, remember that when host -> -1
 								// and port -> -1 we don't have to save that
-								manager.connect();
 								for (Contents cont : responseM.getTriplets()) {
 									if (cont.getHost() != -1 
 											&& cont.getPort() != -1)
 									{
-										try{
-										manager.insertContents(
-												cont.getInfo_hash().toString(),
-												Integer.toString(cont.getHost()),
-												cont.getHost());
-										} catch (Exception e) {
-											e.printStackTrace(System.err);
+										if (Const.PRINTF_FTS) {
+											System.out.println(" [FTS]"
+													+ " Master has sent: "
+													+ cont.toString());
 										}
+										insertContents(
+												cont.getInfo_hash().toString(),
+												cont.getHost(),
+												(int)cont.getPort());
 									}
 								}
-								manager.disconnect();
 								networker.publish(Topic.HI,
-										new HelloCloseM(responseM.getConnection_id(),
+										new HelloCloseM(
+												responseM.getConnection_id(),
 												myID,
 												responseM.getContents_sha()));
 							}

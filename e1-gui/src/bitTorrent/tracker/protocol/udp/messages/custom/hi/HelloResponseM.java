@@ -67,10 +67,10 @@ public class HelloResponseM extends HelloBaseM {
 				this.connection_id).array();
 		byte[] assignedIdBytes = this.assigned_id.getBytes();
 		byte[] contentsBytes = this.contents_sha.getBytes();
-		int temsi = -1;
-		temsi = typeBytes.length + connectionIdBytes.length
+		int temsi = 0;
+		temsi = (typeBytes.length + connectionIdBytes.length
 				+ assignedIdBytes.length + contentsBytes.length 
-				+ CustomMessage.CRLF.length;
+				+ CustomMessage.CRLF.length);
 		if (!this.triplets.isEmpty())
 			temsi += (this.triplets.size() * this.triplets.get(0).getSize());
 		byte[] ret = new byte[temsi];

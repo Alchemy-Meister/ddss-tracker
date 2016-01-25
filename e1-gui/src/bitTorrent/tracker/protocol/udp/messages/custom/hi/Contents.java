@@ -57,7 +57,7 @@ public class Contents {
 	}
 	
 	public int getSize() {
-		return 16 + 4 + 2;
+		return this.info_hash.getBytes().length + 4 + 2;
 	}
 	
 	public String toString() {

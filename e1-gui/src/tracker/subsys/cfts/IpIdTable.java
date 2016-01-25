@@ -44,6 +44,14 @@ public class IpIdTable {
 				instance = new IpIdTable();
 		return instance;
 	}
+	
+	/**
+	 * Returns how many members (master + slaves) are in the cluster.
+	 * @return
+	 */
+	public int getCountMembers() {
+		return idIp.size();
+	}
 
 	public List<TrackerMember> getAll() {
 		List<TrackerMember> ret = new ArrayList<TrackerMember>();

@@ -1,16 +1,21 @@
 package tracker.controllers;
 
 import common.utils.Utilities;
+import test.DBftTest;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Networker;
 import tracker.subsys.cfts.FaultToleranceSys;
+import tracker.subsys.db.DBFaultToleranceSys;
 
 public class BasicInfoController {
 
 	private Networker networker;
 	private FaultToleranceSys fts;
+	private DBFaultToleranceSys dbfts;
 
+	private Thread dbftsThread;
+	
 	public BasicInfoController() {
 		// TODO start whatever dependecy goes here.
 	}
@@ -45,6 +50,10 @@ public class BasicInfoController {
 		FaultToleranceSys.setNetwork(ip, port, peerPort);
 		fts = FaultToleranceSys.getInstance();
 		fts.run();
+		dbfts = DBFaultToleranceSys.getInstance();
+		dbftsThread = new Thread(dbfts);
+		dbftsThread.setDaemon(true);
+		dbftsThread.start();
 	}
 
 	public void disconnect() {

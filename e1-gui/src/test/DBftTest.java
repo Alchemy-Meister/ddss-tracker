@@ -1,5 +1,12 @@
 package test;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 
@@ -7,21 +14,13 @@ import bitTorrent.tracker.protocol.udp.messages.PeerInfo;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest.Event;
 import common.utils.Utilities;
-import tracker.networking.Bundle;
-import tracker.networking.Networker;
-import tracker.networking.Topic;
 
 public class DBftTest {
-
-	private Networker networker;
 	
-	public DBftTest(Networker networker) {
-		this.networker = networker;
-	}
-
-	public void sendAnnounce() {
+	public static void main(String[] args) throws SocketException, UnknownHostException {
 		AnnounceRequest ar = new AnnounceRequest();
-		ar.setInfoHash(DigestUtils.sha1Hex("Hello"));
+		System.out.println(DigestUtils.sha1Hex("Hello world"));
+		ar.setInfoHash(DigestUtils.sha1Hex("Hello world"));
 		ar.setPeerId("222");
 		ar.setDownloaded(1);
 		ar.setLeft(2);
@@ -30,11 +29,21 @@ public class DBftTest {
 		ar.setKey(3);
 		ar.setNumWant(3);
 		PeerInfo peerInfo = new PeerInfo();
-		peerInfo.setIpAddress(Utilities.pack("192.168.51.10".getBytes()));
+		peerInfo.setIpAddress(Utilities.pack(
+				InetAddress.getByName("192.168.51.10").getAddress()));
 		peerInfo.setPort(2222);
 		ar.setPeerInfo(peerInfo);
-		System.out.println( " [ÑAPA] announce sent!");
-		this.networker.notify(Topic.ANNOUNCE_R, new Bundle("192.168.51.10",
-				2222, ar));
+		DatagramSocket socket = new DatagramSocket();
+		try {
+			DatagramPacket messageOut = new DatagramPacket(
+					ar.getBytes(),
+					ar.getBytes().length,
+					InetAddress.getByName("228.1.1.4"), 1235);
+			socket.send(messageOut);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println( "\n [ÑAPA-TEST] Announce sent!\n");
+		socket.close();
 	}
 }
