@@ -1,6 +1,7 @@
 package tracker.db;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -77,8 +78,9 @@ public class DBManager {
 				" ID INTEGER NOT NULL PRIMARY KEY," +
 				" HOST VARCHAR(255), PORT INTEGER);";
 		String que = "CREATE TABLE CONTENTS (" +
-				" SHA1 CHAR(40) NOT NULL PRIMARY KEY," +
-				" PEER_ID INTEGER NOT NULL REFERENCES PEERINFO (ID) ON DELETE CASCADE"
+				" SHA1 CHAR(40) NOT NULL," +
+				" PEER_ID INTEGER NOT NULL REFERENCES PEERINFO (ID) ON DELETE CASCADE,"
+				+ "PRIMARY KEY (SHA1, PEER_ID)"
 				+ ");"; 
 		sta.executeUpdate(peer);
 		sta.executeUpdate(que);
@@ -219,5 +221,34 @@ public class DBManager {
 			}
 		}
 
+	}
+	
+	public List<Peer> getPeersWithContent(String sha1) throws SQLException {
+		List<Peer> peerList = new ArrayList<>();
+		sha1 = sha1.toLowerCase();
+		
+		String a = "SELECT I.* FROM PEERINFO I, CONTENTS C"
+				+ " WHERE C.PEER_ID = I.ID AND C.SHA1 = ?";
+		PreparedStatement pre = conn.prepareStatement(a);
+		pre.setString(1, sha1);
+		ResultSet re = pre.executeQuery();
+		
+		while(re.next()) {
+			Peer peer = null;
+			try {
+				peer = new Peer(Utilities.pack(
+						InetAddress.getByName(re.getString(2)).getAddress()),
+						re.getShort(3));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			if(peer != null) {
+				peerList.add(peer);
+			}
+		}
+		pre.close();
+		re.close();
+		
+		return peerList;
 	}
 }
