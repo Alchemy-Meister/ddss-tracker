@@ -109,17 +109,18 @@ public class PeerPanel extends ObserverJPanel {
 		{
 			public void valueChanged(ListSelectionEvent e) {
 				if(!e.getValueIsAdjusting()) {
-					String peerID = peerListTable.getValueAt(
-						peerListTable.getSelectedRow(), 0).toString();
-		            
-					String[][] peerInfo = pController.getPeerBasicData(peerID);
-		            DefaultTableModel peerInfoModel = 
-		            		(DefaultTableModel) peerInfoTable.getModel();
-		            peerInfoModel.setRowCount(0);
-		            for(int i = 0; i < peerInfo.length; i++) {
-		            	peerInfoModel.addRow(peerInfo[i]);
-		            }
-		            
+					String peerID = null;
+					synchronized (peerListTable) {
+						peerID = peerListTable.getValueAt(
+								peerListTable.getSelectedRow(), 0).toString();
+						String[][] peerInfo = pController.getPeerBasicData(peerID);
+			            DefaultTableModel peerInfoModel = 
+			            		(DefaultTableModel) peerInfoTable.getModel();
+			            peerInfoModel.setRowCount(0);
+			            for(int i = 0; i < peerInfo.length; i++) {
+			            	peerInfoModel.addRow(peerInfo[i]);
+			            }
+					}
 		            String[][] peerTorrents = 
 		            		pController.getPeerTorrents(peerID);
 		            DefaultTableModel torrentModel = (DefaultTableModel)
@@ -141,18 +142,20 @@ public class PeerPanel extends ObserverJPanel {
 	}
 	
 	public synchronized void updateIDs() {
-		DefaultTableModel model = (DefaultTableModel)peerListTable.getModel();
-		if (model.getRowCount() > 0) {
-			for (int i = model.getRowCount() - 1; i >= 0; i--) {
-				model.removeRow(i);
+		synchronized (peerListTable) {
+			DefaultTableModel model = (DefaultTableModel)peerListTable.getModel();
+			if (model.getRowCount() > 0) {
+				for (int i = model.getRowCount() - 1; i >= 0; i--) {
+					model.removeRow(i);
+				}
+				model.fireTableDataChanged();
+			}
+			String[][] ids = this.pController.getPeerListHardCodedData();
+			for(int i = 0; i < ids.length; i++) {
+				model.addRow(new Object[] {ids[i][0]});
 			}
 			model.fireTableDataChanged();
 		}
-		String[][] ids = this.pController.getPeerListHardCodedData();
-		for(int i = 0; i < ids.length; i++) {
-			model.addRow(new Object[] {ids[i][0]});
-		}
-		model.fireTableDataChanged();
 	}
 
 	@Override
