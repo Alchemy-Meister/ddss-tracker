@@ -15,15 +15,15 @@ import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage;
 * 
 */
 
-public class ConnectionResponseError extends BitTorrentUDPMessage {
+public class ResponseError extends BitTorrentUDPMessage {
 	
 	private String errorString;
 	
-	public ConnectionResponseError() {
+	public ResponseError() {
 		super(Action.CONNECT);
 	}
 	
-	public ConnectionResponseError(Action action, int transactionId,
+	public ResponseError(Action action, int transactionId,
 			String errorString)
 	{
 		super(action);
@@ -47,9 +47,9 @@ public class ConnectionResponseError extends BitTorrentUDPMessage {
 		return byteBuffer.array();
 	}
 	
-	public static ConnectionResponseError parse(byte[] byteArray) {
+	public static ResponseError parse(byte[] byteArray) {
 		ByteBuffer bufferReceive = ByteBuffer.wrap(byteArray);
-		ConnectionResponseError request = new ConnectionResponseError();
+		ResponseError request = new ResponseError();
 		
 		request.setAction(Action.valueOf(bufferReceive.getInt(0)));
 		request.setTransactionId(bufferReceive.getInt(8));

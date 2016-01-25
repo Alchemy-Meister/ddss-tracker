@@ -7,14 +7,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import bitTorrent.metainfo.InfoDictionarySingleFile;
-import bitTorrent.metainfo.MetainfoFile;
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPRequestMessage;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import common.utils.Utilities;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest.Event;
-import peer.model.Torrents;
+import peer.model.Torrent;
 import peer.networking.Networker;
 
 public class NetworkerWriteRunnable implements Runnable {
@@ -33,10 +31,10 @@ public class NetworkerWriteRunnable implements Runnable {
 	
 	private boolean firstTimeBool = true;
 	private long connectionTime = 0;
-	private long firstTime = connectionTime;
+	private long firstTime = 0;
 	
-	private volatile long startTime = firstTime;
-	private volatile long currentTime = startTime;
+	private volatile long startTime;
+	private volatile long currentTime;
 	private volatile long elapsetTime = NetworkerWriteRunnable.RETRY_TIME;
 	
 	public NetworkerWriteRunnable(int port, String ip, DatagramSocket socket) {
@@ -67,9 +65,9 @@ public class NetworkerWriteRunnable implements Runnable {
 	}
 
 	public void cResponseReceived() {
+		this.firstTimeBool = true;
 		this.cResponseReceived = true;
 		this.elapsetTime = NetworkerWriteRunnable.RETRY_TIME;
-		this.startTime = this.currentTime;
 	}
 	
 	public void setConnectionID(long connectionID) {
@@ -97,13 +95,38 @@ public class NetworkerWriteRunnable implements Runnable {
 		write.start();
 	}
 	
+	private AnnounceRequest createAnnounce(String hash, long size) {
+		AnnounceRequest request = 
+				new AnnounceRequest();
+		
+		request.setConnectionId(this.connectionID);
+		//TODO CHECK IF SHA1
+		request.setInfoHash(hash);
+		try {
+			request.getPeerInfo().setIpAddress(
+			Utilities.pack(
+					InetAddress.getLocalHost()
+					.getAddress()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//TODO Same port as the server, should be different.
+		request.getPeerInfo().setPort(this.port);
+		
+		//Never downloads or uploads anything.
+		request.setDownloaded(0);
+		request.setUploaded(0);
+		request.setEvent(Event.NONE);
+		request.setLeft(size);
+		
+		return request;
+	}
+	
 	@Override
 	public void run() {
 		if (this.initialized) {
 			while(!Thread.currentThread().isInterrupted()) {
-				
-				if(Torrents.getTorrents().size() > 0) {
-					
+				if(Torrent.torrents.size() > 0) {
 					if(elapsetTime >= NetworkerWriteRunnable.RETRY_TIME) {
 						//check if master has sent connection response.
 						if(!this.cResponseReceived) {
@@ -141,35 +164,13 @@ public class NetworkerWriteRunnable implements Runnable {
 								//Sends announce and scraping request.
 								System.out.println("sending announce.");
 								
-								for(MetainfoFile<InfoDictionarySingleFile>
-								torrent : Torrents.getTorrents())
+								for(String hash : Torrent.torrents.keySet())
 								{
-									AnnounceRequest request = 
-											new AnnounceRequest();
-									
-									request.setConnectionId(this.connectionID);
-									//TODO CHECK IF SHA1
-									request.setInfoHash(
-											torrent.getInfo().getHexInfoHash());
-									try {
-										request.getPeerInfo().setIpAddress(
-										Utilities.pack(
-												InetAddress.getLocalHost()
-												.getAddress()));
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-									//TODO Same port as the server, should be different.
-									request.getPeerInfo().setPort(this.port);
-									
-									//TODO for the server get ip form int.
-									// System.out.println(InetAddress.getByAddress(Utilities.unpack(asd)).getHostAddress());
-									
-									//Never downloads or uploads anything.
-									request.setDownloaded(0);
-									request.setUploaded(0);
-									request.setEvent(Event.NONE);
-									request.setLeft(torrent.getInfo().getLength());
+									Torrent torrent = 
+											Torrent.torrents.get(hash);
+									AnnounceRequest request =
+											this.createAnnounce(
+													hash,torrent.getSize());
 									
 									this.sendMessage(request, this.socket);
 								}
