@@ -12,11 +12,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import common.gui.CustomJTable;
 import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
 import tracker.controllers.PeerController;
 import tracker.observers.DBFaultToleranceObserver;
+import tracker.subsys.db.DBFaultToleranceSys;
 
 public class PeerPanel extends ObserverJPanel {
 
@@ -100,6 +102,8 @@ public class PeerPanel extends ObserverJPanel {
 		
 		peerListPanel.add(new JScrollPane(peerListTable), "cell 0 1,grow");
 		
+		DBFaultToleranceSys.getInstance().addObserver(this);
+		
 		peerListTable.getSelectionModel().addListSelectionListener(
 				new ListSelectionListener()
 		{
@@ -131,8 +135,9 @@ public class PeerPanel extends ObserverJPanel {
 
 	@Override
 	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-		
+		if(arg instanceof AnnounceRequest) {
+			
+		}
 	}
 
 	@Override

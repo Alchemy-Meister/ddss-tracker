@@ -145,7 +145,6 @@ public class NetworkerPeerReadRunnable implements Runnable {
 									aRequest.getTransactionId());
 							this.db.connect();
 							try {
-								System.out.println(this.db.getPeersWithContent(aRequest.getInfoHash()).size());
 								aResponse.setLeechers(
 										this.db.getPeersWithContent(
 												aRequest.getInfoHash()).size());

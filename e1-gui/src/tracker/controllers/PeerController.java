@@ -2,7 +2,11 @@ package tracker.controllers;
 
 import java.util.Random;
 
+import tracker.db.DBManager;
+
 public class PeerController {
+	
+	private DBManager db = DBManager.getInstance();
 	
 	public PeerController() {
 		//TODO initialize database instance.

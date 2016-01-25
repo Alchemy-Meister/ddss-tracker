@@ -246,6 +246,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				System.out.println();
 			if (topic == Topic.ANNOUNCE_R) {
 				AnnounceRequest announce = bundle.getPeerMessage();
+				this.notifyObservers(announce);
 				if (Const.PRINTF_DBFTS) {
 					System.out.println(" [DB-FTS] Announce received, transac: " +
 							announce.getTransactionId() + ", sha1: "
