@@ -57,7 +57,7 @@ public class TrackerGUI extends JFrame {
 		
 		Color tabbedPanelColor = new Color(230, 230, 230);
 		
-		jPanelTabList.add(new BasicInfoPanel(tabbedPanelColor));
+		jPanelTabList.add(new BasicInfoPanel(tabbedPanelColor, this));
 		jPanelTabList.add(new TrackerPanel(tabbedPanelColor));
 		jPanelTabList.add(new PeerPanel(tabbedPanelColor));
 		

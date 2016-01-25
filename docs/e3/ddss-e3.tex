@@ -1,0 +1,90 @@
+\documentclass[twoside,a4paper,10pt]{article}
+\usepackage[top=2.54cm,bottom=2.54cm,left=2.54cm,right=2.54cm]{geometry}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+%\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{url}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{placeins}
+%\usepackage{ref}
+
+%%%
+
+\pagenumbering{arabic}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+% Shows section number and name
+\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+% Clear previous styles
+\fancyhf{}
+\fancyhead{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LO]{\rightmark}
+\fancyhead[RE]{BitTorrent Tracker: deliverable 3}
+\fancyhead[LE]{\thepage}
+\fancyfoot{}
+% Other modifiers
+%\fancyfoot[LE,RO]{\thepage}
+%\fancyfoot[LO,CE]{Something}
+%\fancyfoot[CO,RE]{Author Name}
+
+\title{BitTorrent Tracker: deliverable 3\\
+  Group 01}
+\author{Irene Díez \and Jesus Sesma}
+
+\begin{document}
+\date{}
+\maketitle
+
+%\begin{abstract}
+%Your abstract.
+%\end{abstract}
+\section{Threads}\label{sec:pa-hierarchy}
+
+Our application uses the following threads:
+\begin{itemize}
+\item \texttt{tracker.networking.runnables}: threads for networking purposes.
+  \begin{enumerate}
+  \item \texttt{NetworkerReadRunnable}: thread to read messages.
+  \item \texttt{NetworkerWriteRunnable}: thread to write messages.
+  \item \texttt{NetworkerPeerReadRunnable}: thread to read messages from the
+    peer. Not used in this deliverable, but it has been left for completeness.
+  \item \texttt{NetworkerPeerWriteRunnable}: thread to write messages from the
+    peer. Not used in this deliverable, but it has been left for completeness.
+  \item \texttt{NetworkerStatusRunnable}: thread to display a status image,
+    used in our testing phase.
+  \end{enumerate}
+\item \texttt{tracker.subsys.cfts.FaultToleranceSys}: threads to handle
+  the Fault Tolerance System.
+  \begin{enumerate}
+  \item \textbf{Main thread}: initialises the \texttt{FaultToleranceSys}'
+    listeners.
+  \item \textbf{KA timer thread}: to send KA messages.
+  \item \textbf{HI timer thread}: to send HI messages.
+  \end{enumerate}
+\item \texttt{tracker.subsys.db.DBFaultToleranceSys}: threads to handle
+  the Database Fault Tolerance System.
+  \begin{enumerate}
+  \item \textbf{Main thread}: handles if the master has to send an Announce
+    or a Commit order again.
+  \end{enumerate}
+\item \texttt{tracker.subsys.election.MasterElectionSys}: threads to handle
+  the MasterElectionSystem.
+  \begin{enumerate}
+  \item \textbf{Main thread}: initialises the  \texttt{MasterElectionSys}'
+    listeners.
+  \end{enumerate}
+\end{itemize}
+
+%\bibliographystyle{unsrt}
+%\bibliography{bib}
+
+\end{document}
+
+

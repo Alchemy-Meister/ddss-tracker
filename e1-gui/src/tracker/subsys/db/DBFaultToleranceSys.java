@@ -32,7 +32,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private static DBFaultToleranceSys instance = null;
 	private IpIdTable ipidtable = null;
-	
+	private boolean run = true;
 	private DBManager manager;
 	
 	// id transaction_id - key announce request original message
@@ -93,6 +93,11 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		return instance;
 	}
 	
+ 	public void stop() {
+ 		run = false;
+ 	}
+ 	
+ 	
 	@Override
 	public void run() {
 		TrackerSubsystem.networker.subscribe(Topic.ANNOUNCE_R, this);
@@ -101,7 +106,7 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		TrackerSubsystem.networker.subscribe(Topic.DS_DONE, this);
 		if (Const.PRINTF_DBFTS)
 			System.out.println(" [DB-FTS] Up and running.");
-		while(true) {
+		while(run) {
 			if (canIParticipate()) {
 				Integer first_transaction = getFirstTransaction();
 				if (first_transaction != null) {

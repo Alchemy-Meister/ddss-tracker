@@ -9,9 +9,6 @@ public class SHA1 {
 	private byte[] sha1;
 	
 	public SHA1(byte[] sha1) throws Exception {
-		for (byte i : sha1) {
-			System.out.printf("0x%02X ", i);
-		}
 		if (sha1.length != 20)
 			throw new Exception("Invalid SHA1");
 		else {

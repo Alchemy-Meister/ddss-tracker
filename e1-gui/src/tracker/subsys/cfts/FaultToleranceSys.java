@@ -127,9 +127,10 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		//TODO Unsubscribre to networker
 		myHiConnectionIds.clear();
 		timerKA.cancel();
-		timerKA = new Timer();
+		//timerKA = new Timer();
 		timerHI.cancel();
-		timerHI = new Timer();
+		//timerHI = new Timer();
+		masterElection.stop();
 	}
 
 	@Override

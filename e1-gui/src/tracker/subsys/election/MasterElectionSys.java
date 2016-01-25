@@ -46,6 +46,10 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 		TrackerSubsystem.networker.subscribe(Topic.ME, this);
 	}
 	
+	public void stop() {
+		timerME.cancel();
+	}
+	
 	private boolean canIVote() {
 		LongLong myid = ipidTable.getMyId();
 		if (myid == null ||

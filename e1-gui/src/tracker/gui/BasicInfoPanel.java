@@ -9,6 +9,7 @@ import java.awt.event.FocusListener;
 import java.util.Observable;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -40,6 +41,8 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	private static final String CONNECT_MSG = "Connect";
 	private static final String DISCONNECT_MGS = "Disconnect";
 	
+	private JFrame mainFrame;
+	
 	private JTextField tfID;
 	private JTextField tfSP;
 	private JTextField tfIP;
@@ -57,9 +60,9 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 	private FaultToleranceObserver ftObserver;
 	private BasicInfoController biController;
 	
-	public BasicInfoPanel(Color color) {
+	public BasicInfoPanel(Color color, JFrame mainFrame) {
 		super();
-		
+		this.mainFrame = mainFrame;
 		ftObserver = new FaultToleranceObserver();
 		ftObserver.addObserver(this);
 		biController = new BasicInfoController();
@@ -92,7 +95,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		this.add(lblSwarmPort, "cell 0 3");
 		
 		tfSP = new JTextField();
-		tfSP.setText("1234");
+		//tfSP.setText("1234");
 		this.add(tfSP, "cell 1 3,growx");
 		tfSP.setColumns(10);
 		tfSP.addFocusListener(this);
@@ -103,7 +106,7 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 		this.add(lblPeerPort, "cell 0 4,alignx trailing");
 		
 		tfPP = new JTextField();
-		tfPP.setText("1235");
+		//tfPP.setText("1235");
 		this.add(tfPP, "cell 1 4,growx");
 		tfPP.setColumns(10);
 		tfPP.addFocusListener(this);
@@ -328,6 +331,9 @@ public class BasicInfoPanel extends ObserverJPanel implements FocusListener,
 				this.tfIP.setEnabled(true);
 				this.tfPP.setEnabled(true);
 				this.tfSP.setEnabled(true);
+				mainFrame.setVisible(false);
+				mainFrame.dispose();
+				mainFrame = null;
 			}
 		} else if(clickedButton.equals(errorButton)) {
 			System.out.println("Hey what are you trying to do, "
