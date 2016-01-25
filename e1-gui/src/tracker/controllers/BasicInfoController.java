@@ -1,9 +1,9 @@
 package tracker.controllers;
 
 import common.utils.Utilities;
-import test.DBftTest;
 import tracker.Const;
 import tracker.exceptions.NetProtoException;
+import tracker.networking.Dispatcher;
 import tracker.networking.Networker;
 import tracker.subsys.cfts.FaultToleranceSys;
 import tracker.subsys.db.DBFaultToleranceSys;
@@ -11,6 +11,7 @@ import tracker.subsys.db.DBFaultToleranceSys;
 public class BasicInfoController {
 
 	private Networker networker;
+	private Dispatcher dispatcher;
 	private FaultToleranceSys fts;
 	private DBFaultToleranceSys dbfts;
 
@@ -45,8 +46,16 @@ public class BasicInfoController {
 	public void connect(int port, int peerPort, String ip) 
 			throws NetProtoException {
 		// TODO HERE IT BEGINS
+		if (Const.ENABLE_JMS) {
+			dispatcher = Dispatcher.getInstance();
+			dispatcher.run();
+			FaultToleranceSys.setDispatcher();
+		}
 		networker = Networker.getInstance(port, peerPort, ip);
+		if (Const.ENABLE_JMS)
+			networker.setDispatcher(dispatcher);
 		networker.startRW();
+		
 		FaultToleranceSys.setNetwork(ip, port, peerPort);
 		fts = FaultToleranceSys.getInstance();
 		fts.run();
@@ -58,6 +67,8 @@ public class BasicInfoController {
 
 	public void disconnect() {
 		networker.stopNetThread();
+		if (Const.ENABLE_JMS)
+			dispatcher.stopAll();
 		fts.stop();
 	}
 

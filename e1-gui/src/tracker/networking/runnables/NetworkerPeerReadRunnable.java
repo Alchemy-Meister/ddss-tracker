@@ -13,8 +13,10 @@ import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
+import tracker.Const;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Bundle;
+import tracker.networking.Dispatcher;
 import tracker.networking.Networker;
 import tracker.networking.Topic;
 import tracker.subsys.cfts.IpIdTable;
@@ -24,6 +26,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 	private int port;
 	private String ip;
 	private Networker networker = null;
+	private Dispatcher dispatcher = null;
 	private MulticastSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
@@ -51,9 +54,15 @@ public class NetworkerPeerReadRunnable implements Runnable {
 	public void setNetworker(Networker networker) {
 		this.networker = networker;
 	}
+	public void setDispatcher(Dispatcher dispatcher) {
+		this.dispatcher = dispatcher;
+	}
 	
 	private void notify(Topic topic, Bundle bundle) {
-		this.networker.notify(topic, bundle);
+		if (Const.ENABLE_JMS)
+			this.dispatcher.notify(topic, bundle);
+		else
+			this.networker.notify(topic, bundle);
 	}
 	
 	public void setIP(String ip) {
@@ -124,14 +133,13 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							}	
 							break;
 						case SCRAPE:
-							//TODO DO NOTHING, COZ FUCK U.
+							//TODO DO NOTHING
 							break;
 						case ERROR:
-							//TODO WTF??
+							//TODO
 							break;
 						}
 					}
-					
 				} catch (IOException e) {
 					Thread.currentThread().interrupt();
 				}

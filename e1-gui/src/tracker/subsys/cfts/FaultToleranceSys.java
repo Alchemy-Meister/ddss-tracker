@@ -26,7 +26,6 @@ import tracker.Const;
 import tracker.db.DBManager;
 import tracker.db.model.TrackerMember;
 import tracker.networking.Bundle;
-import tracker.networking.Networker;
 import tracker.networking.Topic;
 import tracker.subsys.PeerIdAssigner;
 import tracker.subsys.TrackerSubsystem;
@@ -107,17 +106,20 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	 * the incomming ACK messages.
 	 */
 	public void run() {
-		
-		TrackerSubsystem.networker.subscribe(Topic.KA, this);
-		TrackerSubsystem.networker.subscribe(Topic.HI, this);
+		// TODO CHANGE SUS
+		if (Const.ENABLE_JMS) {
+			TrackerSubsystem.dispatcher.subscribe(Topic.KA, this);
+			TrackerSubsystem.dispatcher.subscribe(Topic.HI, this);
+		} else {
+			TrackerSubsystem.networker.subscribe(Topic.KA, this);
+			TrackerSubsystem.networker.subscribe(Topic.HI, this);
+		}
 		// 1- We start sending KAs with an unasigned id
-		timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
-				Const.UNASIGNED_ID), 0);
+		timerKA.schedule(new KATimerTask(Const.UNASIGNED_ID), 0);
 		waitFromToElectMyself = System.currentTimeMillis();
 		waitingForMaster = true;
 		// 2- We also start sending HI messages
-		timerHI.schedule(new HITimerTask(TrackerSubsystem.networker, 
-				myHiConnectionIds), 0);
+		timerHI.schedule(new HITimerTask(myHiConnectionIds), 0);
 	}
 
 	public void stop() {
@@ -173,8 +175,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 					timerHI.cancel();
 					timerKA = new Timer();
 					timerHI = new Timer();
-					timerKA.schedule(new KATimerTask(TrackerSubsystem.networker,
-							master), 0);
+					timerKA.schedule(new KATimerTask(master), 0);
 					ipidTable.setMyId(bundle.getIP(), master);
 					ipidTable.electMaster(master);
 					if (Const.PRINTF_FTS)
@@ -225,10 +226,17 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 									System.out.println(" [FTS] Giving info"
 											+ " and assigning id to slave.");
 								}
-								networker.publish(Topic.HI,new HelloResponseM(
-										hellom.getConnection_id(),
-										PeerIdAssigner.assignId(),
-										new SHA1(hashBytes), table));
+								if (Const.ENABLE_JMS) {
+									dispatcher.publish(Topic.HI,new HelloResponseM(
+											hellom.getConnection_id(),
+											PeerIdAssigner.assignId(),
+											new SHA1(hashBytes), table));
+								} else {
+									networker.publish(Topic.HI,new HelloResponseM(
+											hellom.getConnection_id(),
+											PeerIdAssigner.assignId(),
+											new SHA1(hashBytes), table));
+								}
 							} catch (Exception e) {
 								e.printStackTrace(System.err);
 							} finally {
@@ -261,10 +269,7 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 								LongLong myID = responseM.getAssigned_id();
 								ipidTable.setMyId(bundle.getIP(), myID);
 								updateMaster = true;
-								timerKA.schedule(
-										new KATimerTask(
-												TrackerSubsystem.networker,
-												myID), 0);
+								timerKA.schedule(new KATimerTask(myID), 0);
 								if (Const.PRINTF_FTS) {
 									System.out.println(" [FTS] Master has " +
 											"assigned this id: "
@@ -287,11 +292,19 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 												(int)cont.getPort());
 									}
 								}
-								networker.publish(Topic.HI,
-										new HelloCloseM(
-												responseM.getConnection_id(),
-												myID,
-												responseM.getContents_sha()));
+								if (Const.ENABLE_JMS) {
+									dispatcher.publish(Topic.HI,
+											new HelloCloseM(
+													responseM.getConnection_id(),
+													myID,
+													responseM.getContents_sha()));
+								} else {
+									networker.publish(Topic.HI,
+											new HelloCloseM(
+													responseM.getConnection_id(),
+													myID,
+													responseM.getContents_sha()));
+								}
 							}
 						}
 						break;
@@ -349,18 +362,19 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private class KATimerTask extends TimerTask {
 
-		private Networker networker;
 		private LongLong uuid;
 
-		public KATimerTask(Networker networker, LongLong uuid) {
-			this.networker = networker;
+		public KATimerTask(LongLong uuid) {
 			this.uuid = uuid;
 		}
 
 		@Override
 		public void run() {
-			networker.publish(Topic.KA, new KeepAliveM(uuid));
-			timerKA.schedule(new KATimerTask(this.networker, uuid),
+			if (Const.ENABLE_JMS)
+				dispatcher.publish(Topic.KA, new KeepAliveM(uuid));
+			else
+				networker.publish(Topic.KA, new KeepAliveM(uuid));
+			timerKA.schedule(new KATimerTask(uuid),
 					Const.KA_EVERY);
 		}
 
@@ -368,13 +382,12 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 
 	private class HITimerTask extends TimerTask {
 
-		private Networker networker;
 		private List<Long> hiConnectIds;
 		private Random random;
 
-		public HITimerTask(Networker networker, List<Long> hiConnectIds) {
+		public HITimerTask(List<Long> hiConnectIds)
+		{
 			random = new Random(System.currentTimeMillis());
-			this.networker = networker;
 			this.hiConnectIds = hiConnectIds;
 		}
 
@@ -382,8 +395,11 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 		public void run() {
 			long newRandom = random.nextLong();
 			hiConnectIds.add(newRandom);
-			networker.publish(Topic.HI, new HelloM(newRandom));
-			timerHI.schedule(new HITimerTask(this.networker, hiConnectIds),
+			if (Const.ENABLE_JMS)
+				dispatcher.publish(Topic.HI, new HelloM(newRandom));
+			else
+				networker.publish(Topic.HI, new HelloM(newRandom));
+			timerHI.schedule(new HITimerTask(hiConnectIds),
 					Const.HI_EVERY);
 		}
 

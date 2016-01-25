@@ -17,6 +17,27 @@ public enum Topic {
 		return this.value;
 	}
 	
+	public static Topic topicFromInt(int t) {
+		switch (t) {
+		case 0:
+			return Topic.KA;
+		case 1:
+			return Topic.ME;
+		case 2:
+			return Topic.HI;
+		case 3:
+			return Topic.DS_READY;
+		case 4:
+			return Topic.DS_COMMIT;
+		case 5:
+			return Topic.DS_DONE;
+		case 6:
+			return Topic.ANNOUNCE_R;
+		default:
+			return Topic.ERROR;
+		}
+	}
+	
 	public static Topic topicFromType(Type t) {
 		switch (t.getValue()) {
 		case 0:

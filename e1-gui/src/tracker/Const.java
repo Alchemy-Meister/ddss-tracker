@@ -13,6 +13,7 @@ public class Const {
 	public static boolean PRINTF_ME = true; // debug of me system
 	public static boolean PRINTF_DB = true; // debug of db manager
 	public static boolean PRINTF_DBFTS = true; // debug of db fault tole. sys.
+	public static boolean PRINTF_DISPA = true; // debug of dispatcher
 
 	// Control strings
 	public static final String DELETE_ROW = "DELETE_ROW";
@@ -20,6 +21,13 @@ public class Const {
 
 	// Special id
 	public static final LongLong UNASIGNED_ID = new LongLong("0");
+	
+	// enable udp or jms
+	public static final boolean ENABLE_JMS = true;
+	public static final String JMS_HOST = "127.0.0.1";
+	public static final int JMS_PORT = 61616;
+	public static final String CONN_FACT_NAME = "TopicConnectionFactory";
+	public static final String SUBSCRIBER_ID = "SubscriberID";
 
 	// Prefefined miliseconds
 	public static final long KA_EVERY = 2000;

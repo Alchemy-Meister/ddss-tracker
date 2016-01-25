@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 
+import tracker.networking.Dispatcher;
 import tracker.networking.Networker;
 import tracker.networking.Subscriber;
 
@@ -16,6 +17,7 @@ public abstract class TrackerSubsystem implements Subscriber {
 
 	protected List<Observer> observers = null;
 	protected static Networker networker;
+	protected static Dispatcher dispatcher;
 	
 	public TrackerSubsystem() {
 		observers = new ArrayList<Observer>();
@@ -38,6 +40,11 @@ public abstract class TrackerSubsystem implements Subscriber {
 	public static void setNetwork(String ip, int port, int peerPort) {
 		if (networker == null)
 			networker = Networker.getInstance(port, peerPort, ip);
+	}
+	
+	public static void setDispatcher() {
+		if (dispatcher == null)
+			dispatcher = Dispatcher.getInstance();
 	}
 	
 }

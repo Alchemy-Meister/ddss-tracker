@@ -43,7 +43,11 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 
 	@Override
 	public void run() {
-		TrackerSubsystem.networker.subscribe(Topic.ME, this);
+		// TODO CHANGE SUS
+		if (Const.ENABLE_JMS)
+			TrackerSubsystem.dispatcher.subscribe(Topic.ME, this);
+		else
+			TrackerSubsystem.networker.subscribe(Topic.ME, this);
 	}
 	
 	public void stop() {
@@ -176,7 +180,10 @@ public class MasterElectionSys extends TrackerSubsystem implements  Runnable {
 		}
 		@Override
 		public void run() {
-			networker.publish(Topic.ME, new MasterElectionM(vote, author));
+			if (Const.ENABLE_JMS)
+				dispatcher.publish(Topic.ME, new MasterElectionM(vote, author));
+			else
+				networker.publish(Topic.ME, new MasterElectionM(vote, author));
 			timerME = new Timer();
 			timerME.schedule(new METimerTask(author, vote), Const.ME_EVERY);
 		}

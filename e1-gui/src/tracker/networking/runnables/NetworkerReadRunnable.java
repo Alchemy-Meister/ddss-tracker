@@ -49,8 +49,6 @@ public class NetworkerReadRunnable implements Runnable {
 	private void notify(Topic topic, Bundle bundle) {
 		networker.notify(topic, bundle);
 	}
-	
-	
 
 	@Override
 	public void run() {

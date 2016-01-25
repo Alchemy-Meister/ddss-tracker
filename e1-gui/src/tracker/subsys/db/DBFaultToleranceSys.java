@@ -100,10 +100,18 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
  	
 	@Override
 	public void run() {
-		TrackerSubsystem.networker.subscribe(Topic.ANNOUNCE_R, this);
-		TrackerSubsystem.networker.subscribe(Topic.DS_READY, this);
-		TrackerSubsystem.networker.subscribe(Topic.DS_COMMIT, this);
-		TrackerSubsystem.networker.subscribe(Topic.DS_DONE, this);
+		// TODO CHANGE SUS
+		if (Const.ENABLE_JMS) {
+			TrackerSubsystem.dispatcher.subscribe(Topic.ANNOUNCE_R, this);
+			TrackerSubsystem.dispatcher.subscribe(Topic.DS_READY, this);
+			TrackerSubsystem.dispatcher.subscribe(Topic.DS_COMMIT, this);
+			TrackerSubsystem.dispatcher.subscribe(Topic.DS_DONE, this);
+		} else {
+			TrackerSubsystem.networker.subscribe(Topic.ANNOUNCE_R, this);
+			TrackerSubsystem.networker.subscribe(Topic.DS_READY, this);
+			TrackerSubsystem.networker.subscribe(Topic.DS_COMMIT, this);
+			TrackerSubsystem.networker.subscribe(Topic.DS_DONE, this);
+		}
 		if (Const.PRINTF_DBFTS)
 			System.out.println(" [DB-FTS] Up and running.");
 		while(run) {
@@ -151,8 +159,13 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 												ar.getAction().value(),
 												first_transaction);
 										putTransIdCommitSendTime(first_transaction);
-										networker.publish(Topic.DS_COMMIT,
-												commit);
+										if (Const.ENABLE_JMS) {
+											dispatcher.publish(Topic.DS_COMMIT,
+													commit);
+										} else {
+											networker.publish(Topic.DS_COMMIT,
+													commit);
+										}
 									}
 								}
 							}
@@ -267,7 +280,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 									announce.getAction().value(),
 									announce.getTransactionId(),
 									myid, info_hashes);
-							networker.publish(Topic.DS_READY, dsready);
+							if (Const.ENABLE_JMS)
+								dispatcher.publish(Topic.DS_READY, dsready);
+							else
+								networker.publish(Topic.DS_READY, dsready);
 							if (Const.PRINTF_DBFTS) {
 								System.out.println(" [DB-FTS] DS-Ready sent,"
 										+ " trans_id: " +
@@ -315,7 +331,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 										ar.getAction().value(),
 										first_transaction);
 								putTransIdCommitSendTime(first_transaction);
-								networker.publish(Topic.DS_COMMIT, commit);
+								if (Const.ENABLE_JMS)
+									dispatcher.publish(Topic.DS_COMMIT, commit);
+								else
+									networker.publish(Topic.DS_COMMIT, commit);
 								if (Const.PRINTF_DBFTS) {
 									System.out.println(" [DB-FTS] DS-Commit "
 											+ "sent, trans_id: " +
@@ -364,8 +383,13 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				if (!ipidtable.amIMaster()) {
 					LongLong myid = ipidtable.getMyId();
 					if (myid != null) {
-						networker.publish(Topic.DS_DONE, 	
-						new DSDoneM(commit.getTransactionId(), myid));
+						if (Const.ENABLE_JMS) {
+							dispatcher.publish(Topic.DS_DONE, 	
+									new DSDoneM(commit.getTransactionId(), myid));
+						} else {
+							networker.publish(Topic.DS_DONE, 	
+									new DSDoneM(commit.getTransactionId(), myid));			
+						}
 						if (Const.PRINTF_DBFTS) {
 							System.out.println(" [DB-FTS] DS-done sent, trans_id: " +
 									commit.getTransactionId());

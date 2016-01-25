@@ -18,6 +18,7 @@ import tracker.subsys.TrackerSubsystem;
 public class Networker implements Publisher {
 
 	private static Networker instance = null;
+	private Dispatcher dispatcher = null; // needed to jms
 	private Thread netReadThread, netWriteThread, netPeerReadThread;
 	private NetworkerReadRunnable netReadRunnable;
 	private NetworkerPeerReadRunnable netPeerRunnable;
@@ -43,6 +44,12 @@ public class Networker implements Publisher {
 			instance.netPeerRunnable.setPort(peerPort);
 		}
 		return instance;
+	}
+	
+	
+	public void setDispatcher(Dispatcher d) {
+		this.dispatcher = d;
+		netPeerRunnable.setDispatcher(this.dispatcher);
 	}
 
 	public boolean isNetThreadRunning() {
