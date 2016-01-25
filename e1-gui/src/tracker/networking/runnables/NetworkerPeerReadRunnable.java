@@ -73,7 +73,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 		if(this.initialized) {
 			while(!Thread.currentThread().isInterrupted()) {
 				try {
-					byte[] buffer = new byte[5000];
+					byte[] buffer = new byte[10000];
 					DatagramPacket messageIn = 
 							new DatagramPacket(buffer, buffer.length);
 					this.socket.receive(messageIn);

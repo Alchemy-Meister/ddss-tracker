@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
+import bitTorrent.tracker.protocol.udp.messages.custom.peer.ResponseError;
 import peer.networking.Networker;
 
 public class NetworkerReadRunnable implements Runnable {
@@ -30,7 +31,7 @@ public class NetworkerReadRunnable implements Runnable {
 	public void run() {
 		while(!Thread.currentThread().isInterrupted()) {
 			try {
-				byte[] buffer = new byte[5000];	
+				byte[] buffer = new byte[20000];	
 				DatagramPacket messageIn = new DatagramPacket(
 						buffer, buffer.length);
 				
@@ -63,7 +64,9 @@ public class NetworkerReadRunnable implements Runnable {
 							//TODO Nothing to do here.
 							break;
 						case ERROR:
-							//TODO check if error.
+							ResponseError eResponse = ResponseError.parse(
+									response);
+							//TODO do something with this on the UI.
 							break;
 						}
 					}
