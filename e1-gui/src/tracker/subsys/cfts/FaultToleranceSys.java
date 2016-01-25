@@ -49,7 +49,6 @@ public class FaultToleranceSys extends TrackerSubsystem implements Runnable {
 	private boolean updateMaster = false;
 	private List<Long> myHiConnectionIds = null;
 
-
 	private FaultToleranceSys() {
 		super();
 		masterElection = MasterElectionSys.getInstance();

@@ -15,6 +15,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSDoneM;
 import bitTorrent.tracker.protocol.udp.messages.custom.ds.DSReadyM;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import common.utils.Utilities;
+import test.DBftTest;
 import tracker.Const;
 import tracker.db.DBManager;
 import tracker.db.model.TrackerMember;
@@ -98,7 +99,8 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		TrackerSubsystem.networker.subscribe(Topic.DS_READY, this);
 		TrackerSubsystem.networker.subscribe(Topic.DS_COMMIT, this);
 		TrackerSubsystem.networker.subscribe(Topic.DS_DONE, this);
-		
+		if (Const.PRINTF_DBFTS)
+			System.out.println(" [DB-FTS] Up and running.");
 		while(true) {
 			if (canIParticipate()) {
 				Integer first_transaction = getFirstTransaction();
@@ -158,8 +160,9 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 					}
 				}
 			}
+			
 			try { Thread.sleep(100);} catch (Exception e) {}
-		}
+		} 
 	}
 	
 	private boolean canIParticipate() {
@@ -202,6 +205,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 		if (canIParticipate()) {
 			if (topic == Topic.ANNOUNCE_R) {
 				AnnounceRequest announce = bundle.getPeerMessage();
+				if (Const.PRINTF_DBFTS) {
+					System.out.println(" [DB-FTS] Announce received, transac: " +
+							announce.getTransactionId());
+				}
 				putAR(announce);
 				// initialise the list of peers ready for this tran id
 				transIdReadyLock.lock();
@@ -230,6 +237,11 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 									announce.getTransactionId(),
 									myid, info_hashes);
 							networker.publish(Topic.DS_READY, dsready);
+							if (Const.PRINTF_DBFTS) {
+								System.out.println(" [DB-FTS] DS-Ready sent,"
+										+ " trans_id: " +
+										announce.getTransactionId());
+							}
 						} else {
 							// If my id is not set I dont have to send ready.
 							// If I have and id but the below exception is
@@ -242,6 +254,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				}
 			} else if (topic == Topic.DS_READY) {
 				DSReadyM dsready = (DSReadyM) bundle.getMessage();
+				if (Const.PRINTF_DBFTS) {
+					System.out.println(" [DB-FTS] DS-Ready received, trans_id: " +
+							dsready.getTransactionId());
+				}
 				// update the list of peers ready for the given trans id
 				String id = dsready.getId().toString();
 				setTransIdReady(dsready.getTransactionId(), id);
@@ -251,6 +267,11 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 					Integer first_transaction = getFirstTransaction();
 					if (first_transaction != null) {
 						if (haveThemAllReady(first_transaction)) {
+							if (Const.PRINTF_DBFTS) {
+								System.out.println(" [DB-FTS] All peers ready"
+										+ " for trans_id: " +
+										first_transaction);
+							}
 							setCheckTineToRetryAnnounce(false);
 							AnnounceRequest ar = getAR(first_transaction);
 							if (ar != null) {
@@ -260,6 +281,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 										first_transaction);
 								putTransIdCommitSendTime(first_transaction);
 								networker.publish(Topic.DS_COMMIT, commit);
+								if (Const.PRINTF_DBFTS) {
+									System.out.println(" [DB-FTS] DS-Commit sent, trans_id: " +
+											commit.getTransactionId());
+								}
 							}
 						} else {
 							// The other thread checks if we have to send the
@@ -272,6 +297,10 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 				// Master and slaves commit at the same time
 				DSCommitM commit = (DSCommitM) bundle.getMessage();
 				AnnounceRequest an = getAR(commit.getTransactionId());
+				if (Const.PRINTF_DBFTS) {
+					System.out.println(" [DB-FTS] DS-Commit received, trans_id: " +
+							commit.getTransactionId());
+				}
 				// Check whether we have commited such transaction id yet
 				if (!haveIAlreadyCommited(commit.getTransactionId())) {
 					manager.connect();
@@ -285,6 +314,15 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 						e.printStackTrace(System.err);
 					}
 					manager.disconnect();
+					if (Const.PRINTF_DBFTS) {
+						System.out.println(" [DB-FTS] Commited trans_id: " +
+								commit.getTransactionId());
+					}
+				} else {
+					if (Const.PRINTF_DBFTS) {
+						System.out.println(" [DB-FTS] Not commiting trans_id: " +
+								commit.getTransactionId());
+					}
 				}
 				// either way, send that the transaction is done
 				// (if we are not master)
@@ -293,12 +331,20 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 					if (myid != null) {
 						networker.publish(Topic.DS_DONE, 	
 						new DSDoneM(commit.getTransactionId(), myid));
+						if (Const.PRINTF_DBFTS) {
+							System.out.println(" [DB-FTS] DS-done sent, trans_id: " +
+									commit.getTransactionId());
+						}
 					}
 				}
 			} else if (topic == Topic.DS_DONE) {
 				DSDoneM done = (DSDoneM) bundle.getMessage();
 				setTransIdCommited((int) done.getConnection_id(),
 						done.getSenderId().toString());
+				if (Const.PRINTF_DBFTS) {
+					System.out.println(" [DB-FTS] DS-done received, trans_id: " +
+							done.getConnection_id());
+				}
 				if (ipidtable.amIMaster()) {
 					// check if all have commited the first transaction
 					Integer first_transaction = getFirstTransaction();
@@ -306,11 +352,14 @@ public class DBFaultToleranceSys extends TrackerSubsystem implements Runnable {
 						if (haveThemAllCommited(first_transaction)) {
 							setCheckTimeToRetryCommit(false);
 							cleanTransactionId(first_transaction);
+							if (Const.PRINTF_DBFTS) {
+								System.out.println(" [DB-FTS] Trans_id: " +
+										first_transaction + " done!");
+							}
 						} else {
 							setCheckTimeToRetryCommit(true);
 						}
 					}
-					
 				}
 			}
 		}

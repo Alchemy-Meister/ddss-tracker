@@ -12,6 +12,7 @@ public class Const {
 	public static boolean PRINTF_FTS = true; // debug of fault tolerance system
 	public static boolean PRINTF_ME = true; // debug of me system
 	public static boolean PRINTF_DB = true; // debug of db manager
+	public static boolean PRINTF_DBFTS = true; // debug of db fault tole. sys.
 
 	// Control strings
 	public static final String DELETE_ROW = "DELETE_ROW";
