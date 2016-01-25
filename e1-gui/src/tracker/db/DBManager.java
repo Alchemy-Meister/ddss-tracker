@@ -223,6 +223,31 @@ public class DBManager {
 
 	}
 	
+	public List<Peer> getPeers() throws SQLException {
+		List<Peer> peerList = new ArrayList<>();
+		
+		String a = "SELECT * FROM PEERINFO;";
+		PreparedStatement pre = conn.prepareStatement(a);
+		ResultSet re = pre.executeQuery();
+		while(re.next()) {
+			Peer peer = null;
+			try {
+				peer = new Peer(Utilities.pack(
+						InetAddress.getByName(re.getString(2)).getAddress()),
+						re.getShort(3));
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			if(peer != null) {
+				peerList.add(peer);
+			}
+		}
+		pre.close();
+		re.close();
+		
+		return peerList; 
+	}
+	
 	public List<Peer> getPeersWithContent(String sha1) throws SQLException {
 		List<Peer> peerList = new ArrayList<>();
 		sha1 = sha1.toLowerCase();

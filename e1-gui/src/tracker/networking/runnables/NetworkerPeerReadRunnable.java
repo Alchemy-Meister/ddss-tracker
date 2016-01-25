@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.sql.SQLException;
 
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
+import bitTorrent.tracker.protocol.udp.messages.PeerInfo;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
@@ -117,18 +118,20 @@ public class NetworkerPeerReadRunnable implements Runnable {
 						case ANNOUNCE:
 							AnnounceRequest aRequest = AnnounceRequest.parse(
 									messageIn.getData());
+							PeerInfo info = aRequest.getPeerInfo();
+							info.setPort(messageIn.getPort());
+							aRequest.setPeerInfo(info);
 							
-							try {
-								String ip = InetAddress.getByAddress(
+							String superIp = InetAddress.getByAddress(
 									Utilities.unpack(
 										aRequest.getPeerInfo().getIpAddress()))
 										.getHostAddress();
-								int port = messageIn.getPort();
-								
+							int superPort = messageIn.getPort();
+							try {
 								this.db.connect();
-								db.insertPeer(ip, port);
+								db.insertPeer(superIp, superPort);
 								this.db.insertContents(aRequest.getInfoHash(),
-										ip, port);
+										superIp, superPort);
 								this.db.disconnect();
 								
 							} catch (SQLException e) {
@@ -137,8 +140,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							
 							notify(Topic.ANNOUNCE_R,
 									// line too long, U_U
-									new Bundle(messageIn.getAddress().getHostAddress(),
-											messageIn.getPort(),
+									new Bundle(superIp, superPort,
 											aRequest));
 							AnnounceResponse aResponse = new AnnounceResponse();
 							aResponse.setTransactionId(
@@ -156,8 +158,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							if(IpIdTable.getInstance().amIMaster()) {
 								new Thread(new NetworkerPeerWriteRunnable(
 										aResponse,
-										messageIn.getAddress().getHostAddress(),
-										messageIn.getPort()))
+										superIp, superPort))
 								.start();
 								System.out.println("announce request sent.");
 							}	

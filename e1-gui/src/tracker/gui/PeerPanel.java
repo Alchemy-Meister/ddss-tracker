@@ -136,8 +136,23 @@ public class PeerPanel extends ObserverJPanel {
 	@Override
 	public void update(Observable o, Object arg) {
 		if(arg instanceof AnnounceRequest) {
-			
+			updateIDs();
 		}
+	}
+	
+	public synchronized void updateIDs() {
+		DefaultTableModel model = (DefaultTableModel)peerListTable.getModel();
+		if (model.getRowCount() > 0) {
+			for (int i = model.getRowCount() - 1; i >= 0; i--) {
+				model.removeRow(i);
+			}
+			model.fireTableDataChanged();
+		}
+		String[][] ids = this.pController.getPeerListHardCodedData();
+		for(int i = 0; i < ids.length; i++) {
+			model.addRow(new Object[] {ids[i][0]});
+		}
+		model.fireTableDataChanged();
 	}
 
 	@Override

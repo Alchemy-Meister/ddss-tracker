@@ -1,8 +1,11 @@
 package tracker.controllers;
 
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Random;
 
 import tracker.db.DBManager;
+import tracker.db.model.Peer;
 
 public class PeerController {
 	
@@ -38,25 +41,23 @@ public class PeerController {
 	}
 	
 	public String[][] getPeerListHardCodedData() {
-		return new String[][]{
-			{"Peer_00"},
-			{"Peer_01"},
-			{"Peer_02"},
-			{"Peer_03"},
-			{"Peer_04"},
-			{"Peer_05"},
-			{"Peer_06"},
-			{"Peer_07"},
-			{"Peer_08"},
-			{"Peer_09"},
-			{"Peer_10"},
-			{"Peer_11"},
-			{"Peer_12"},
-			{"Peer_13"},
-			{"Peer_14"},
-			{"Peer_15"},
-			{"Peer_16"}
-		};
+		List<Peer> peerlist = null;
+		this.db.connect();
+		try {
+			peerlist = this.db.getPeers();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		this.db.disconnect();
+		if(peerlist != null) {
+			String[][] string = new String[peerlist.size()][1];
+			for(int i = 0; i < peerlist.size(); i++) {
+				string[i][0] = "Peer_" + i;
+			}
+			return string;
+		} else {
+			return new String[][]{};
+		}
 	}
 	
 	public String[][] getPeerBasicHardCodedInfo() {
