@@ -109,6 +109,10 @@ public class NetworkerPeerReadRunnable implements Runnable {
 											messageIn.getPort(),
 											aRequest));
 							AnnounceResponse aResponse = new AnnounceResponse();
+							aResponse.setTransactionId(
+									aRequest.getTransactionId());
+							aResponse.setLeechers(123);
+							aResponse.setSeeders(23234);
 							//TODO SET SHITTY PARAMS.
 							if(IpIdTable.getInstance().amIMaster()) {
 								new Thread(new NetworkerPeerWriteRunnable(

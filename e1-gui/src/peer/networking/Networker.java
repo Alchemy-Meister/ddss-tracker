@@ -2,6 +2,9 @@ package peer.networking;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observer;
 
 import peer.networking.runnables.NetworkerReadRunnable;
 import peer.networking.runnables.NetworkerWriteRunnable;
@@ -11,6 +14,8 @@ public class Networker {
 	private Thread netReadThread, netWriteThread;
 	private NetworkerReadRunnable netReadRunnable;
 	private NetworkerWriteRunnable netWriteRunnable;
+	
+	private static List<Observer> observers = new ArrayList<Observer>();
 	
 	private Networker(int port, String ip) {
 		try {
@@ -39,7 +44,6 @@ public class Networker {
 	
 	public void startRW() throws SocketException {
 		netReadRunnable.setNetworker(this);
-		netWriteRunnable.setNetworker(this);
 		netWriteRunnable.init();
 		
 		netReadThread = new Thread(netReadRunnable);
@@ -64,5 +68,19 @@ public class Networker {
 	
 	public void setConnectionId(long connectionId) {
 		this.netWriteRunnable.setConnectionID(connectionId);
+	}
+	
+	public static void addObserver(Observer o) {
+		Networker.observers.add(o);
+	}
+	
+	public static void removeObserver(Observer o) {
+		Networker.observers.remove(o);
+	}
+	
+	public void notify(Object whatever) {
+		for(Observer observer : observers) {
+			observer.update(null, whatever);
+		}
 	}
 }

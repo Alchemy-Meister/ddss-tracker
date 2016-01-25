@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import bitTorrent.metainfo.InfoDictionarySingleFile;
 import bitTorrent.metainfo.MetainfoFile;
 import common.utils.Utilities;
+import peer.model.Torrent;
 
 public class TorrentTableModel extends DefaultTableModel {
 
@@ -25,6 +26,19 @@ public class TorrentTableModel extends DefaultTableModel {
 
 	public static String[] getColumnNames() {
 		return TorrentTableModel.columnNames;
+	}
+	
+	public void updateTorrent(String hash, Torrent torrent) {
+		boolean found = false;
+		for (int i = 0; i < this.getRowCount() && !found; i++) {
+			String rowHash = (String) this.getValueAt(i, 1);
+			if(rowHash.equals(hash.toLowerCase())) {
+				this.setValueAt(torrent.getLeechers(), i, 4);
+				this.setValueAt(torrent.getSeeders(), i, 5);
+				this.fireTableDataChanged();
+				found = true;
+			}
+		}
 	}
 
 	public void addRow(MetainfoFile<InfoDictionarySingleFile> torrent) {		

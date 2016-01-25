@@ -13,12 +13,11 @@ import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import common.utils.Utilities;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest.Event;
 import peer.model.Torrent;
-import peer.networking.Networker;
+import peer.model.Transaction;
 
 public class NetworkerWriteRunnable implements Runnable {
 	private int port;
 	private String ip;
-	private Networker networker = null;
 	private DatagramSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
@@ -58,10 +57,6 @@ public class NetworkerWriteRunnable implements Runnable {
 	
 	public void setPort(int port) {
 		this.port = port;
-	}
-	
-	public void setNetworker(Networker networker) {
-		this.networker = networker;
 	}
 
 	public void cResponseReceived() {
@@ -135,12 +130,19 @@ public class NetworkerWriteRunnable implements Runnable {
 							{
 								//Sends Connection Request.
 								System.out.println("sending connect.");
-								this.sendMessage(new ConnectionRequest(),
+								
+								ConnectionRequest request =
+										new ConnectionRequest();
+								
+								Transaction.transactions.put(
+										request.getTransactionId(), request);
+								
+								this.sendMessage(request,
 										this.socket);
 							} else {
 								//Stop thread.
 								Thread.currentThread().interrupt();
-								//TODO notify panels somehow...
+								System.err.println("Give up sending connection requests.");
 							}
 							
 						} else {
@@ -172,13 +174,16 @@ public class NetworkerWriteRunnable implements Runnable {
 											this.createAnnounce(
 													hash,torrent.getSize());
 									
+									Transaction.transactions.put(
+										request.getTransactionId(), request);
+									
 									this.sendMessage(request, this.socket);
 								}
 								
 							} else {
 								//Stop thread.
 								Thread.currentThread().interrupt();
-								//TODO notify panels somehow...
+								System.err.println("Give up sending announce requests.");
 							}
 						}
 						startTime = System.currentTimeMillis();

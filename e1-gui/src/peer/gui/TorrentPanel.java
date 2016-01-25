@@ -15,6 +15,8 @@ import common.gui.CustomJTable;
 import common.gui.ObserverJPanel;
 import net.miginfocom.swing.MigLayout;
 import peer.controllers.TorrentController;
+import peer.model.Torrent;
+import peer.networking.Networker;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -29,7 +31,6 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 	private JButton btnTorrent;
 	
 	private TorrentTableModel torrentModel;
-	
 	private TorrentController controller;
 
 	public TorrentPanel(Color color) {
@@ -59,11 +60,18 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 		btnTorrent.addActionListener(this);
 		
 		controller = new TorrentController();
+		Networker.addObserver(this);
 	}
 
 	@Override
 	public void update(Observable o, Object arg) {
-		
+		Torrent torrent = Torrent.torrents.get((String) arg);
+		this.torrentModel.updateTorrent((String) arg, torrent);
+	}
+	
+	@Override
+	public void unsubscribe() {
+		Networker.removeObserver(this);
 	}
 
 	@Override
@@ -82,10 +90,5 @@ public class TorrentPanel extends ObserverJPanel implements ActionListener {
 	          controller.addTorrent(this.torrentModel, torrent);
 	        }
 		}
-	}
-
-	@Override
-	public void unsubscribe() {
-		
 	}
 }
