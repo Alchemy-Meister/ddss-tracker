@@ -7,12 +7,15 @@ import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.sql.SQLException;
 
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.AnnounceResponse;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionRequest;
 import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
+import common.utils.Utilities;
+import tracker.db.DBManager;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Bundle;
 import tracker.networking.Networker;
@@ -27,6 +30,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 	private MulticastSocket socket;
 	private InetAddress group;
 	private boolean initialized = false;
+	private DBManager db = DBManager.getInstance();
 	
 	
 	public NetworkerPeerReadRunnable(int port, String ip) {
@@ -91,6 +95,7 @@ public class NetworkerPeerReadRunnable implements Runnable {
 									new ConnectionResponse(
 											cRequest.getConnectionId(),
 											cRequest.getTransactionId());
+							
 							if(IpIdTable.getInstance().amIMaster()) {
 								Thread asd = new Thread(new NetworkerPeerWriteRunnable(
 										response,
@@ -103,6 +108,24 @@ public class NetworkerPeerReadRunnable implements Runnable {
 						case ANNOUNCE:
 							AnnounceRequest aRequest = AnnounceRequest.parse(
 									messageIn.getData());
+							
+							try {
+								String ip = InetAddress.getByAddress(
+									Utilities.unpack(
+										aRequest.getPeerInfo().getIpAddress()))
+										.getHostAddress();
+								int port = messageIn.getPort();
+								
+								this.db.connect();
+								db.insertPeer(ip, port);
+								this.db.insertContents(aRequest.getInfoHash(),
+										ip, port);
+								this.db.disconnect();
+								
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							
 							notify(Topic.ANNOUNCE_R,
 									// line too long, U_U
 									new Bundle(messageIn.getAddress().getHostAddress(),
@@ -111,8 +134,16 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							AnnounceResponse aResponse = new AnnounceResponse();
 							aResponse.setTransactionId(
 									aRequest.getTransactionId());
-							aResponse.setLeechers(123);
-							aResponse.setSeeders(23234);
+							this.db.connect();
+							try {
+								System.out.println(this.db.getPeersWithContent(aRequest.getInfoHash()).size());
+								aResponse.setLeechers(
+										this.db.getPeersWithContent(
+												aRequest.getInfoHash()).size());
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							aResponse.setSeeders(0);
 							//TODO SET SHITTY PARAMS.
 							if(IpIdTable.getInstance().amIMaster()) {
 								new Thread(new NetworkerPeerWriteRunnable(
@@ -127,13 +158,14 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							//TODO DO NOTHING, COZ FUCK U.
 							break;
 						case ERROR:
-							//TODO WTF??
+							//TODO The peer doesn't send errors, coz we rock.
 							break;
 						}
 					}
 					
 				} catch (IOException e) {
 					Thread.currentThread().interrupt();
+					this.db.disconnect();
 				}
 				
 			}
