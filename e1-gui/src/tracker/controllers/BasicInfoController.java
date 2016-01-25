@@ -18,7 +18,6 @@ public class BasicInfoController {
 	private Thread dbftsThread;
 	
 	public BasicInfoController() {
-		// TODO start whatever dependecy goes here.
 	}
 
 	public boolean isValidIP(String ip) {
@@ -67,8 +66,9 @@ public class BasicInfoController {
 
 	public void disconnect() {
 		networker.stopNetThread();
-		if (Const.ENABLE_JMS)
+		if (Const.ENABLE_JMS) {
 			dispatcher.stopAll();
+		}
 		fts.stop();
 	}
 

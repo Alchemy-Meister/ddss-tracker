@@ -3,6 +3,8 @@ package tracker.networking;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -28,11 +30,17 @@ public class Dispatcher implements Publisher, MessageListener, Runnable {
 	private HashMap<Topic, List<TrackerSubsystem>> subscribers;
 	private HashMap<Topic, Thread> topicThread;
 	private HashMap<Topic, Boolean> topicRun;
+	private HashMap<Topic, TopicConnection> topicConnMap;
+	private HashMap<Topic, TopicSession> topicSessionMap;
+	private HashMap<Topic, TopicSubscriber> topicSubsMap;
 	
 	private Dispatcher() {
 		this.subscribers = new HashMap<Topic, List<TrackerSubsystem>>();
 		this.topicThread = new HashMap<Topic, Thread>();
 		this.topicRun = new HashMap<Topic, Boolean>();
+		this.topicConnMap = new HashMap<Topic, TopicConnection>();
+		this.topicSessionMap = new HashMap<Topic, TopicSession>();
+		this.topicSubsMap = new HashMap<Topic, TopicSubscriber>();
 	}
 	
 	public static Dispatcher getInstance() {
@@ -74,6 +82,9 @@ public class Dispatcher implements Publisher, MessageListener, Runnable {
 						tsubscriber = tsession.createSubscriber(topic);
 						tsubscriber.setMessageListener(Dispatcher.this);
 						tconn.start();
+						Dispatcher.this.topicSubsMap.put(t, tsubscriber);
+						Dispatcher.this.topicConnMap.put(t, tconn);
+						Dispatcher.this.topicSessionMap.put(t, tsession);
 						while (Dispatcher.this.topicRun.get(t)) {
 							try {
 							Thread.sleep(100);
@@ -92,8 +103,24 @@ public class Dispatcher implements Publisher, MessageListener, Runnable {
 	public void stopAll() {
 		for (Topic t : topicRun.keySet()) {
 			topicRun.put(t, false);
+			try {
+				topicSubsMap.get(t).close();
+			} catch (JMSException e1) {
+				e1.printStackTrace();
+			}
+			try {
+				topicSessionMap.get(t).close();
+			} catch (JMSException e) {
+				e.printStackTrace();
+			}
+			try {
+				topicConnMap.get(t).close();
+			} catch (JMSException e) {
+				e.printStackTrace();
+			}
 			topicThread.get(t).interrupt();
 			topicThread.put(t, null);
+			
 		}
 	}
 	
