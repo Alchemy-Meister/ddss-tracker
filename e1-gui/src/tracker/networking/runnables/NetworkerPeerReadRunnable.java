@@ -8,6 +8,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import bitTorrent.tracker.protocol.udp.messages.BitTorrentUDPMessage.Action;
 import bitTorrent.tracker.protocol.udp.messages.PeerInfo;
@@ -18,6 +20,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.peer.ConnectionResponse;
 import tracker.Const;
 import common.utils.Utilities;
 import tracker.db.DBManager;
+import tracker.db.model.Peer;
 import tracker.exceptions.NetProtoException;
 import tracker.networking.Bundle;
 import tracker.networking.Dispatcher;
@@ -145,15 +148,32 @@ public class NetworkerPeerReadRunnable implements Runnable {
 							AnnounceResponse aResponse = new AnnounceResponse();
 							aResponse.setTransactionId(
 									aRequest.getTransactionId());
+							List<Peer> peersWithContent = null;
 							this.db.connect();
 							try {
-								aResponse.setLeechers(
-										this.db.getPeersWithContent(
-												aRequest.getInfoHash()).size());
+								peersWithContent = this.db.getPeersWithContent(
+										aRequest.getInfoHash());
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
+							this.db.disconnect();
+							aResponse.setLeechers(peersWithContent == null ?
+									0 : peersWithContent.size());
 							aResponse.setSeeders(0);
+							List<PeerInfo> pInfoL = new ArrayList<PeerInfo>();
+							int maxCount = 0;
+							if (peersWithContent != null) {
+								for (Peer peerrr : peersWithContent) {
+									PeerInfo ptemp = new PeerInfo();
+									ptemp.setPort(peerrr.getPort());
+									ptemp.setIpAddress(peerrr.getHost());
+									pInfoL.add(ptemp);
+									maxCount += 1;
+									if (maxCount == 23)
+										break;
+								}
+							}
+							aResponse.setPeers(pInfoL);
 							//TODO SET SHITTY PARAMS.
 							if(IpIdTable.getInstance().amIMaster()) {
 								new Thread(new NetworkerPeerWriteRunnable(
