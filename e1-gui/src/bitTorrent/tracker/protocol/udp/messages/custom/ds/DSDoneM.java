@@ -18,6 +18,7 @@ import tracker.Const;
  */
 public class DSDoneM extends DatabaseSyncM {
 
+	private static final long serialVersionUID = -5188201026345830472L;
 	private LongLong id;
 	
 	public DSDoneM(long connection_id, LongLong id) {

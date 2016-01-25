@@ -1,11 +1,14 @@
 package bitTorrent.tracker.protocol.udp.messages.custom;
 
+import java.io.Serializable;
+
 /**
  * 20 byte class to hold SHA1
  *
  */
-public class SHA1 {
+public class SHA1 implements Serializable {
 
+	private static final long serialVersionUID = -4497713980719343136L;
 	private byte[] sha1;
 	
 	public SHA1(byte[] sha1) throws Exception {

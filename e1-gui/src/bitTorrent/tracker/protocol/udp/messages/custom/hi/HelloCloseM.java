@@ -22,6 +22,7 @@ import tracker.Const;
  */
 public class HelloCloseM extends HelloBaseM {
 
+	private static final long serialVersionUID = -1051799110833112540L;
 	private LongLong assigned_id;
 	private SHA1 contents_sha;
 	public static final String HI_CLOSE = "HI_CLOSE";

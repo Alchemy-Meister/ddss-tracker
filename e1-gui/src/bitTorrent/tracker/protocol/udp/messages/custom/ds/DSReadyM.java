@@ -23,7 +23,8 @@ import tracker.Const;
  */
 public class DSReadyM extends DatabaseSyncM {
 	
-    private int action, transaction_id;
+	private static final long serialVersionUID = -1438665336911280520L;
+	private int action, transaction_id;
     private LongLong id;
     private List<SHA1> info_hashes;
 

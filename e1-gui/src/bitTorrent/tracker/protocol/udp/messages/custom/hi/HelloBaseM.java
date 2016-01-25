@@ -12,6 +12,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.Type;
  */
 public abstract class HelloBaseM extends CustomMessage {
 
+	private static final long serialVersionUID = 1126552652846535619L;
 	protected final Type type = Type.HI;
 	protected long connection_id;
 	protected String subtype = null;

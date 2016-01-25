@@ -1,5 +1,6 @@
 package bitTorrent.tracker.protocol.udp.messages.custom;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
@@ -8,8 +9,9 @@ import java.nio.ByteBuffer;
  * @author Irene
  * @author Jesus
  */
-public class LongLong implements Comparable<LongLong> {
+public class LongLong implements Comparable<LongLong>, Serializable {
 
+	private static final long serialVersionUID = -1883673635582768553L;
 	private BigInteger value = null; // just to print
 	private byte[] mostLeft, leastRight; // these hold the real value
 

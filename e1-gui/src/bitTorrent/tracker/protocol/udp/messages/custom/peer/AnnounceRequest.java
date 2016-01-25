@@ -1,5 +1,6 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.peer;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
@@ -28,7 +29,9 @@ import common.utils.Utilities;
  * 
  */
 
-public class AnnounceRequest extends BitTorrentUDPRequestMessage {
+public class AnnounceRequest extends BitTorrentUDPRequestMessage implements Serializable {
+
+	private static final long serialVersionUID = 2336876204809348857L;
 
 	public enum Event {		
 		NONE(0),

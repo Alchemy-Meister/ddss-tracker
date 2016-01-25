@@ -16,6 +16,7 @@ import tracker.Const;
  */
 public class KeepAliveM extends CustomMessage {
 
+	private static final long serialVersionUID = -5895098448973380103L;
 	private final Type type = Type.KA;
 	private LongLong id;
 

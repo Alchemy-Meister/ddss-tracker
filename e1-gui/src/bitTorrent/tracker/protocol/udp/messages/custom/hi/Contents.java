@@ -1,5 +1,6 @@
 package bitTorrent.tracker.protocol.udp.messages.custom.hi;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -13,7 +14,9 @@ import tracker.Const;
  * @author Irene
  * @author Jesus 
  */
-public class Contents {
+public class Contents implements Serializable {
+	
+	private static final long serialVersionUID = -261678484446828501L;
 	private SHA1 info_hash;
 	private int host;
 	private short port;

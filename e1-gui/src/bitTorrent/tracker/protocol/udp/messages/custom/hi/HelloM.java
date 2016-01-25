@@ -14,6 +14,7 @@ import tracker.Const;
 */
 public class HelloM extends HelloBaseM {
 
+	private static final long serialVersionUID = 1375883207361139538L;
 	public static final String HI_INI = "HI_INI";
 
 	

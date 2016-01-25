@@ -12,6 +12,7 @@ import bitTorrent.tracker.protocol.udp.messages.custom.Type;
  */
 public abstract class DatabaseSyncM extends CustomMessage {
 
+	private static final long serialVersionUID = -2460534889358910251L;
 	protected Type type;
 	protected long connection_id;
 	

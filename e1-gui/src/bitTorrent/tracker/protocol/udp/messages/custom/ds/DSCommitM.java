@@ -18,7 +18,7 @@ import tracker.Const;
  *
  */
 public class DSCommitM extends DatabaseSyncM {
-
+	private static final long serialVersionUID = -3196536417950109597L;
 	private int action;
 	private int transaction_id;
 

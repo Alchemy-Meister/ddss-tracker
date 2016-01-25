@@ -17,6 +17,7 @@ import tracker.Const;
  */
 public class MasterElectionM extends CustomMessage {
 
+	private static final long serialVersionUID = -836758682792387996L;
 	private final Type type = Type.ME;
 	private LongLong payload, author;
 	

@@ -24,6 +24,7 @@ import tracker.Const;
  */
 public class HelloResponseM extends HelloBaseM {
 
+	private static final long serialVersionUID = -5884586121329948488L;
 	private LongLong assigned_id;
 	private SHA1 contents_sha;
 	private List<Contents> triplets;
