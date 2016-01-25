@@ -1,0 +1,72 @@
+\documentclass[twoside,a4paper,10pt]{article}
+\usepackage[top=2.54cm,bottom=2.54cm,left=2.54cm,right=2.54cm]{geometry}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+%\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{url}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{placeins}
+%\usepackage{ref}
+
+%%%
+
+\pagenumbering{arabic}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+% Shows section number and name
+\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+% Clear previous styles
+\fancyhf{}
+\fancyhead{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LO]{\rightmark}
+\fancyhead[RE]{BitTorrent Tracker: deliverable 5}
+\fancyhead[LE]{\thepage}
+\fancyfoot{}
+% Other modifiers
+%\fancyfoot[LE,RO]{\thepage}
+%\fancyfoot[LO,CE]{Something}
+%\fancyfoot[CO,RE]{Author Name}
+
+\title{BitTorrent Tracker: deliverable 5\\
+  Group 01}
+\author{Irene Díez \and Jesus Sesma}
+
+\begin{document}
+\date{}
+\maketitle
+
+%\begin{abstract}
+%Your abstract.
+%\end{abstract}
+\section{Protocol implementation}\label{sec:pa-hierarchy}
+
+This section describes the considerations taken to implement the protocol.
+
+\begin{itemize}
+\item \emph{Criterion to determine announce interval}: according to the
+  Failure model design defined in Deliverable 1, the announce interval is
+  15 seconds; connection requests are also sent after 15s. Moreover, as said
+  in Deliverable 1 after one minute of connection retries for both
+  announces and connection requests the peer considers the master to be down.
+\item \emph{Criterion to determine which peers are selected}: our tracker
+  uses the internal database ordering to determine which peers are selected
+  up to a maximum of 23 peers (this limit was defined in Deliverable 1).
+\item \emph{Checks and error messages}: the peer is fully capable of detecting
+  the errors happened in the protocol; this error information is shown as debug
+  information via standard error.
+  When the tracker is down the peer interrupts the connection.
+\end{itemize}
+
+%\bibliographystyle{unsrt}
+%\bibliography{bib}
+
+\end{document}
+
+
