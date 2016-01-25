@@ -88,7 +88,7 @@ public class PeerPanel extends ObserverJPanel {
 		peerTorrentTable = new CustomJTable();
 		peerTorrentTable.setEnabled(false);
 		peerTorrentTable.setModel(new DefaultTableModel(
-				pController.getPeerTorrentsHardCodedData(),
+				pController.getPeerTorrents("Peer_0"),
 				pController.getPeerTorrentColumnNames()));
 		((DefaultTableModel) peerTorrentTable.getModel()).setRowCount(0);
 		peerTorrentListPanel.add(new JScrollPane(peerTorrentTable),

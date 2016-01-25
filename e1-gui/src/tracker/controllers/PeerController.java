@@ -4,8 +4,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Random;
 
+import bitTorrent.tracker.protocol.udp.messages.custom.hi.Contents;
 import common.utils.Utilities;
 import tracker.db.DBManager;
 import tracker.db.model.Peer;
@@ -31,7 +31,9 @@ public class PeerController {
 		this.db.disconnect();
 		if(peer != null) {
 			try {
-				return new String[][]{{InetAddress.getByAddress(Utilities.unpack(peer.getHost())).getHostName(), String.valueOf(peer.getPort())}};
+				return new String[][]{{InetAddress.getByAddress(
+						Utilities.unpack(peer.getHost())).getHostAddress(),
+					Short.valueOf(peer.getPort()).toString()}};
 			} catch (UnknownHostException e) {
 				return new String[][]{{"", ""}};
 			}
@@ -41,8 +43,30 @@ public class PeerController {
 	}
 	
 	public String[][] getPeerTorrents(String id) {
-		// TODO return real data from DB.
-		return this.shuffleArray(this.getPeerTorrentsHardCodedData());
+		int idnum = Integer.valueOf(id.split("_")[1]);
+		
+		List<Contents> contentList = null;
+		this.db.connect();
+		try {
+			contentList = this.db.getAllContentsPeer(idnum);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		this.db.disconnect();
+		if(contentList != null) {
+			String[][] stringContent = 
+				new String[contentList.size()][getPeerTorrentColumnNames()
+				                               .length];
+				for(int i = 0; i < contentList.size(); i++) {
+					stringContent[i][0] = contentList.get(i).getInfo_hash().toString();
+					stringContent[i][1] = Integer.valueOf(0).toString();
+					stringContent[i][2] = Integer.valueOf(0).toString();
+					stringContent[i][3] = "u are a pirate!";
+				}
+				return stringContent;
+		} else {
+			return new String[][]{{}};
+		}
 	}
 	
 	public String[] getPeerIDListColumnName() {
@@ -57,7 +81,7 @@ public class PeerController {
 	
 	public String[] getPeerTorrentColumnNames() {
 		// TODO get the column names from database.
-		return new String[]{"Name", "Downloading", "Uploading", "Extra"};
+		return new String[]{"Hash", "Downloading", "Uploading", "Extra"};
 	}
 	
 	public String[][] getPeerListHardCodedData() {
@@ -81,45 +105,6 @@ public class PeerController {
 	}
 	
 	public String[][] getPeerBasicHardCodedInfo() {
-		return new String[][]{{"61.24.63.40", "65122"}};
+		return new String[][]{{"", ""}};
 	}
-	
-	public String[][] getPeerTorrentsHardCodedData() {
-		return new String[][]{
-			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"35%", "2%", "u are a pirate!"},
-			{"[ReinForce] Shingeki no Kyojin (BDRip 1920x1080 x264 FLAC)", 
-				"13%", "5%", "u are a pirate!"},
-			{"[PSXJowie] Elfen Lied | エルフェンリート (BD 1280x720) [MP4 Batch]",
-				"100%", "48%", "u are a pirate!"},
-			{"[Leopard-Raws] CLAYMORE (BD 1920x1080 x264 AAC(Jpn+5.1eng+EngSub))",
-				"5%", "0%", "u are a pirate!"},
-			{"Hatsune MIku 39's Giving Day Concert 2010 [1080p60 Hi10p AAC + 5.1 AC3][kuchikirukia]",
-				"74%", "23%", "u are a pirate!"},
-			{"[Poi] 40mP - 小さな自分と大きな世界 feat. 初音ミク Chiisana Jibun To Ookina Sekai feat. Hatsune Miku [MP3].zip",
-				"98%", "72%", "u are a pirate!"},
-			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-			    "98%", "72%", "u are a pirate!"},
-			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"98%", "72%", "u are a pirate!"},
-			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"98%", "72%", "u are a pirate!"},
-			{"[ANK-Raws] Seitokai no Ichizon (BDrip 1920x1080 x264 FLAC Hi10P)",
-				"98%", "72%", "u are a pirate!"}
-			};
-	}
-	
-	private String[][] shuffleArray(String[][] ar)
-	  {
-	    Random rnd = new Random();
-	    for (int i = ar.length - 1; i > 0; i--)
-	    {
-	      int index = rnd.nextInt(i + 1);
-	      // Simple swap
-	      String[] a = ar[index];
-	      ar[index] = ar[i];
-	      ar[i] = a;
-	    }
-	    return ar;
-	  }
 }

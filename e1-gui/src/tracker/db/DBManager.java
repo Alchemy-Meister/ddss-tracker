@@ -131,6 +131,34 @@ public class DBManager {
 		pre.close();
 		return ret;
 	}
+	
+	public List<Contents> getAllContentsPeer(int id) throws Exception {
+		List<Contents> contentList = new ArrayList<>();
+		Map<Integer, Peer> idtopeer = new HashMap<Integer, Peer>();
+		String a = "SELECT * from CONTENTS WHERE PEER_ID = ?;";
+		PreparedStatement pre = conn.prepareStatement(a);
+		pre.setInt(1, id);
+		ResultSet re = pre.executeQuery();
+		while(re.next()) {
+			String sha1 = re.getString(1);
+			int tempId = re.getInt(2);
+			if (idtopeer.get(tempId) == null) {
+				Peer temp = getPeer(tempId);
+				if (temp != null)
+					idtopeer.put(tempId, temp);
+			}
+			if (idtopeer.get(tempId) != null) {
+				contentList.add(new Contents(new SHA1(
+						Utilities.hexStringToByteArray(sha1)),
+						idtopeer.get(id).getHost(),
+						idtopeer.get(id).getPort()));
+			}
+		}
+		re.close();
+		pre.close();
+		
+		return contentList;
+	}
 
 	public Peer getPeer(int id) throws Exception {
 		Peer ret = null;
